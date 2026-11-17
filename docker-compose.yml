@@ -1,0 +1,13 @@
+services:
+  autoinvoice:
+    build: .
+    container_name: autoinvoice-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - NODE_ENV=production
+    volumes:
+      # Live development mount so changes on host are immediately served
+      - .:/app

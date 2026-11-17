@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Money Receipt — AutoInvoice</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+    <link rel="stylesheet" href="assets/vendor/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/print.css" />
+  </head>
+  <body class="receipt-page">
+    <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#printArea">Skip to content</a>
+    <nav class="navbar navbar-expand-lg app-navbar no-print">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="index.html">
+          <img src="assets/logo.svg" alt="AutoInvoice Logo" width="28" height="28" class="me-2" />
+          <span>AutoInvoice</span>
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNavbar">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+            <li class="nav-item"><a class="nav-link" href="quotation.html">Quotation</a></li>
+            <li class="nav-item"><a class="nav-link" href="invoice.html">Invoice</a></li>
+            <li class="nav-item"><a class="nav-link" href="challan.html">Challan</a></li>
+            <li class="nav-item"><a class="nav-link active fw-bold" aria-current="page" href="receipt.html">Receipt</a></li>
+            <li class="nav-item"><a class="nav-link" href="statement.html">Statement</a></li>
+            <li class="nav-item"><a class="nav-link" href="expenses.html">Expenses</a></li>
+            <li class="nav-item"><a class="nav-link" href="search.html">Search & Reports</a></li>
+          </ul>
+          <div class="d-flex align-items-center gap-2">
+            <button id="themeToggle" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">🌙</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container pb-5">
+      <div id="modeBadge" class="mb-2 no-print"></div>
+      <section class="border rounded p-3 mb-3 print-area receipt-card" id="printArea">
+        <!-- 1. Corporate Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-3" id="headerTop">
+          <div class="d-flex align-items-center">
+            <img id="companyLogo" src="assets/logo.svg" alt="Logo" width="60" height="60" class="me-3" />
+            <div class="company-text">
+              <span class="company-title" id="companyName"></span>
+              <div class="company-slogan" id="companySlogan"></div>
+              <div class="small text-muted" id="companyAddress"></div>
+              <div class="small text-muted" id="companyContacts"></div>
+            </div>
+          </div>
+          <div class="text-end" style="max-width: 360px;">
+            <div class="doc-badge-title">MONEY RECEIPT</div>
+            <div class="doc-subtitle mt-1">Official Payment Voucher</div>
+            <div id="receiptQRBlock" class="mt-2">
+              <div id="receiptQR" aria-label="Payment verification QR" role="img"></div>
+            </div>
+            <div class="qr-verify-text print-only">Scan to Verify</div>
+          </div>
+        </div>
+
+        <!-- 2. Meta & Client Information Section (Two Balanced Corporate Panels) -->
+        <div class="row g-3 mb-3 receipt-meta-row">
+          <!-- Left Panel: Received From / Client Details -->
+          <div class="col-md-6 col-12">
+            <div class="invoice-card h-100 p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                <span class="card-section-label">Received From (Client)</span>
+                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none no-print fw-semibold" id="onboardClientBtn" data-bs-toggle="modal" data-bs-target="#clientOnboardModal">+ Onboard Client</button>
+              </div>
+
+              <!-- Interactive Form Inputs (Hidden during print) -->
+              <div class="no-print">
+                <select id="clientSelect" class="form-select form-select-sm mb-2" aria-label="Select Registered Client">
+                  <option value="">-- Choose Existing Client --</option>
+                </select>
+                <input id="clientName" class="form-control form-control-sm mb-2" list="clientList" autocomplete="off" placeholder="Client / Company Name *" aria-label="Client or Company Name" />
+                <datalist id="clientList"></datalist>
+                <textarea id="clientAddress" class="form-control form-control-sm" rows="2" placeholder="Client Billing Address" aria-label="Client Billing Address"></textarea>
+              </div>
+
+              <!-- Formatted Client Details Block (Shown in Print & Live Preview) -->
+              <div class="client-details-block" id="clientDisplayBlock">
+                <div class="client-name-text fw-bold fs-6" id="clientNameDisplay">—</div>
+                <div class="client-contact-text mt-1 text-muted" id="clientContactDisplay"></div>
+                <div class="client-address-text mt-1 text-muted" id="clientAddressDisplay" style="white-space: pre-line;"></div>
+                <div class="client-comms-text mt-1 text-muted small" id="clientCommsDisplay"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Panel: Receipt & Voucher Metadata -->
+          <div class="col-md-6 col-12">
+            <div class="invoice-card h-100 p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                <span class="card-section-label">Receipt Voucher Details</span>
+              </div>
+              <table class="table table-sm meta-table mb-0">
+                <tbody>
+                  <tr>
+                    <td class="text-muted fw-semibold" style="width: 42%;"><label for="receiptNumber">Receipt Number:</label></td>
+                    <td>
+                      <input id="receiptNumber" class="form-control form-control-sm fw-bold no-print" readonly aria-label="Receipt Number" />
+                      <span class="print-only fw-bold font-monospace text-primary fs-6" id="receiptNumberPrint"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-muted fw-semibold"><label for="receiptDate">Receipt Date:</label></td>
+                    <td>
+                      <input id="receiptDate" type="date" class="form-control form-control-sm no-print" aria-label="Receipt Date" />
+                      <span class="print-only" id="receiptDatePrint"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-muted fw-semibold"><label for="paymentMethod">Payment Method:</label></td>
+                    <td>
+                      <select id="paymentMethod" class="form-select form-select-sm no-print" aria-label="Payment Method">
+                        <option value="Cash">Cash</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cheque">Cheque</option>
+                        <option value="bKash">bKash</option>
+                        <option value="Nagad">Nagad</option>
+                        <option value="Rocket">Rocket</option>
+                        <option value="Card / POS">Card / POS</option>
+                        <option value="Mobile Banking">Mobile Banking</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      <span class="print-only fw-semibold" id="paymentMethodPrint">Cash</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-muted fw-semibold"><label for="trxRef">Trx / Cheque Ref:</label></td>
+                    <td>
+                      <input id="trxRef" class="form-control form-control-sm no-print" placeholder="Optional bKash TrxID / Cheque #" aria-label="Transaction or Cheque Reference" />
+                      <span class="print-only font-monospace small" id="trxRefPrint">—</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-muted fw-semibold"><label for="linkedInvoice">Linked Invoice:</label></td>
+                    <td>
+                      <div class="no-print">
+                        <input id="linkedInvoice" class="form-control form-control-sm" list="invoiceList" placeholder="e.g. INV-2025-0001 (Optional)" aria-label="Linked Invoice" />
+                        <datalist id="invoiceList"></datalist>
+                        <div class="form-text small" id="linkedInvoiceInfo" role="status" aria-live="polite"></div>
+                      </div>
+                      <span class="print-only fw-bold font-monospace" id="linkedInvoicePrint">—</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Financial Settlement & Payment Particulars Table -->
+        <div class="mb-3">
+          <table class="table receipt-table mb-0">
+            <thead>
+              <tr>
+                <th>Description / Payment Particulars</th>
+                <th style="width: 30%; text-align: right;">Amount (৳)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="receiptParticularsRow">
+                <td>
+                  <div class="fw-bold" id="receiptParticularsTitle">Payment for Commercial Invoice</div>
+                  <div class="small text-muted" id="receiptParticularsSub">Total Invoiced: <span id="receiptInvTotal">৳0.00</span> • Previously Paid: <span id="receiptPrevPaid">৳0.00</span></div>
+                </td>
+                <td class="text-end font-monospace" id="receiptInvTotalCol">৳0.00</td>
+              </tr>
+              <tr class="table-success receipt-amount-row">
+                <td class="fw-bold text-success">
+                  <div class="fs-6">Amount Received (This Receipt)</div>
+                  <div class="small fw-normal text-muted" id="receiptPaymentModeDesc">Received via Cash</div>
+                </td>
+                <td class="text-end fw-bold font-monospace text-success fs-5">
+                  <span id="amountReceivedDisplay">৳0.00</span>
+                </td>
+              </tr>
+              <tr class="receipt-due-row" id="receiptDueRow">
+                <td class="fw-semibold">
+                  <div>Remaining Due Balance</div>
+                  <div class="small fw-normal text-muted" id="receiptDueDesc">Outstanding balance after this receipt</div>
+                </td>
+                <td class="text-end fw-bold font-monospace">
+                  <span id="dueAmountDisplay">৳0.00</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Interactive Amount Received Controls (Form inputs for editing, hidden in print) -->
+          <div class="card p-3 mt-2 bg-body-tertiary border-0 no-print">
+            <div class="row g-3 align-items-center">
+              <div class="col-md-5">
+                <label for="amountReceived" class="form-label fw-bold small mb-1" title="Enter payment amount for this receipt">Enter Amount Received (৳) *</label>
+                <input id="amountReceived" type="text" inputmode="decimal" class="form-control" aria-describedby="dueMsg" placeholder="e.g. 2000" />
+              </div>
+              <div class="col-md-4">
+                <label for="dueAmount" class="form-label small mb-1" title="Remaining due after applying this receipt">Calculated Remaining Due (৳)</label>
+                <input id="dueAmount" class="form-control" readonly />
+              </div>
+              <div class="col-md-3 pt-md-3">
+                <div class="form-check form-switch mb-1">
+                  <input class="form-check-input" type="checkbox" id="zeroDueToggle" />
+                  <label class="form-check-label small" for="zeroDueToggle" title="Zero out the remaining due by adjustment (renegotiation)">Zero Due / Withholding</label>
+                </div>
+                <select id="adjustmentReason" class="form-select form-select-sm" aria-label="Adjustment or Withholding Reason" disabled>
+                  <option value="Payment Settlement Rebate">Settlement Rebate / Discount</option>
+                  <option value="AIT Deducted">AIT Deducted (Tax Withholding)</option>
+                  <option value="VDS Deducted (Mushak-6.6)">VDS Deducted (Mushak-6.6)</option>
+                  <option value="Other Adjustment">Other Adjustment</option>
+                </select>
+              </div>
+            </div>
+            <div id="dueMsg" class="form-text mt-2" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <!-- 4. Amount in Words Box (Publication Standard) -->
+        <div class="words-box mb-3">
+          <div class="smaller text-muted fw-semibold text-uppercase">Amount in Words:</div>
+          <div class="fw-bold text-primary fs-6" id="amountInWords">Zero Taka Only</div>
+        </div>
+
+        <!-- 5. Signatures Section -->
+        <div class="row sign-row mt-4 pt-2">
+          <div class="col-6">
+            <div class="signature-line-wrap">
+              <div class="signature-line"></div>
+              <div class="fw-semibold small" id="deliveredLabel">Received by / Cashier</div>
+            </div>
+          </div>
+          <div class="col-6 text-end">
+            <div class="signature-line-wrap text-end ms-auto">
+              <div id="billerSignatureWrap" class="biller-signature-wrap mb-1 text-end">
+                <img id="billerSignatureImg" src="" alt="Authorized Signature" class="biller-signature-img d-none" />
+              </div>
+              <div class="signature-line"></div>
+              <div class="fw-semibold small" id="receivedLabel">Authorized Signatory</div>
+              <div class="text-muted smaller d-none" id="signatoryTitleLabel"></div>
+              <div class="text-muted smaller">Seal &amp; Signature</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="print-doc-footer text-center mt-3 pt-2">
+          Thank you for your payment. This is a computer-generated money receipt.
+        </div>
+      </section>
+
+      <div class="d-flex gap-2 align-items-center flex-wrap no-print">
+        <button id="saveReceiptBtn" class="btn btn-primary">Save Receipt</button>
+        <button id="downloadPdfBtn" class="btn btn-outline-primary d-none">⬇️ Save A4 PDF</button>
+        <button id="printBtn" class="btn btn-secondary">Print PDF</button>
+        <div class="dropdown d-inline-block">
+          <button class="btn btn-outline-success dropdown-toggle" type="button" id="shareDocDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            📤 Share
+          </button>
+          <ul class="dropdown-menu shadow-sm" aria-labelledby="shareDocDropdown">
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" id="shareWhatsAppBtn"><span>💬</span> Send via WhatsApp</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" id="shareEmailBtn"><span>✉️</span> Send via Email</a></li>
+          </ul>
+        </div>
+        <button id="downloadCsvBtn" class="btn btn-outline-secondary">Download CSV</button>
+      </div>
+    </main>
+
+    <!-- Client Onboarding Modal -->
+    <div class="modal fade no-print" id="clientOnboardModal" tabindex="-1" aria-labelledby="clientOnboardModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold" id="clientOnboardModalLabel">👥 Onboard New Client</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="quickClientForm">
+            <div class="modal-body">
+              <div class="mb-2">
+                <label for="quickClientName" class="form-label small fw-semibold">Client / Company Name *</label>
+                <input type="text" class="form-control" id="quickClientName" required placeholder="e.g. Beximco Pharmaceuticals Ltd" />
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-md-6">
+                  <label for="quickClientCompany" class="form-label small fw-semibold">Contact / Attention</label>
+                  <input type="text" class="form-control form-control-sm" id="quickClientCompany" placeholder="e.g. Mr. Rafiqul Islam" />
+                </div>
+                <div class="col-md-6">
+                  <label for="quickClientTitle" class="form-label small fw-semibold">Designation</label>
+                  <input type="text" class="form-control form-control-sm" id="quickClientTitle" placeholder="e.g. Head of Procurement" />
+                </div>
+              </div>
+              <div class="mb-2">
+                <label for="quickClientAddress" class="form-label small fw-semibold">Full Address</label>
+                <textarea class="form-control form-control-sm" id="quickClientAddress" rows="2" placeholder="e.g. 19 Dhanmondi R/A, Dhaka-1205"></textarea>
+              </div>
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <label for="quickClientPhone" class="form-label small fw-semibold">Phone</label>
+                  <input type="text" class="form-control form-control-sm" id="quickClientPhone" placeholder="e.g. +880 1711-000000" />
+                </div>
+                <div class="col-md-6">
+                  <label for="quickClientEmail" class="form-label small fw-semibold">Email</label>
+                  <input type="email" class="form-control form-control-sm" id="quickClientEmail" placeholder="e.g. accounts@client.com" />
+                </div>
+                <div class="col-12 mt-2">
+                  <label for="quickClientBin" class="form-label small fw-semibold">Client BIN / TIN (Optional)</label>
+                  <input type="text" class="form-control form-control-sm" id="quickClientBin" placeholder="e.g. 001234567-0102" />
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-sm btn-success">Save & Select Client</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="assets/vendor/bootstrap.bundle.min.js"></script>
+    <script src="js/vendor/qrcode.min.js"></script>
+    <script src="js/constants.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/records.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/catalog.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/biller.js"></script>
+    <script src="js/receipt.js"></script>
+  </body>
+</html>

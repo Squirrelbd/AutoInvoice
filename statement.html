@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Client Statement of Account — AutoInvoice</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="stylesheet" href="assets/vendor/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/print.css" />
+  <style>
+    .statement-page {
+      background-color: var(--bs-body-bg);
+    }
+
+    .statement-hero-kpi {
+      border-radius: 0.5rem;
+      padding: 0.85rem 1rem;
+      background-color: var(--bs-tertiary-bg);
+      border: 1px solid var(--border-subtle);
+      transition: transform 0.15s ease;
+    }
+
+    .statement-hero-kpi .kpi-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .statement-hero-kpi .kpi-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .aging-badge {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.6rem;
+    }
+  </style>
+</head>
+
+<body class="statement-page">
+  <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#printArea">Skip to
+    content</a>
+
+  <!-- Sticky Glassmorphic Navbar -->
+  <nav class="navbar navbar-expand-lg app-navbar no-print">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="index.html">
+        <img src="assets/logo.svg" alt="AutoInvoice Logo" width="28" height="28" class="me-2" />
+        <span>AutoInvoice</span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+          <li class="nav-item"><a class="nav-link" href="quotation.html">Quotation</a></li>
+          <li class="nav-item"><a class="nav-link" href="invoice.html">Invoice</a></li>
+          <li class="nav-item"><a class="nav-link" href="challan.html">Challan</a></li>
+          <li class="nav-item"><a class="nav-link" href="receipt.html">Receipt</a></li>
+          <li class="nav-item"><a class="nav-link active fw-bold" aria-current="page"
+              href="statement.html">Statement</a></li>
+          <li class="nav-item"><a class="nav-link" href="expenses.html">Expenses</a></li>
+          <li class="nav-item"><a class="nav-link" href="search.html">Search & Reports</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+          <button id="themeToggle" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">🌙</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-3 pb-5">
+    <!-- Interactive Filter & Action Toolbar (no-print) -->
+    <section class="card shadow-sm border p-3 mb-4 no-print bg-body">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h1 class="h5 mb-0 fw-bold text-primary d-flex align-items-center gap-2">
+            <span>📑</span> Client Statement of Account & Ledger
+          </h1>
+          <p class="text-muted small mb-0">Select a client and date range to inspect receivables, credit payments, and
+            generate a printable audit-ready statement.</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+          <button type="button" id="downloadPdfBtn"
+            class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 d-none">
+            <span>⬇️</span> Save A4 PDF
+          </button>
+          <button type="button" id="printBtn" class="btn btn-primary btn-sm d-flex align-items-center gap-1 shadow-sm">
+            <span>🖨️</span> Print / Save PDF
+          </button>
+          <button type="button" id="exportCsvBtn"
+            class="btn btn-outline-success btn-sm d-flex align-items-center gap-1">
+            <span>📥</span> Export CSV
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center gap-1"
+              type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <span>📤</span> Share
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <li><a class="dropdown-item d-flex align-items-center gap-2" href="#"
+                  id="shareWhatsAppBtn"><span>💬</span> Send via WhatsApp</a></li>
+              <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" id="shareEmailBtn"><span>✉️</span>
+                  Send via Email</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2 align-items-end">
+        <!-- Client Selector -->
+        <div class="col-md-3 col-sm-6 col-12">
+          <label for="clientSelect" class="form-label small fw-semibold mb-1">Select Client / Customer *</label>
+          <select id="clientSelect" class="form-select form-select-sm" aria-label="Select Customer">
+            <option value="">-- Choose Client --</option>
+          </select>
+        </div>
+
+        <!-- Biller / Entity Filter -->
+        <div class="col-lg-2 col-md-3 col-sm-6 col-12">
+          <label for="billerFilter" class="form-label small fw-semibold mb-1">🏢 Biller / Entity</label>
+          <select id="billerFilter" class="form-select form-select-sm" aria-label="Filter by Biller">
+            <option value="all" selected>All Billers (Consolidated)</option>
+          </select>
+        </div>
+
+        <!-- Date Preset Quick Filters -->
+        <div class="col-lg-2 col-md-3 col-sm-6 col-12">
+          <label for="datePreset" class="form-label small fw-semibold mb-1">Time Period</label>
+          <select id="datePreset" class="form-select form-select-sm">
+            <option value="all" selected>All Time (Entire History)</option>
+            <option value="this_month">This Month</option>
+            <option value="last_month">Last Month</option>
+            <option value="this_quarter">This Quarter</option>
+            <option value="this_fy">This BD Fiscal Year (Jul–Jun)</option>
+            <option value="this_year">This Calendar Year (Jan–Dec)</option>
+            <option value="custom">Custom Date Range...</option>
+          </select>
+        </div>
+
+        <!-- Custom Date From -->
+        <div class="col-lg-2 col-md-2 col-sm-4 col-6">
+          <label for="dateFrom" class="form-label small fw-semibold mb-1 text-muted">From Date</label>
+          <input type="date" class="form-control form-control-sm" id="dateFrom" />
+        </div>
+
+        <!-- Custom Date To -->
+        <div class="col-lg-2 col-md-2 col-sm-4 col-6">
+          <label for="dateTo" class="form-label small fw-semibold mb-1 text-muted">To Date</label>
+          <input type="date" class="form-control form-control-sm" id="dateTo" />
+        </div>
+
+        <div class="col-lg-1 col-md-2 col-sm-4 col-12 text-end">
+          <button type="button" id="resetFiltersBtn" class="btn btn-outline-secondary btn-sm w-100"
+            title="Reset filters">
+            Reset
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Printable Statement Document Area -->
+    <section class="border rounded p-4 mb-3 print-area shadow-sm bg-body" id="printArea">
+      <!-- 1. Header: Active Biller / Company Branding -->
+      <div class="d-flex justify-content-between align-items-start mb-3" id="headerTop">
+        <div class="d-flex align-items-center">
+          <img id="companyLogo" src="assets/logo.svg" alt="Company Logo" width="56" height="56" class="me-3" />
+          <div class="company-text">
+            <span class="company-title" id="companyName">Amirul Islam</span>
+            <div class="company-slogan" id="companySlogan">Freelance Embedded Systems Service provider</div>
+            <div class="company-address" id="companyAddress">Banasree, Rampura, Dhaka, Bangladesh</div>
+            <div class="company-contacts" id="companyContacts">Phone: +8801747144755 | Email: mahadi.ma.ak@gmail.com
+            </div>
+          </div>
+        </div>
+        <div class="text-end">
+          <div class="doc-badge-title">STATEMENT OF ACCOUNT</div>
+          <div class="doc-subtitle mt-1">Customer Transaction & Receivables Ledger</div>
+          <div class="qr-block-wrap mt-2 d-none" id="statementQrWrap">
+            <div id="qrContainer"></div>
+            <div class="qr-verify-text">Scan to Verify</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Statement Metadata & Customer Profile Block -->
+      <div class="row g-3 mb-3 invoice-meta-row">
+        <!-- Left: Account Holder Info -->
+        <div class="col-md-7 col-12">
+          <div class="invoice-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+              <span class="card-section-label">Account Holder / Invoiced To</span>
+              <span id="accountStatusBadge" class="badge bg-secondary-subtle text-secondary">No Client Selected</span>
+            </div>
+            <div class="client-details-block">
+              <div class="client-name-text" id="clientNameDisplay">Select a client to view statement</div>
+              <div class="client-contact-text mt-1 text-muted" id="clientContactDisplay"></div>
+              <div class="client-address-text mt-1" id="clientAddressDisplay" style="white-space: pre-line;"></div>
+              <div class="client-comms-text mt-1" id="clientCommsDisplay"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Statement Period & Summary Meta -->
+        <div class="col-md-5 col-12">
+          <div class="invoice-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+              <span class="card-section-label">Statement Particulars</span>
+            </div>
+            <table class="table table-sm meta-table mb-0">
+              <tbody>
+                <tr>
+                  <td class="text-muted" style="width: 40%;">Statement Ref:</td>
+                  <td class="text-end fw-bold font-monospace" id="statementRefDisplay">—</td>
+                </tr>
+                <tr>
+                  <td class="text-muted">Issue Date:</td>
+                  <td class="text-end fw-semibold" id="statementDateDisplay">—</td>
+                </tr>
+                <tr>
+                  <td class="text-muted">Ledger Period:</td>
+                  <td class="text-end fw-semibold" id="statementPeriodDisplay">All Time</td>
+                </tr>
+                <tr>
+                  <td class="text-muted">Currency:</td>
+                  <td class="text-end fw-bold text-primary">BDT (৳ — Bangladesh Taka)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Financial KPI Summary Ribbon -->
+      <div class="row g-2 mb-3" id="kpiRibbon">
+        <div class="col-6 col-md-3">
+          <div class="statement-hero-kpi text-center">
+            <div class="kpi-label">Opening Balance</div>
+            <div class="kpi-val text-secondary" id="openingBalanceVal">৳0.00</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="statement-hero-kpi text-center">
+            <div class="kpi-label">Total Invoiced (Debits)</div>
+            <div class="kpi-val text-primary" id="totalDebitsVal">৳0.00</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="statement-hero-kpi text-center">
+            <div class="kpi-label">Total Payments (Credits)</div>
+            <div class="kpi-val text-success" id="totalCreditsVal">৳0.00</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="statement-hero-kpi text-center">
+            <div class="kpi-label">Closing Balance Due</div>
+            <div class="kpi-val text-danger" id="closingBalanceVal">৳0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Chronological Transaction Ledger Table -->
+      <div class="table-responsive mb-3">
+        <table class="table table-sm table-hover align-middle mb-0" id="ledgerTable">
+          <thead class="table-light border-top border-bottom">
+            <tr>
+              <th style="width: 13%;">Date</th>
+              <th style="width: 15%;">Reference #</th>
+              <th style="width: 10%;">Type</th>
+              <th style="width: 24%;">Description / Particulars</th>
+              <th style="width: 12%;" class="text-end">Debit (+৳)</th>
+              <th style="width: 12%;" class="text-end">Credit (-৳)</th>
+              <th style="width: 14%;" class="text-end fw-bold">Balance (৳)</th>
+            </tr>
+          </thead>
+          <tbody id="ledgerTableBody">
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">
+                Please select a client from the toolbar above to generate their statement of account.
+              </td>
+            </tr>
+          </tbody>
+          <tfoot id="ledgerTableFoot" class="table-light fw-bold border-top">
+            <!-- Dynamically populated totals -->
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- 5. Overdue Aging Analysis Breakdown -->
+      <div class="invoice-card p-3 mb-3" id="agingSummaryCard">
+        <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+          <span class="card-section-label">Receivables Aging Analysis (Current Dues by Age)</span>
+          <span class="small text-muted" id="agingAsOfDate">As of Today</span>
+        </div>
+        <div class="row g-2 text-center" id="agingRow">
+          <div class="col">
+            <div class="p-2 border rounded bg-body-tertiary">
+              <div class="small text-muted fw-semibold mb-1">Current (Not Due)</div>
+              <strong class="text-success" id="agingCurrentVal">৳0.00</strong>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-2 border rounded bg-body-tertiary">
+              <div class="small text-muted fw-semibold mb-1">1–30 Days</div>
+              <strong class="text-warning" id="aging1to30Val">৳0.00</strong>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-2 border rounded bg-body-tertiary">
+              <div class="small text-muted fw-semibold mb-1">31–60 Days</div>
+              <strong class="text-danger" id="aging31to60Val">৳0.00</strong>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-2 border rounded bg-body-tertiary">
+              <div class="small text-muted fw-semibold mb-1">61–90 Days</div>
+              <strong class="text-danger" id="aging61to90Val">৳0.00</strong>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-2 border rounded bg-body-tertiary">
+              <div class="small text-muted fw-semibold mb-1">90+ Days</div>
+              <strong class="text-danger" id="aging90PlusVal">৳0.00</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Payment Instructions, Terms & Sign-off Block -->
+      <div class="row g-3 align-items-end mt-2" id="signoffBlock">
+        <div class="col-md-7 col-12">
+          <div class="p-2 border rounded bg-body-tertiary small">
+            <div class="fw-semibold text-primary mb-1">Remittance &amp; Notice:</div>
+            <div id="remittanceBox" class="mb-1 d-none">
+              <div id="remittanceContent" class="small"></div>
+            </div>
+            <div class="text-muted" style="line-height: 1.4;">
+              Please remit outstanding dues to our registered corporate bank or MFS account specified above or on
+              individual invoices.
+              This is an official computer-generated statement of account. Any discrepancies should be notified within 7
+              business days of receipt.
+            </div>
+          </div>
+        </div>
+        <div class="col-md-5 col-12">
+          <div class="d-flex justify-content-between text-center gap-3">
+            <div class="flex-grow-1">
+              <div style="height: 48px;"></div>
+              <div class="border-top pt-1 small text-muted">Prepared By</div>
+            </div>
+            <div class="flex-grow-1">
+              <div id="billerSignatureWrap" class="biller-signature-wrap mb-1 text-center" style="height: 48px;">
+                <img id="billerSignatureImg" src="" alt="Authorized Signature" class="biller-signature-img d-none" />
+              </div>
+              <div class="border-top pt-1 small fw-semibold text-primary" id="authorizedLabel">Authorized Signature
+                &amp; Seal</div>
+              <div class="text-muted smaller d-none" id="signatoryTitleLabel"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Scripts -->
+  <script src="assets/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/vendor/qrcode.min.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/records.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/biller.js"></script>
+  <script src="js/statement.js"></script>
+</body>
+
+</html>

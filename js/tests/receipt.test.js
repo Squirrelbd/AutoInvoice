@@ -1,0 +1,63 @@
+// Tests for receipt page
+
+test('Receipt required fields present', () => {
+  const doc = document.getElementById('receiptFrame').contentWindow.document;
+  const ids = ['receiptNumber','receiptDate','linkedInvoice','clientName','clientAddress','paymentMethod','amountReceived','dueAmount','amountInWords','receiptQR'];
+  const results = ids.map(id => ok(!!doc.getElementById(id), `Element #${id} exists`));
+  return results;
+});
+
+test('Payment stats and due calculation accurate', () => {
+  const win = document.getElementById('receiptFrame').contentWindow;
+  const { STORAGE_KEYS } = win;
+  const base = { invoiceNumber: 'INV-TEST-0001', date: '2025-12-01', client: { name: 'Test Co', address: 'Dhaka' }, items: [], grandTotal: 1000 };
+  win.localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify([base]));
+  const stats1 = win.getInvoicePaymentStats('INV-TEST-0001');
+  const r1 = ok(stats1.total === 1000 && stats1.paid === 0 && stats1.due === 1000, 'Initial stats reflect full due');
+  // Save a receipt of 300
+  win.saveReceipt({ receiptNumber: 'RCPT-TEST-0001', date: '2025-12-02', invoiceNumber: 'INV-TEST-0001', client: base.client, paymentMethod: 'Cash', amount: 300 });
+  const stats2 = win.getInvoicePaymentStats('INV-TEST-0001');
+  const r2 = ok(stats2.total === 1000 && stats2.paid === 300 && stats2.due === 700, 'Stats after payment reflect remaining due');
+  // Apply zero due adjustment to 650 remaining
+  win.saveReceipt({ receiptNumber: 'RCPT-TEST-0002', date: '2025-12-03', invoiceNumber: 'INV-TEST-0001', client: base.client, paymentMethod: 'Cash', amount: 650, adjustment: { applied: true, amount: 50, originalTotal: 1000, adjustedTotal: 950, timestamp: new Date().toISOString(), method: 'toggle' } });
+  const stats3 = win.getInvoicePaymentStats('INV-TEST-0001');
+  const r3 = ok(stats3.total === 950 && stats3.paid === 950 && stats3.due === 0, 'Adjustment lowers total and closes due');
+  return [r1, r2, r3];
+});
+
+test('Print CSS includes A4 and QR physical sizing', async () => {
+  const res = await fetch('../css/print.css', { cache: 'no-store' });
+  const css = await res.text();
+  const hasA4 = /@page\s*\{\s*size:\s*A4/i.test(css);
+  const hasQR = /#receiptQR\s*\{[^}]*width:\s*20mm[^}]*height:\s*20mm/i.test(css);
+  return [ok(hasA4, '@page size A4 present'), ok(hasQR, '#receiptQR 20mm sizing present')];
+});
+
+test('Approximate print content size within limits', () => {
+  const doc = document.getElementById('receiptFrame').contentWindow.document;
+  const html = doc.getElementById('printArea').outerHTML;
+  const bytes = new Blob([html]).size;
+  return ok(bytes < 200000, `Print area HTML ${bytes} bytes < 200KB`);
+});
+
+test('Currency formatting and words (BDT)', () => {
+  const win = document.getElementById('receiptFrame').contentWindow;
+  const s1 = ok(win.formatBDT(1234.5) === '৳1,234.50', 'formatBDT formats en-BD with ৳');
+  const s2 = ok(win.numberToWordsBDT(100.5).includes('One Hundred Taka and Fifty Paisa'), 'numberToWordsBDT produces words for BDT');
+  return [s1, s2];
+});
+
+test('Receipt QR uses standardized payload', () => {
+  const doc = document.getElementById('receiptFrame').contentWindow.document;
+  const el = doc.getElementById('receiptQR');
+  const txt = el?.dataset?.text || '';
+  const pattern = /^(?:INV:[^|]+\|T:[0-9]+(\.[0-9]+)?\|C:[^|]+\|TO:.+|DOC=RCPT\|TXID=[^|]+\|DT=[^|]*\|AMT=[0-9]+(\.[0-9]+)?\|CCY=BDT\|BEN=[^|]+\|REC=[^|]*\|V=1)$/;
+  return ok(pattern.test(txt), 'QR text matches valid receipt schema');
+});
+
+test('Void invoice reports status Void with zero due in payment stats', () => {
+  const win = document.getElementById('receiptFrame').contentWindow;
+  win.saveInvoice({ invoiceNumber: 'INV-VOID-RCPT', date: '2026-10-01', grandTotal: 5000, status: 'Void', client: { name: 'Void Co' } });
+  const stats = win.getInvoicePaymentStats('INV-VOID-RCPT');
+  return ok(stats.status === 'Void' && stats.total === 0 && stats.due === 0, 'Void invoice reports Void status and 0 payable due');
+});

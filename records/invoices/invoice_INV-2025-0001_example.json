@@ -1,0 +1,23 @@
+{
+  "invoiceNumber": "INV-2025-0001",
+  "date": "2025-06-23",
+  "title": "ETS Reader Development",
+  "paymentMethod": "Cash",
+  "dueDate": "2025-07-15",
+  "client": { "name": "Saiham Knit (Suits Unit)", "address": "Gulshan-1, Dhaka-1212" },
+  "items": [
+    { "name": "ETS Card Reader Device R&D", "desc": "Development", "qty": 3, "unitPrice": 3500 },
+    { "name": "Repair labor / hourly service", "desc": "Service", "qty": 7, "unitPrice": 650 },
+    { "name": "Components (PCB+Data Cable+Enclosure+RFID)", "desc": "Parts", "qty": 3, "unitPrice": 3000 }
+  ],
+  "grandTotal": 24050,
+  "amountInWords": "Twenty Four Thousand and Fifty Taka Only",
+  "qrData": "INV:INV-2025-0001|T:24050|C:Amirul Islam|TO:Saiham Knit (Suits Unit)",
+  "company": {
+    "name": "Amirul Islam",
+    "slogan": "Freelance Embedded Systems Service provider",
+    "address": "Banasree, Rampura, Dhaka, Bangladesh",
+    "phone": "+8801747144755",
+    "email": "mahadi.ma.ak@gmail.com"
+  }
+}

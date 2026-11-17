@@ -1,0 +1,620 @@
+{
+  "assets/vendor/bootstrap.bundle.min.js": {
+    "mtime": 1762688765.982,
+    "seen": 1791444936.1466033,
+    "ast_hash": "6baf57f25796c332144ed58a2a0cd9ee",
+    "semantic_hash": "6baf57f25796c332144ed58a2a0cd9ee"
+  },
+  "js/challan.js": {
+    "mtime": 1792774917.8525746,
+    "seen": 1792775196.5762436,
+    "ast_hash": "d1bb5d52e205a9bae8535e257d59a6ae",
+    "semantic_hash": ""
+  },
+  "js/constants.js": {
+    "mtime": 1792769058.1511714,
+    "seen": 1792770998.2143273,
+    "ast_hash": "01be32111e9989c80956a1c258cbeece",
+    "semantic_hash": ""
+  },
+  "js/dashboard.js": {
+    "mtime": 1792764995.7753906,
+    "seen": 1792765062.5409293,
+    "ast_hash": "f06da5423fbfe4e804409d94b85e5175",
+    "semantic_hash": ""
+  },
+  "js/invoice.js": {
+    "mtime": 1792774906.3004255,
+    "seen": 1792775196.5762486,
+    "ast_hash": "6aea1be730be423db9bec3c4d879c5d1",
+    "semantic_hash": ""
+  },
+  "js/quotation.js": {
+    "mtime": 1792774352.9973197,
+    "seen": 1792774448.938979,
+    "ast_hash": "ac15781de1ee0816f9d5e37c2348c511",
+    "semantic_hash": ""
+  },
+  "js/receipt.js": {
+    "mtime": 1792774929.838548,
+    "seen": 1792775196.5762508,
+    "ast_hash": "106d013ce813438ec843f5fb3cbcb9b3",
+    "semantic_hash": ""
+  },
+  "js/records.js": {
+    "mtime": 1792768510.658502,
+    "seen": 1792768706.8343816,
+    "ast_hash": "d8f7ed7bad3678eb71e93c2f58d6655b",
+    "semantic_hash": ""
+  },
+  "js/search.js": {
+    "mtime": 1792770889.3158498,
+    "seen": 1792770998.2143347,
+    "ast_hash": "c1b84b932e90679c647ec7f48d7f0c25",
+    "semantic_hash": ""
+  },
+  "js/storage.js": {
+    "mtime": 1792776332.7689412,
+    "seen": 1792776394.8798442,
+    "ast_hash": "573552840b6ab60a1deab08fe05a257d",
+    "semantic_hash": ""
+  },
+  "js/tests/invoice.test.js": {
+    "mtime": 1791396131.5309381,
+    "seen": 1791444936.1466155,
+    "ast_hash": "e248642105e0a1fdb4e7689346146acf",
+    "semantic_hash": "e248642105e0a1fdb4e7689346146acf"
+  },
+  "js/tests/qr.test.js": {
+    "mtime": 1791396122.0872412,
+    "seen": 1791444936.1466165,
+    "ast_hash": "bf05001ea8257dc5d924975c8f86c2ae",
+    "semantic_hash": "bf05001ea8257dc5d924975c8f86c2ae"
+  },
+  "js/tests/receipt.test.js": {
+    "mtime": 1791396146.2893665,
+    "seen": 1791444936.146618,
+    "ast_hash": "34fad0a314675ec467b27ffb7f843d43",
+    "semantic_hash": "34fad0a314675ec467b27ffb7f843d43"
+  },
+  "js/tests/storage.test.js": {
+    "mtime": 1791454584.583817,
+    "seen": 1791454648.8251235,
+    "ast_hash": "5cf626fe7a818f2db0d98ae773dbcb6c",
+    "semantic_hash": ""
+  },
+  "js/tests/test-runner.js": {
+    "mtime": 1792776348.3012967,
+    "seen": 1792776394.8798583,
+    "ast_hash": "3f500525fdf03c634d61801fb32a31c7",
+    "semantic_hash": ""
+  },
+  "js/tests/utils.test.js": {
+    "mtime": 1792764510.6735175,
+    "seen": 1792764573.664071,
+    "ast_hash": "5c06938338b6ce97524c4d75b14d5a95",
+    "semantic_hash": ""
+  },
+  "js/theme.js": {
+    "mtime": 1791439314.9101505,
+    "seen": 1791444936.1466212,
+    "ast_hash": "78620746beec3f2229380fa47dde8695",
+    "semantic_hash": "78620746beec3f2229380fa47dde8695"
+  },
+  "js/utils.js": {
+    "mtime": 1792775054.6602342,
+    "seen": 1792775196.5762703,
+    "ast_hash": "a73bd5a55885c03aa266d7908bfbeef3",
+    "semantic_hash": ""
+  },
+  "js/vendor/qrcode.min.js": {
+    "mtime": 1762688767.282,
+    "seen": 1791444936.146623,
+    "ast_hash": "517b55d3688ce9ef1085a3d9632bcb97",
+    "semantic_hash": "517b55d3688ce9ef1085a3d9632bcb97"
+  },
+  "records/challans/challan_CH-2025-0007_example.json": {
+    "mtime": 1762820475.844,
+    "seen": 1791444936.1466238,
+    "ast_hash": "ea19060aff74c8d77d55323492659f04",
+    "semantic_hash": "ea19060aff74c8d77d55323492659f04"
+  },
+  "records/challans/index.json": {
+    "mtime": 1762820506.414,
+    "seen": 1791444936.1466248,
+    "ast_hash": "b37ed79522fd3e6ff640b11b2652efd7",
+    "semantic_hash": "b37ed79522fd3e6ff640b11b2652efd7"
+  },
+  "records/invoices/index.json": {
+    "mtime": 1792768475.9783537,
+    "seen": 1792768706.834404,
+    "ast_hash": "c26fc8b1ff1941fd020e17bcff08f73e",
+    "semantic_hash": ""
+  },
+  "records/invoices/invoice_INV-2025-0001_example.json": {
+    "mtime": 1762820465.037,
+    "seen": 1791444936.1466267,
+    "ast_hash": "554be858f269ea41234243b8c8bfbee2",
+    "semantic_hash": "554be858f269ea41234243b8c8bfbee2"
+  },
+  "server.js": {
+    "mtime": 1792776358.075214,
+    "seen": 1792776394.8798702,
+    "ast_hash": "dd533d873051e2763c69be21ed919b77",
+    "semantic_hash": ""
+  },
+  ".agents/rules/agency.md": {
+    "mtime": 1791445111.556079,
+    "seen": 1791445149.2636924,
+    "ast_hash": "6e1a55c4da49677d719622504692d4d4",
+    "semantic_hash": ""
+  },
+  ".agents/rules/graphify.md": {
+    "mtime": 1791444921.5356276,
+    "seen": 1791445149.263694,
+    "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
+    "semantic_hash": ""
+  },
+  ".agents/rules/ponytail.md": {
+    "mtime": 1791445097.888954,
+    "seen": 1791445149.263695,
+    "ast_hash": "fce313b65a6b1830483b652dc033a84d",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-agents-orchestrator/SKILL.md": {
+    "mtime": 1787542549.5802414,
+    "seen": 1791445149.263696,
+    "ast_hash": "1e6b1043897cec5b75f30cde56cdfce1",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-backend-architect/SKILL.md": {
+    "mtime": 1787542549.0132928,
+    "seen": 1791445149.263697,
+    "ast_hash": "783b8770d2c4b225d4d79fc597de3ec8",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-code-reviewer/SKILL.md": {
+    "mtime": 1787542549.0172918,
+    "seen": 1791445149.2636979,
+    "ast_hash": "9f4644b54547fbb5272e6c9a0c9d5e5e",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-devops-automator/SKILL.md": {
+    "mtime": 1787542549.0308685,
+    "seen": 1791445149.2636986,
+    "ast_hash": "08519b1edbfca0154a81cb6080791c90",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-document-generator/SKILL.md": {
+    "mtime": 1787542549.821597,
+    "seen": 1791445149.2636998,
+    "ast_hash": "6013324b9a5b5671617dd995d37a7efd",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-evidence-collector/SKILL.md": {
+    "mtime": 1787542549.938682,
+    "seen": 1791445149.2637005,
+    "ast_hash": "ea644b54555f5fa7529acd1886feff52",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-finance-tracker/SKILL.md": {
+    "mtime": 1787542549.905115,
+    "seen": 1791445149.2637014,
+    "ast_hash": "fe5348d83467aeb45bd99245f741998a",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-financial-analyst/SKILL.md": {
+    "mtime": 1787542549.159567,
+    "seen": 1791445149.2637026,
+    "ast_hash": "93607aa003d919d1394dfc63e4cebaed",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-frontend-developer/SKILL.md": {
+    "mtime": 1787542549.0528624,
+    "seen": 1791445149.2637033,
+    "ast_hash": "4977edba6ea5a1af16a7c1e43a8d77c9",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-git-workflow-master/SKILL.md": {
+    "mtime": 1787542549.058869,
+    "seen": 1791445149.2637043,
+    "ast_hash": "300c748990a55d33c5426c751890bf8d",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-minimal-change-engineer/SKILL.md": {
+    "mtime": 1787542549.0798748,
+    "seen": 1791445149.263705,
+    "ast_hash": "f4d36aca1edfe20bc029837c764cc47b",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-performance-benchmarker/SKILL.md": {
+    "mtime": 1787542549.9446783,
+    "seen": 1791445149.2637062,
+    "ast_hash": "aaa29ae15fbb63227e6afc934ef5c5a8",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-project-shepherd/SKILL.md": {
+    "mtime": 1787542549.4103875,
+    "seen": 1791445149.263707,
+    "ast_hash": "ba69771b327852383edd23d8531858a0",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-reality-checker/SKILL.md": {
+    "mtime": 1787542549.9506788,
+    "seen": 1791445149.2637079,
+    "ast_hash": "efc0f0fb8c50b33210d02f3f85355eee",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-security-architect/SKILL.md": {
+    "mtime": 1787542549.4790845,
+    "seen": 1791445149.2637086,
+    "ast_hash": "db100bbe94a35cc4629c336f8b76b85c",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-senior-developer/SKILL.md": {
+    "mtime": 1787542549.12457,
+    "seen": 1791445149.26371,
+    "ast_hash": "28ad8f851a43ac364ce11fda7dbc35b9",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-senior-project-manager/SKILL.md": {
+    "mtime": 1787542549.4164298,
+    "seen": 1791445149.263712,
+    "ast_hash": "8e76bc5e247809bf6ce7b485f6a6d265",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-test-automation-engineer/SKILL.md": {
+    "mtime": 1787542549.9566784,
+    "seen": 1791445149.263713,
+    "ast_hash": "9fcc8fedbb383d90e01dba0c414d9f19",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-ui-designer/SKILL.md": {
+    "mtime": 1787542548.9907715,
+    "seen": 1791445149.2637138,
+    "ast_hash": "f641cf28944679536a44f07703f1751a",
+    "semantic_hash": ""
+  },
+  ".agents/skills/agency-ux-architect/SKILL.md": {
+    "mtime": 1787542548.9952803,
+    "seen": 1791445149.2637148,
+    "ast_hash": "7716d873e301ddc23fa11a4c6eb23dca",
+    "semantic_hash": ""
+  },
+  ".agents/skills/graphify/SKILL.md": {
+    "mtime": 1791444921.524819,
+    "seen": 1791445149.2637157,
+    "ast_hash": "b62ef33ed17cc71aae20f3ff9ce1a943",
+    "semantic_hash": ""
+  },
+  ".agents/skills/graphify/references/add-watch.md": {
+    "mtime": 1790582765.0145543,
+    "seen": 1791445149.263717,
+    "ast_hash": "c1f65eb4102ad515149303c7f296b718",
+    "semantic_hash": ""
+  },
+  ".agents/skills/graphify/references/exports.md": {
+    "mtime": 1790582765.0155542,
+    "seen": 1791445149.263718,
+    "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
+    "semantic_hash": ""
+  },
+  ".agents/skills/graphify/references/extraction-spec.md": {
+    "mtime": 1790582765.016562,
+    "seen": 1791445149.2637186,
+    "ast_hash": "42fef56a01698118f7fd722acdadea34",
+    "semantic_hash": ""
+  },
+  ".agents/skills/graphify/references/github-and-merge.md": {
+    "mtime": 1790582765.0175602,
+    "seen": 1791445149.2637198,
+    "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
+    "semantic_hash": ""
+  },
+  ".agents/skills/graphify/references/hooks.md": {
+    "mtime": 1790582765.0175602,
+    "seen": 1791445149.2637208,
+    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
+    "semantic_hash": ""
+  },
+  ".agents/skills/graphify/references/query.md": {
+    "mtime": 1790582765.019072,
+    "seen": 1791445149.2637217,
+    "ast_hash": "3c46f8ad006874260614ed8657d02307",
+    "semantic_hash": ""
+  },
+  ".agents/skills/graphify/references/transcribe.md": {
+    "mtime": 1790582765.0200932,
+    "seen": 1791445149.2637227,
+    "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
+    "semantic_hash": ""
+  },
+  ".agents/skills/graphify/references/update.md": {
+    "mtime": 1790582765.0210912,
+    "seen": 1791445149.2637236,
+    "ast_hash": "9378bd03d56baaf78bd738ab3848f142",
+    "semantic_hash": ""
+  },
+  ".agents/skills/ponytail-audit/SKILL.md": {
+    "mtime": 1786000838.7361562,
+    "seen": 1791445149.2637246,
+    "ast_hash": "2a757432defa9d63639a3aca3bbbf23a",
+    "semantic_hash": ""
+  },
+  ".agents/skills/ponytail-debt/SKILL.md": {
+    "mtime": 1786000839.309197,
+    "seen": 1791445149.2637255,
+    "ast_hash": "33f49652fe513cf08082e9bcf8e2ecf2",
+    "semantic_hash": ""
+  },
+  ".agents/skills/ponytail-gain/SKILL.md": {
+    "mtime": 1786000840.002534,
+    "seen": 1791445149.2637265,
+    "ast_hash": "e0090358fafc0a4b01716b88399e8405",
+    "semantic_hash": ""
+  },
+  ".agents/skills/ponytail-help/SKILL.md": {
+    "mtime": 1786000840.609444,
+    "seen": 1791445149.2637277,
+    "ast_hash": "a89c89a1fec6a90c3751302574389d47",
+    "semantic_hash": ""
+  },
+  ".agents/skills/ponytail-review/SKILL.md": {
+    "mtime": 1786000841.2350976,
+    "seen": 1791445149.2637286,
+    "ast_hash": "438e2414888145bc0108fa63f64314fd",
+    "semantic_hash": ""
+  },
+  ".agents/skills/ponytail/SKILL.md": {
+    "mtime": 1786000841.9320207,
+    "seen": 1791445149.2637296,
+    "ast_hash": "421e40917db6cc732864011799da3235",
+    "semantic_hash": ""
+  },
+  ".agents/workflows/graphify.md": {
+    "mtime": 1791444921.5377612,
+    "seen": 1791445149.2637308,
+    "ast_hash": "a831cf3669f1e6ab85d8a80ebe655f99",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1791445129.558979,
+    "seen": 1791445149.2637317,
+    "ast_hash": "42951f617fba830defb7f313cb5598e5",
+    "semantic_hash": ""
+  },
+  "CHANGELOG.md": {
+    "mtime": 1792771026.6006308,
+    "seen": 1792771494.4083302,
+    "ast_hash": "b10c853881227355289d78c445ed4238",
+    "semantic_hash": ""
+  },
+  "DEVELOPER_GUIDE.md": {
+    "mtime": 1791444741.7505183,
+    "seen": 1791445149.2637339,
+    "ast_hash": "3d03fe7d7f53edcc781c81058fb5e249",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1792776545.779657,
+    "seen": 1792776559.676,
+    "ast_hash": "9b111cc1d8930cf74deb39294660b82c",
+    "semantic_hash": ""
+  },
+  "challan.html": {
+    "mtime": 1792774887.5048041,
+    "seen": 1792775196.5763295,
+    "ast_hash": "71cdbf89b109072c58e496b49eeeea81",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1792769937.380355,
+    "seen": 1792770998.2144127,
+    "ast_hash": "ff4a6d73116ffcaccd3f3dc2a3490863",
+    "semantic_hash": ""
+  },
+  "invoice.html": {
+    "mtime": 1792774863.6595235,
+    "seen": 1792775196.5763319,
+    "ast_hash": "27c1765fa6d28564e372b03999a7e9d4",
+    "semantic_hash": ""
+  },
+  "quotation.html": {
+    "mtime": 1792774875.3069675,
+    "seen": 1792775196.5763326,
+    "ast_hash": "7b86d3d3c99b1c8b5ac1f0cc8916472d",
+    "semantic_hash": ""
+  },
+  "receipt.html": {
+    "mtime": 1792772793.9746568,
+    "seen": 1792773395.04904,
+    "ast_hash": "8a64e252f31d03a5f864b1e8504e9a7d",
+    "semantic_hash": ""
+  },
+  "records/README.md": {
+    "mtime": 1791444770.660082,
+    "seen": 1791445149.263742,
+    "ast_hash": "4b72c94cdb27ff2d3342e947097de7a5",
+    "semantic_hash": ""
+  },
+  "search.html": {
+    "mtime": 1792770358.1394866,
+    "seen": 1792770998.214418,
+    "ast_hash": "2220b914266869aea26d61bed479d260",
+    "semantic_hash": ""
+  },
+  "tests/README.md": {
+    "mtime": 1791444781.6352475,
+    "seen": 1791445149.2637436,
+    "ast_hash": "e81f1cb9c7ea37952ef76c385e2f6346",
+    "semantic_hash": ""
+  },
+  "tests/tests.html": {
+    "mtime": 1792770512.860015,
+    "seen": 1792770998.21442,
+    "ast_hash": "6623400644efbaeee998169ec82b4901",
+    "semantic_hash": ""
+  },
+  "assets/logo.svg": {
+    "mtime": 1764798881.809,
+    "seen": 1791445149.2637467,
+    "ast_hash": "ba99407d5e51dca6ece57bc4e18a4752",
+    "semantic_hash": ""
+  },
+  "js/tests/challan.test.js": {
+    "mtime": 1792763921.2824013,
+    "seen": 1792764054.022173,
+    "ast_hash": "815dc6e1ef2ed24dcf58d057b931dc0f",
+    "semantic_hash": ""
+  },
+  "js/tests/quotation.test.js": {
+    "mtime": 1791447026.777567,
+    "seen": 1791452953.6977153,
+    "ast_hash": "da5fd1649529329986d7c760858fe58f",
+    "semantic_hash": ""
+  },
+  "js/catalog.js": {
+    "mtime": 1791453600.288352,
+    "seen": 1791454648.8250983,
+    "ast_hash": "16db7964328e610b624bdbf35f1cef15",
+    "semantic_hash": ""
+  },
+  "AUDIT_REPORT.md": {
+    "mtime": 1792763621.27616,
+    "seen": 1792763637.0721486,
+    "ast_hash": "06c58ed43f2c43280d94a78941402cb9",
+    "semantic_hash": ""
+  },
+  "tests/phase1_test_results.png": {
+    "mtime": 1792764034.436432,
+    "seen": 1792764054.0223322,
+    "ast_hash": "b3a2d46c2ad353649c9bee9ecf31761b",
+    "semantic_hash": ""
+  },
+  "tests/phase2_test_results.png": {
+    "mtime": 1792764577.9886658,
+    "seen": 1792764889.998074,
+    "ast_hash": "1698293aed2613fa8ae58c6941d21141",
+    "semantic_hash": ""
+  },
+  "tests/phase3_test_results.png": {
+    "mtime": 1792764871.7618456,
+    "seen": 1792764889.9980764,
+    "ast_hash": "1698293aed2613fa8ae58c6941d21141",
+    "semantic_hash": ""
+  },
+  "tests/phase4_test_results.png": {
+    "mtime": 1792765047.2229333,
+    "seen": 1792765062.5410252,
+    "ast_hash": "1698293aed2613fa8ae58c6941d21141",
+    "semantic_hash": ""
+  },
+  "tests/ui_dashboard_light.png": {
+    "mtime": 1792767453.2176852,
+    "seen": 1792768706.8344753,
+    "ast_hash": "0cc1e9d0e8a25058eed4e6d5df3f81e1",
+    "semantic_hash": ""
+  },
+  "tests/ui_dashboard_light_mode.png": {
+    "mtime": 1792767504.3333206,
+    "seen": 1792768706.8344774,
+    "ast_hash": "ec4a89167d3369ef7ac4d8ed172c2771",
+    "semantic_hash": ""
+  },
+  "tests/ui_dashboard_scrolled.png": {
+    "mtime": 1792767475.503969,
+    "seen": 1792768706.8344786,
+    "ast_hash": "724d30b994122c33bb9cfbd3bcadeccf",
+    "semantic_hash": ""
+  },
+  "tests/ui_invoice_page.png": {
+    "mtime": 1792767570.0527627,
+    "seen": 1792768706.8344793,
+    "ast_hash": "f31ecb231355768a7f40f7703a6a7b99",
+    "semantic_hash": ""
+  },
+  "js/biller.js": {
+    "mtime": 1792776231.1436777,
+    "seen": 1792776277.5086718,
+    "ast_hash": "45fc9e96de702c8c4df82daa44c04248",
+    "semantic_hash": ""
+  },
+  "js/tests/biller.test.js": {
+    "mtime": 1792769499.747993,
+    "seen": 1792770998.2143373,
+    "ast_hash": "2f7f96a0302b04fd3de0bb79c0355911",
+    "semantic_hash": ""
+  },
+  "js/tests/reports.test.js": {
+    "mtime": 1792770501.3503993,
+    "seen": 1792770998.214346,
+    "ast_hash": "72f2a03b03d7218aae864818beff8caf",
+    "semantic_hash": ""
+  },
+  "tests/reports_multibiller_test_results.png": {
+    "mtime": 1792770976.6975534,
+    "seen": 1792770998.214427,
+    "ast_hash": "59fe8867ae0e1934c0b997eb3a9a3e21",
+    "semantic_hash": ""
+  },
+  "tests/ui_biller_form.png": {
+    "mtime": 1792770640.6886916,
+    "seen": 1792770998.214428,
+    "ast_hash": "ae722d88840e9f6549fe24d7a218da9d",
+    "semantic_hash": ""
+  },
+  "tests/ui_biller_modal.png": {
+    "mtime": 1792770630.756063,
+    "seen": 1792770998.2144287,
+    "ast_hash": "736008f6af693e63a0c1829828a6b1f2",
+    "semantic_hash": ""
+  },
+  "tests/ui_dashboard_multibiller.png": {
+    "mtime": 1792770622.4521084,
+    "seen": 1792770998.214432,
+    "ast_hash": "f38dcd238b135d4d2666107e35ee72e3",
+    "semantic_hash": ""
+  },
+  "tests/ui_invoice_nexus_biller.png": {
+    "mtime": 1792770704.7204528,
+    "seen": 1792770998.2144344,
+    "ast_hash": "e867492b6b92c62ead6629f06223fdc2",
+    "semantic_hash": ""
+  },
+  "tests/ui_reports_and_statement.png": {
+    "mtime": 1792770914.1484158,
+    "seen": 1792770998.2144365,
+    "ast_hash": "a8eafa73579b679865428d75055d9f7c",
+    "semantic_hash": ""
+  },
+  "tests/ui_statement_and_revenue.png": {
+    "mtime": 1792770925.117143,
+    "seen": 1792770998.2144377,
+    "ast_hash": "607567567d9584147b0a6e37dfa8945b",
+    "semantic_hash": ""
+  },
+  "tests/ui_receipt_print.png": {
+    "mtime": 1792773328.14561,
+    "seen": 1792773395.049064,
+    "ast_hash": "190e5535bdd6b94c5c022f3f838f02f9",
+    "semantic_hash": ""
+  },
+  "tests/ui_receipt_screen.png": {
+    "mtime": 1792773179.604069,
+    "seen": 1792773395.049065,
+    "ast_hash": "1d753b5fe20e8a7a1a4e9cf40c2e6c73",
+    "semantic_hash": ""
+  },
+  "records/billers.json": {
+    "mtime": 1792776317.8724265,
+    "seen": 1792776394.8798642,
+    "ast_hash": "99b669294b0536df0f245b9983372b73",
+    "semantic_hash": ""
+  },
+  "docker-compose.yml": {
+    "mtime": 1792776521.7833278,
+    "seen": 1792776559.6760027,
+    "ast_hash": "1be72d08627791bc3ce14fde3e811317",
+    "semantic_hash": ""
+  }
+}

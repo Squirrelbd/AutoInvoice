@@ -1,0 +1,94 @@
+{
+  "runtime": "antigravity",
+  "mode": "interactive",
+  "model_profile": "balanced",
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "nyquist_validation": true,
+    "ai_integration_phase": false,
+    "use_worktrees": false
+  },
+  "agent_skills": {
+    "gsd-planner": [
+      ".agents/skills/ponytail",
+      ".agents/skills/graphify",
+      ".agents/skills/agency-senior-project-manager",
+      ".agents/skills/agency-software-architect",
+      ".agents/skills/agency-workflow-architect"
+    ],
+    "gsd-roadmapper": [
+      ".agents/skills/agency-product-manager",
+      ".agents/skills/agency-sprint-prioritizer",
+      ".agents/skills/agency-project-shepherd"
+    ],
+    "gsd-executor": [
+      ".agents/skills/ponytail",
+      ".agents/skills/agency-minimal-change-engineer",
+      ".agents/skills/agency-senior-developer",
+      ".agents/skills/agency-frontend-developer",
+      ".agents/skills/agency-backend-architect",
+      ".agents/skills/agency-document-generator",
+      ".agents/skills/agency-finance-tracker",
+      ".agents/skills/accidental-data-loss-prevention"
+    ],
+    "gsd-verifier": [
+      ".agents/skills/agency-reality-checker",
+      ".agents/skills/agency-evidence-collector",
+      ".agents/skills/agency-test-results-analyzer",
+      ".agents/skills/agency-finance-tracker"
+    ],
+    "gsd-code-reviewer": [
+      ".agents/skills/agency-code-reviewer",
+      ".agents/skills/ponytail-review",
+      ".agents/skills/agency-application-security-engineer",
+      ".agents/skills/agency-finance-tracker"
+    ],
+    "gsd-code-fixer": [
+      ".agents/skills/ponytail",
+      ".agents/skills/agency-minimal-change-engineer",
+      ".agents/skills/agency-senior-developer"
+    ],
+    "gsd-security-auditor": [
+      ".agents/skills/agency-security-architect",
+      ".agents/skills/agency-application-security-engineer",
+      ".agents/skills/accidental-data-loss-prevention"
+    ],
+    "gsd-ui-auditor": [
+      ".agents/skills/agency-accessibility-auditor",
+      ".agents/skills/agency-ui-finish-gate-reviewer",
+      ".agents/skills/agency-ui-designer",
+      ".agents/skills/agency-ux-architect"
+    ],
+    "gsd-ui-checker": [
+      ".agents/skills/agency-ux-architect",
+      ".agents/skills/agency-ui-designer",
+      ".agents/skills/agency-accessibility-auditor"
+    ],
+    "gsd-ui-researcher": [
+      ".agents/skills/agency-ux-architect",
+      ".agents/skills/agency-ui-designer"
+    ],
+    "gsd-nyquist-auditor": [
+      ".agents/skills/agency-test-automation-engineer",
+      ".agents/skills/agency-api-tester",
+      ".agents/skills/agency-test-results-analyzer"
+    ],
+    "gsd-debugger": [
+      ".agents/skills/graphify",
+      ".agents/skills/agency-minimal-change-engineer",
+      ".agents/skills/agency-test-results-analyzer"
+    ],
+    "gsd-doc-writer": [
+      ".agents/skills/agency-technical-writer"
+    ],
+    "gsd-integration-checker": [
+      ".agents/skills/agency-workflow-architect",
+      ".agents/skills/agency-api-tester",
+      ".agents/skills/agency-bookkeeper-controller",
+      ".agents/skills/agency-payments-billing-engineer"
+    ]
+  },
+  "granularity": "standard"
+}

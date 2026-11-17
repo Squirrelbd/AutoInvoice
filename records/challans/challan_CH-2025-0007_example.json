@@ -1,0 +1,19 @@
+{
+  "challanNumber": "CH-2025-0007",
+  "date": "2025-06-25",
+  "title": "ETS Device Delivery",
+  "client": { "name": "Client A" },
+  "deliveryAddress": "Banani, Dhaka",
+  "items": [
+    { "name": "ETS Device", "desc": "Card Reader", "qty": 3 },
+    { "name": "Cables", "desc": "Data cables", "qty": 5 }
+  ],
+  "qrData": "Challan#: CH-2025-0007\nCompany: Amirul Islam\nDelivery to: Client A",
+  "company": {
+    "name": "Amirul Islam",
+    "slogan": "Freelance Embedded Systems Service provider",
+    "address": "Banasree, Rampura, Dhaka, Bangladesh",
+    "phone": "+8801747144755",
+    "email": "mahadi.ma.ak@gmail.com"
+  }
+}

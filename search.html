@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Search Records & Reports — AutoInvoice</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="stylesheet" href="assets/vendor/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/print.css" />
+</head>
+
+<body>
+  <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#searchResults">Skip to
+    content</a>
+
+  <!-- Sticky Glassmorphic Navbar -->
+  <nav class="navbar navbar-expand-lg app-navbar no-print">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="index.html">
+        <img src="assets/logo.svg" alt="AutoInvoice Logo" width="28" height="28" class="me-2" />
+        <span>AutoInvoice</span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+          <li class="nav-item"><a class="nav-link" href="quotation.html">Quotation</a></li>
+          <li class="nav-item"><a class="nav-link" href="invoice.html">Invoice</a></li>
+          <li class="nav-item"><a class="nav-link" href="challan.html">Challan</a></li>
+          <li class="nav-item"><a class="nav-link" href="receipt.html">Receipt</a></li>
+          <li class="nav-item"><a class="nav-link" href="statement.html">Statement</a></li>
+          <li class="nav-item"><a class="nav-link" href="expenses.html">Expenses</a></li>
+          <li class="nav-item"><a class="nav-link active fw-bold" aria-current="page" href="search.html">Search &
+              Reports</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+          <button id="themeToggle" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">🌙</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4 pb-5">
+    <!-- Search Filters Card -->
+    <section class="card shadow-sm border p-4 mb-4 no-print">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="h5 mb-1 fw-bold text-primary">🔍 Query Saved Records</h2>
+          <p class="text-muted small mb-0">Search invoices, challans, quotations, and receipts across local storage and preloaded records.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button id="verifyQrModalBtn" class="btn btn-outline-info btn-sm px-3" type="button" data-bs-toggle="modal" data-bs-target="#qrVerifyModal">📱 Verify QR</button>
+          <button id="searchBtn" class="btn btn-primary btn-sm px-3" type="button">Search</button>
+          <button id="resetBtn" class="btn btn-outline-secondary btn-sm px-3" type="button">Reset</button>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label for="searchBiller" class="form-label small fw-semibold">🏢 Biller / Company</label>
+          <select id="searchBiller" class="form-select form-select-sm">
+            <option value="all" selected>All Billers (Consolidated)</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="recordType" class="form-label small fw-semibold">Record Type</label>
+          <select id="recordType" class="form-select form-select-sm">
+            <option value="all" selected>All (Invoices, Challans, Receipts, Quotations)</option>
+            <option value="invoice">Invoice</option>
+            <option value="challan">Challan</option>
+            <option value="receipt">Receipt</option>
+            <option value="quotation">Quotation</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="searchNumber" class="form-label small fw-semibold">Document Number</label>
+          <input id="searchNumber" class="form-control form-control-sm" placeholder="e.g. INV-2026-0001" />
+        </div>
+        <div class="col-md-3">
+          <label for="searchClient" class="form-label small fw-semibold">Client Name</label>
+          <input id="searchClient" class="form-control form-control-sm" placeholder="e.g. Acme Corp" />
+        </div>
+        <div class="col-md-3">
+          <label for="searchStatus" class="form-label small fw-semibold">Payment / Doc Status</label>
+          <select id="searchStatus" class="form-select form-select-sm">
+            <option value="any" selected>Any Status</option>
+            <option value="paid">Invoice: Paid in Full</option>
+            <option value="partial">Invoice: Partially Paid</option>
+            <option value="unpaid">Invoice: Unpaid</option>
+            <option value="overdue">Invoice: Overdue</option>
+            <option value="void">Void / Cancelled</option>
+            <option value="valid">Quotation: Valid (Active)</option>
+            <option value="expired">Quotation: Expired</option>
+            <option value="converted">Quotation: Converted to Invoice</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="searchFromDate" class="form-label small fw-semibold">From Date</label>
+          <input id="searchFromDate" type="date" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-3">
+          <label for="searchToDate" class="form-label small fw-semibold">To Date</label>
+          <input id="searchToDate" type="date" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-3">
+          <label for="searchMinAmount" class="form-label small fw-semibold">Min Amount (৳)</label>
+          <input id="searchMinAmount" type="text" inputmode="decimal" class="form-control form-control-sm" placeholder="0.00" />
+        </div>
+        <div class="col-md-3">
+          <label for="searchMaxAmount" class="form-label small fw-semibold">Max Amount (৳)</label>
+          <input id="searchMaxAmount" type="text" inputmode="decimal" class="form-control form-control-sm" placeholder="999999.99" />
+        </div>
+        <div class="col-md-9">
+          <label for="searchText" class="form-label small fw-semibold">Keywords</label>
+          <input id="searchText" class="form-control form-control-sm" placeholder="Search line items, descriptions, notes, or contact info..." />
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Table Card -->
+    <section class="card shadow-sm border p-4 mb-4" id="searchResults">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h3 class="h5 mb-0 fw-bold">Search Results <span id="resultsCountBadge"
+              class="badge bg-secondary-subtle text-secondary fs-6 align-middle ms-1">0 records</span></h3>
+        </div>
+        <div class="d-flex gap-2">
+          <button id="exportSearchResultsCsvBtn" class="btn btn-sm btn-outline-success">📥 Export Results CSV</button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Type</th>
+              <th>Number</th>
+              <th>Biller</th>
+              <th>Date</th>
+              <th>Client</th>
+              <th class="text-end">Amount</th>
+              <th class="text-center">Status</th>
+              <th class="text-end no-print" style="width: 210px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Client Statement / Account Ledger Card -->
+    <section class="card shadow-sm border p-4 mb-4 no-print" id="clientStatementCard">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h3 class="h5 mb-1 fw-bold text-info">📑 Client Statement of Account / Ledger</h3>
+          <p class="text-muted small mb-0">Generate a complete chronological transaction ledger (invoices, payments,
+            credits, and running balance) for any client.</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center flex-wrap no-print">
+          <select id="statementClientSelect" class="form-select form-select-sm" style="min-width: 220px;"
+            aria-label="Select client for statement of account">
+            <option value="">Select a Client...</option>
+          </select>
+          <a id="openFullStatementBtn" href="statement.html" class="btn btn-sm btn-primary d-none" target="_blank">🖨️
+            Printable Statement</a>
+          <button id="exportStatementCsvBtn" class="btn btn-sm btn-outline-primary" disabled>📥 Export Statement
+            CSV</button>
+        </div>
+      </div>
+      <div id="statementPlaceholder" class="text-center py-4 text-muted small border rounded bg-body-tertiary no-print">
+        Select a client above to view their chronological transaction statement and download account ledger.
+      </div>
+      <div id="statementContent" class="d-none">
+        <div class="d-flex justify-content-between align-items-center bg-body-tertiary p-3 rounded mb-3 border">
+          <div>
+            <strong id="statementClientName" class="fs-6 text-primary">Client Name</strong>
+            <div id="statementClientAddress" class="small text-muted"></div>
+          </div>
+          <div class="text-end">
+            <div class="small text-muted">Net Outstanding Due</div>
+            <strong id="statementNetDue" class="fs-5 text-danger">৳0.00</strong>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Reference</th>
+                <th>Biller</th>
+                <th class="text-end">Billed / Debit (৳)</th>
+                <th class="text-end">Paid / Credit (৳)</th>
+                <th class="text-end fw-bold">Balance (৳)</th>
+              </tr>
+            </thead>
+            <tbody id="statementTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Monthly & Quarterly Revenue Breakdown Card -->
+    <section class="card shadow-sm border p-4 mb-4" id="revenueAnalysisCard">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h3 class="h5 mb-1 fw-bold text-success">📈 Revenue & Collection Breakdown</h3>
+          <p class="text-muted small mb-0">Periodic financial breakdown aggregated by Month and Quarter with collection
+            recovery rates.</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center flex-wrap no-print">
+          <div class="btn-group btn-group-sm" role="group" id="revenuePeriodGroup">
+            <input type="radio" class="btn-check" name="revView" id="revViewMonthly" autocomplete="off" checked>
+            <label class="btn btn-outline-secondary" for="revViewMonthly">Monthly</label>
+            <input type="radio" class="btn-check" name="revView" id="revViewQuarterly" autocomplete="off">
+            <label class="btn btn-outline-secondary" for="revViewQuarterly">Quarterly</label>
+          </div>
+          <button id="exportRevenueCsvBtn" class="btn btn-sm btn-outline-success">📥 Export Revenue CSV</button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Period</th>
+              <th class="text-end">Invoiced (৳)</th>
+              <th class="text-end">Collected (৳)</th>
+              <th class="text-end text-danger fw-bold">Net Due (৳)</th>
+              <th class="text-center">Collection %</th>
+              <th class="text-end">Invoices</th>
+            </tr>
+          </thead>
+          <tbody id="revenueAnalysisBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Outstanding Payments Report Card -->
+    <section class="card shadow-sm border p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h3 class="h5 mb-1 fw-bold text-danger">⏳ Outstanding Receivables</h3>
+          <p class="text-muted small mb-0">Synchronized with active search filters. Lists invoices with remaining due
+            balances.</p>
+        </div>
+        <button id="exportOutstandingCsvBtn" class="btn btn-sm btn-outline-success">📥 Export Receivables CSV</button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Invoice No</th>
+              <th>Biller</th>
+              <th>Date</th>
+              <th>Client</th>
+              <th class="text-end">Total (৳)</th>
+              <th class="text-end">Paid (৳)</th>
+              <th class="text-end text-danger fw-bold">Due (৳)</th>
+              <th class="text-end no-print" style="width: 150px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="outstandingBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Aging Report Card -->
+    <section class="card shadow-sm border p-4" style="break-inside: avoid; page-break-inside: avoid;">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h3 class="h5 mb-1 fw-bold text-warning">📊 Accounts Receivable Aging Analysis</h3>
+          <p class="text-muted small mb-0">Bucketed breakdown based on invoice due dates for overdue payment tracking.
+          </p>
+        </div>
+        <button id="exportAgingCsvBtn" class="btn btn-sm btn-outline-success">📥 Export Aging CSV</button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Aging Bracket</th>
+              <th class="text-end">Open Invoices</th>
+              <th class="text-end text-danger fw-bold">Total Overdue (৳)</th>
+            </tr>
+          </thead>
+          <tbody id="agingBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Offline QR V=1 Verifier Modal -->
+  <div class="modal fade no-print" id="qrVerifyModal" tabindex="-1" aria-labelledby="qrVerifyModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5 fw-bold" id="qrVerifyModalLabel">📱 Offline Document QR Verifier (V=1)</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted mb-2">Paste scanned QR payload text from an Invoice, Challan, Quotation, Receipt,
+            or Statement to decode and cross-check against local records.</p>
+          <div class="mb-3">
+            <label for="qrVerifyInput" class="form-label small fw-semibold">QR Payload String</label>
+            <textarea id="qrVerifyInput" class="form-control form-control-sm font-monospace" rows="3"
+              placeholder="DOC=INV|TXID=INV-2026-0001|DT=2026-10-08|AMT=15000|CCY=BDT|BEN=...|REC=...|V=1"></textarea>
+          </div>
+          <div id="qrVerifyResult" class="d-none border rounded p-3 bg-body-tertiary small"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-sm btn-primary" id="runQrVerifyBtn">Verify Payload</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="container py-4 border-top mt-5 text-muted small no-print">
+    <div class="d-flex justify-content-between flex-wrap gap-2">
+      <span>🛡️ Runs fully offline in browser. Clean print to PDF support.</span>
+      <span>© <span id="year"></span> AutoInvoice • Bangladesh Edition</span>
+    </div>
+  </footer>
+
+  <script src="assets/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/records.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/biller.js"></script>
+  <script src="js/search.js"></script>
+  <script>
+    const yr = document.getElementById('year');
+    if (yr) yr.textContent = new Date().getFullYear();
+  </script>
+</body>
+
+</html>
