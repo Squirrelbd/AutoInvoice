@@ -342,27 +342,7 @@
     });
 
     periodReceipts.forEach(rc => {
-      const bObj = typeof getBillerById === 'function' && rc.billerId ? getBillerById(rc.billerId) : null;
-      const bName = bObj?.name || (rc.company?.name || activeBiller?.name || 'Default');
-      const rcNum = rc.receiptNumber || rc.number || 'RCPT';
-      const method = rc.paymentMethod || 'Payment';
-      const linked = rc.invoiceNumber ? ` for Invoice ${rc.invoiceNumber}` : '';
-      let desc = `Payment Received via ${method}${linked}`;
-      if (rc.adjustment && rc.adjustment.applied) {
-        desc += ` [Settlement Adj: ৳${rc.adjustment.amount}]`;
-      }
-
-      timeline.push({
-        date: rc.date || '',
-        ref: rcNum,
-        type: 'Receipt',
-        desc: desc,
-        biller: bName,
-        debit: 0,
-        credit: roundBDT(rc._effectiveCredit != null ? rc._effectiveCredit : (rc.amount || 0)),
-        rawDoc: rc,
-        url: `receipt.html?no=${encodeURIComponent(rcNum)}`
-      });
+      timeline.push(buildReceiptStatementRow(rc, activeBiller));
     });
 
     // Sort chronologically ascending
@@ -764,12 +744,40 @@
     window.location.href = mailto;
   }
 
+  function buildReceiptStatementRow(rc, activeBiller) {
+    const bObj = typeof getBillerById === 'function' && rc.billerId ? getBillerById(rc.billerId) : null;
+    const bName = bObj?.name || (rc.company?.name || activeBiller?.name || 'Default');
+    const rcNum = rc.receiptNumber || rc.number || 'RCPT';
+    const method = rc.paymentMethod || 'Payment';
+    const linked = rc.invoiceNumber ? ` for Invoice ${rc.invoiceNumber}` : '';
+    let desc = `Payment Received via ${method}${linked}`;
+    if (rc.adjustment && rc.adjustment.applied) {
+      const adjVal = roundBDT(Number(rc.adjustment.amount || 0));
+      desc += adjVal < 0
+        ? ` [Surcharge Adj: +৳${Math.abs(adjVal).toFixed(2)}]`
+        : ` [Settlement Adj: ৳${adjVal.toFixed(2)}]`;
+    }
+    const effCredit = roundBDT(rc._effectiveCredit != null ? rc._effectiveCredit : (rc.amount || 0));
+    return {
+      date: rc.date || '',
+      ref: rcNum,
+      type: 'Receipt',
+      desc,
+      biller: bName,
+      debit: effCredit < 0 ? roundBDT(Math.abs(effCredit)) : 0,
+      credit: effCredit >= 0 ? effCredit : 0,
+      rawDoc: rc,
+      url: `receipt.html?no=${encodeURIComponent(rcNum)}`
+    };
+  }
+
   document.addEventListener('DOMContentLoaded', init);
 
   // Expose for testing
   window.StatementEngine = {
     generateStatement,
     calculateAging,
-    applyDatePreset
+    applyDatePreset,
+    buildReceiptStatementRow
   };
 })();

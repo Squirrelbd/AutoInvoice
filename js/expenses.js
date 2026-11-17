@@ -518,7 +518,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const isTaxWithholding = st && /\b(AIT|VDS)\b/i.test(st.adjustmentReason || '');
         const gross = isTaxWithholding ? baseGross : (st ? st.total : baseGross);
         const vat = roundBDT(Number(inv.vatAmount || 0) || 0);
-        const effectiveVat = baseGross > 0 ? roundBDT(vat * (gross / baseGross)) : 0;
+        const vatScale = baseGross > 0 ? Math.min(1, gross / baseGross) : 0;
+        const effectiveVat = roundBDT(vat * vatScale);
         const amt = exclVat ? roundBDT(Math.max(0, gross - effectiveVat)) : gross;
         item.invoiced = roundBDT(item.invoiced + (isFinite(amt) ? amt : 0));
       }

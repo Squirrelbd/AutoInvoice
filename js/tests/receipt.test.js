@@ -61,3 +61,67 @@ test('Void invoice reports status Void with zero due in payment stats', () => {
   const stats = win.getInvoicePaymentStats('INV-VOID-RCPT');
   return ok(stats.status === 'Void' && stats.total === 0 && stats.due === 0, 'Void invoice reports Void status and 0 payable due');
 });
+
+test('Editable agreed invoice total supports downward partial and upward surcharge adjustments', () => {
+  const win = document.getElementById('receiptFrame').contentWindow;
+  win.saveInvoice({ invoiceNumber: 'INV-ADJ-DN-1', date: '2026-11-01', grandTotal: 10000, client: { name: 'Adj Client A' } });
+  win.saveReceipt({
+    receiptNumber: 'RCPT-ADJ-DN-1',
+    date: '2026-11-02',
+    invoiceNumber: 'INV-ADJ-DN-1',
+    client: { name: 'Adj Client A' },
+    paymentMethod: 'Cash',
+    amount: 4000,
+    adjustment: { applied: true, reason: 'Payment Settlement Rebate', amount: 1500, originalTotal: 10000, adjustedTotal: 8500, timestamp: '2026-11-02T10:00:00Z', method: 'editable_total' }
+  });
+  const s1 = win.getInvoicePaymentStats('INV-ADJ-DN-1');
+  const r1 = ok(s1.total === 8500 && s1.originalTotal === 10000 && s1.paid === 4000 && s1.due === 4500 && s1.status === 'Partial', 'Downward editable adjustment preserves partial due (4500)');
+
+  win.saveReceipt({
+    receiptNumber: 'RCPT-ADJ-DN-2',
+    date: '2026-11-03',
+    invoiceNumber: 'INV-ADJ-DN-1',
+    client: { name: 'Adj Client A' },
+    paymentMethod: 'Cash',
+    amount: 4500,
+    adjustment: { applied: true, reason: 'Payment Settlement Rebate', amount: 1500, originalTotal: 10000, adjustedTotal: 8500, timestamp: '2026-11-03T10:00:00Z', method: 'editable_total' }
+  });
+  const s2 = win.getInvoicePaymentStats('INV-ADJ-DN-1');
+  const r2 = ok(s2.total === 8500 && s2.paid === 8500 && s2.due === 0 && s2.status === 'Paid', 'Final installment against adjusted total closes balance cleanly');
+
+  win.saveInvoice({ invoiceNumber: 'INV-ADJ-UP-1', date: '2026-11-01', grandTotal: 1000, client: { name: 'Adj Client B' } });
+  win.saveReceipt({
+    receiptNumber: 'RCPT-ADJ-UP-1',
+    date: '2026-11-04',
+    invoiceNumber: 'INV-ADJ-UP-1',
+    client: { name: 'Adj Client B' },
+    paymentMethod: 'Bank Transfer',
+    amount: 1200,
+    adjustment: { applied: true, reason: 'Agreed Invoice Revision', amount: -200, originalTotal: 1000, adjustedTotal: 1200, timestamp: '2026-11-04T10:00:00Z', method: 'editable_total' }
+  });
+  const sUp = win.getInvoicePaymentStats('INV-ADJ-UP-1');
+  const r3 = ok(sUp.total === 1200 && sUp.adjustmentAmount === -200 && sUp.paid === 1200 && sUp.due === 0 && sUp.status === 'Paid', 'Upward surcharge increases effective total to 1200 and settles cleanly');
+
+  win.saveInvoice({ invoiceNumber: 'INV-ADJ-RST-1', date: '2026-11-01', grandTotal: 1000, client: { name: 'Adj Client C' } });
+  win.saveReceipt({
+    receiptNumber: 'RCPT-ADJ-RST-1',
+    date: '2026-11-05',
+    invoiceNumber: 'INV-ADJ-RST-1',
+    client: { name: 'Adj Client C' },
+    paymentMethod: 'Cash',
+    amount: 200,
+    adjustment: { applied: true, reason: 'Payment Settlement Rebate', amount: 200, originalTotal: 1000, adjustedTotal: 800, timestamp: '2026-11-05T10:00:00Z', method: 'editable_total' }
+  });
+  win.saveReceipt({
+    receiptNumber: 'RCPT-ADJ-RST-2',
+    date: '2026-11-06',
+    invoiceNumber: 'INV-ADJ-RST-1',
+    client: { name: 'Adj Client C' },
+    paymentMethod: 'Cash',
+    amount: 800,
+    adjustment: { applied: true, reason: 'Adjustment Removed / Restored', amount: 0, originalTotal: 1000, adjustedTotal: 1000, timestamp: '2026-11-06T10:00:00Z', method: 'editable_total' }
+  });
+  const sRst = win.getInvoicePaymentStats('INV-ADJ-RST-1');
+  const r4 = ok(sRst.total === 1000 && sRst.adjustmentAmount === 0 && sRst.paid === 1000 && sRst.due === 0, 'Restoring agreed total overrides prior adjustment back to 1000');
+  return [r1, r2, r3, r4];
+});

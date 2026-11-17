@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const validUntilEl = document.getElementById('validUntil');
 
   let currentQuotationRecord = null;
+  let isDirty = false;
 
   function syncQuotationPrintValues() {
     const qNoPrint = document.getElementById('quotationNumberPrint');
@@ -141,10 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  let isDirty = false;
   const printAreaEl = document.getElementById('printArea');
   if (printAreaEl) {
     printAreaEl.addEventListener('input', () => { isDirty = true; });
+    printAreaEl.addEventListener('change', () => { isDirty = true; });
   }
   window.addEventListener('beforeunload', (e) => {
     if (isDirty) {
@@ -184,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     itemCatalog = AutoInvoiceCatalog.setupItemCatalog({
       datalistId: 'itemList',
       onItemPicked: (item) => {
+        isDirty = true;
         const fullDesc = item.name ? (item.name + (item.desc ? ' - ' + item.desc : '')) : (item.desc || '');
         addRowFromData({
           desc: fullDesc,
@@ -228,74 +230,88 @@ document.addEventListener('DOMContentLoaded', () => {
   ].join('\n');
   const defaultClosingNote = "If you accept this quotation, please sign below to indicate your approval and email me a scanned copy.\nPlease let me know if you have any queries about the quotation. We look forward to collaborating on this project.";
 
-  const params = parseQuery();
-  let hasLoadedItems = false;
-
-  if (params.no) {
-    const q = getQuotationByNumber(params.no);
-    if (q) {
-      currentQuotationRecord = q;
-      quotationNumberEl.value = q.quotationNumber;
-      dateEl.value = q.date || '';
-      if (validityDaysEl) validityDaysEl.value = q.validityDays || 30;
-      if (validUntilEl) {
-        if (q.validUntil) {
-          validUntilEl.value = q.validUntil;
-        } else {
-          computeValidUntilFromDays();
-        }
-      }
-      subjectEl.value = q.subject || '';
-      subjectHeaderEl.textContent = q.subject || '';
-      toNameEl.value = q.to?.name || '';
-      toTitleEl.value = q.to?.title || '';
-      toCompanyEl.value = q.to?.company || '';
-      toAddressEl.value = q.to?.address || '';
-      introTextEl.value = q.intro || defaultIntro;
-      scopeTextEl.value = q.scope || defaultScope;
-      termsTextEl.value = q.terms || defaultTerms;
-      if (closingNoteTextEl) closingNoteTextEl.value = q.closingNote !== undefined ? q.closingNote : defaultClosingNote;
-      itemRowsEl.innerHTML = '';
-      (q.items || []).forEach(r => addRowFromData({ desc: r.desc, qty: r.qty, unit: r.unit || 'Pcs', unitPrice: r.unitPrice }));
-      hasLoadedItems = (q.items || []).length > 0;
-      updateGrandTotal();
-      updateModeBadge(true, q.quotationNumber);
-      updateConversionBadge(q);
-      updateValidityBadge(q);
-      if (q.billerId || q.company) {
-        const qBiller = (typeof getBillerById === 'function' && q.billerId ? getBillerById(q.billerId) : null) || q.company;
-        if (qBiller) setCompanyHeader(qBiller);
-      }
-    } else {
-      currentQuotationRecord = null;
-      quotationNumberEl.value = peekNextQuotationNumber();
-      introTextEl.value = defaultIntro;
-      scopeTextEl.value = defaultScope;
-      termsTextEl.value = defaultTerms;
-      if (closingNoteTextEl) closingNoteTextEl.value = defaultClosingNote;
-      if (validityDaysEl) validityDaysEl.value = 30;
-      computeValidUntilFromDays();
-      updateModeBadge(false);
-      updateConversionBadge(null);
-      updateValidityBadge(null);
-    }
-  } else {
+  function resetQuotationFieldsToNew() {
     currentQuotationRecord = null;
-    quotationNumberEl.value = peekNextQuotationNumber();
-    introTextEl.value = defaultIntro;
-    scopeTextEl.value = defaultScope;
-    termsTextEl.value = defaultTerms;
-    if (closingNoteTextEl) closingNoteTextEl.value = defaultClosingNote;
+    if (quotationNumberEl) quotationNumberEl.value = peekNextQuotationNumber();
+    const csEl = document.getElementById('clientSelect');
+    if (csEl) csEl.value = '';
+    if (subjectEl) subjectEl.value = '';
+    if (subjectHeaderEl) subjectHeaderEl.textContent = '';
+    if (toNameEl) toNameEl.value = '';
+    if (toTitleEl) toTitleEl.value = '';
+    if (toCompanyEl) toCompanyEl.value = '';
+    if (toAddressEl) toAddressEl.value = '';
+    if (dateEl) dateEl.value = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
     if (validityDaysEl) validityDaysEl.value = 30;
+    if (introTextEl) introTextEl.value = defaultIntro;
+    if (scopeTextEl) scopeTextEl.value = defaultScope;
+    if (termsTextEl) termsTextEl.value = defaultTerms;
+    if (closingNoteTextEl) closingNoteTextEl.value = defaultClosingNote;
+    itemRowsEl.innerHTML = '';
+    addRow();
     computeValidUntilFromDays();
+    updateGrandTotal();
     updateConversionBadge(null);
     updateModeBadge(false);
     updateValidityBadge(null);
   }
 
-  if (!dateEl.value) {
-    dateEl.value = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
-    computeValidUntilFromDays();
+  async function loadEditorFromParams(qParams) {
+    const qp = qParams || {};
+    if (typeof setCompanyHeader === 'function') setCompanyHeader();
+    if (qp.no) {
+      let q = getQuotationByNumber(qp.no);
+      if (!q && typeof _getDiskRecordByNumber === 'function') {
+        try { q = await _getDiskRecordByNumber('quotations', qp.no); } catch (_) {}
+      }
+      if (q) {
+        currentQuotationRecord = q;
+        quotationNumberEl.value = q.quotationNumber;
+        dateEl.value = q.date || '';
+        if (validityDaysEl) validityDaysEl.value = q.validityDays || 30;
+        if (validUntilEl) {
+          if (q.validUntil) {
+            validUntilEl.value = q.validUntil;
+          } else {
+            computeValidUntilFromDays();
+          }
+        }
+        subjectEl.value = q.subject || '';
+        subjectHeaderEl.textContent = q.subject || '';
+        toNameEl.value = q.to?.name || '';
+        toTitleEl.value = q.to?.title || '';
+        toCompanyEl.value = q.to?.company || '';
+        toAddressEl.value = q.to?.address || '';
+        const csEl = document.getElementById('clientSelect');
+        if (csEl) csEl.value = q.to?.name || '';
+        introTextEl.value = q.intro || defaultIntro;
+        scopeTextEl.value = q.scope || defaultScope;
+        termsTextEl.value = q.terms || defaultTerms;
+        if (closingNoteTextEl) closingNoteTextEl.value = q.closingNote !== undefined ? q.closingNote : defaultClosingNote;
+        itemRowsEl.innerHTML = '';
+        (q.items || []).forEach(r => addRowFromData({ desc: r.desc, qty: r.qty, unit: r.unit || 'Pcs', unitPrice: r.unitPrice }));
+        if (!(q.items || []).length) addRow();
+        updateGrandTotal();
+        updateModeBadge(true, q.quotationNumber);
+        updateConversionBadge(q);
+        updateValidityBadge(q);
+        if (q.billerId || q.company) {
+          const qBiller = (typeof getBillerById === 'function' && q.billerId ? getBillerById(q.billerId) : null) || q.company;
+          if (qBiller) setCompanyHeader(qBiller);
+        }
+      } else {
+        resetQuotationFieldsToNew();
+      }
+    } else {
+      resetQuotationFieldsToNew();
+    }
+    if (!dateEl.value) {
+      dateEl.value = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
+      computeValidUntilFromDays();
+    }
+    renderQR(qrContainer, buildQRText());
+    syncQuotationPrintValues();
+    isDirty = false;
   }
 
   const debouncedRenderQR = debounce(() => renderQR(qrContainer, buildQRText()), 300);
@@ -432,6 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('Are you sure you want to remove this item row?')) return;
       }
       tr.remove();
+      isDirty = true;
       updateGrandTotal();
       debouncedRenderQR();
     });
@@ -466,10 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
     amountInWordsEl.textContent = numberToWordsBDT(total);
   }
 
-  addRowBtn.addEventListener('click', () => addRow());
-  if (!hasLoadedItems) {
-    addRow();
-  }
+  addRowBtn.addEventListener('click', () => { addRow(); isDirty = true; });
 
   function buildRecord() {
     const items = [];
@@ -579,6 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (duplicateQuotationBtn) {
     duplicateQuotationBtn.addEventListener('click', () => {
+      if (typeof setCompanyHeader === 'function') setCompanyHeader();
       const nextNo = peekNextQuotationNumber();
       quotationNumberEl.value = nextNo;
       dateEl.value = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
@@ -652,9 +667,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return quotationNumberEl?.value || 'Quotation';
     });
-  }
-  if (typeof runAutoPrintIfRequested === 'function') {
-    runAutoPrintIfRequested(prepareForPrint);
   }
 
   if (exportBtn) {
@@ -783,49 +795,54 @@ document.addEventListener('DOMContentLoaded', () => {
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       if (confirm('Clear all fields?')) {
-        subjectEl.value = '';
-        subjectHeaderEl.textContent = '';
-        toNameEl.value = '';
-        toTitleEl.value = '';
-        toCompanyEl.value = '';
-        toAddressEl.value = '';
-        dateEl.value = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
-        if (validityDaysEl) validityDaysEl.value = 30;
-        computeValidUntilFromDays();
-        introTextEl.value = defaultIntro;
-        scopeTextEl.value = defaultScope;
-        termsTextEl.value = defaultTerms;
-        if (closingNoteTextEl) closingNoteTextEl.value = defaultClosingNote;
-        currentQuotationRecord = null;
-        itemRowsEl.innerHTML = '';
-        addRow();
-        updateGrandTotal();
-        updateConversionBadge(null);
-        updateValidityBadge(null);
+        resetQuotationFieldsToNew();
         if (typeof history !== 'undefined' && window.location.search) {
-          try { history.replaceState(null, '', window.location.pathname); } catch (_) { }
+          try { history.replaceState(null, '', '?new=1'); } catch (_) { }
         }
-        if (quotationNumberEl) quotationNumberEl.value = peekNextQuotationNumber();
         renderQR(qrContainer, buildQRText());
         syncQuotationPrintValues();
         isDirty = false;
-        updateModeBadge(false);
       }
     });
   }
-
-  renderQR(qrContainer, buildQRText());
-  syncQuotationPrintValues();
 
   window.addEventListener('billerchange', () => {
     if (typeof setCompanyHeader === 'function') {
       setCompanyHeader();
     }
-    const isEditing = params.no || params.id || params.load;
-    if (!isEditing && quotationNumberEl && !currentQuotationRecord) {
+    const qs = new URLSearchParams(window.location.search);
+    const isEditing = !!(qs.get('no') || qs.get('id') || qs.get('load') || currentQuotationRecord);
+    if (!isEditing && quotationNumberEl) {
       quotationNumberEl.value = peekNextQuotationNumber();
     }
     syncQuotationPrintValues();
     renderQR(qrContainer, buildQRText());
   });
+
+  if (window.AutoInvoiceDocList && typeof window.AutoInvoiceDocList.connectWorkspace === 'function') {
+    window.AutoInvoiceDocList.connectWorkspace({
+      type: 'quotation',
+      getRecords: () => (typeof loadQuotations === 'function' ? loadQuotations() : []),
+      loadDiskSummaries: null,
+      isDirty: () => isDirty,
+      resetDirty: () => { isDirty = false; },
+      hasEditorParams: (p) => !!(p && (p.new === '1' || p.new === 'true' || p.no || p.id || p.load || p.autoprint === '1')),
+      loadEditor: async (p) => { await loadEditorFromParams(p); },
+      onEnterList: () => { currentQuotationRecord = null; },
+      onAfterMutate: (no, action) => {
+        if (action === 'delete' && currentQuotationRecord && currentQuotationRecord.quotationNumber === no) {
+          currentQuotationRecord = null;
+        }
+      },
+      afterFirstLoad: () => {
+        if (typeof runAutoPrintIfRequested === 'function') {
+          runAutoPrintIfRequested(prepareForPrint);
+        }
+      }
+    });
+  } else {
+    loadEditorFromParams(parseQuery()).then(() => {
+      if (typeof runAutoPrintIfRequested === 'function') runAutoPrintIfRequested(prepareForPrint);
+    });
+  }
 });

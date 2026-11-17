@@ -173,3 +173,167 @@ test('CSV exports protect against spreadsheet formula injection (=, +, -, @)', (
 
   return [t1, t2, t3, t4, t5, t6];
 });
+
+test('AutoInvoiceDocList.filterAndSortRecords filters & sorts across all 4 doc types', () => {
+  const backupInvoices = localStorage.getItem(STORAGE_KEYS.invoices);
+  const backupReceipts = localStorage.getItem(STORAGE_KEYS.receipts);
+  const backupChallans = localStorage.getItem(STORAGE_KEYS.challans);
+
+  const testInvoices = [
+    {
+      invoiceNumber: 'INV-DL-01',
+      date: '2026-01-10',
+      dueDate: '2026-01-20',
+      billerId: 'biller_default',
+      client: { name: 'Alpha Textiles', phone: '01711' },
+      title: 'Web Portal Setup',
+      items: [{ name: 'Server Node', qty: 1, rate: 5000, amount: 5000 }],
+      grandTotal: 5000
+    },
+    {
+      invoiceNumber: 'INV-DL-02',
+      date: '2026-02-15',
+      dueDate: '2099-12-31',
+      billerId: 'biller_b',
+      client: { name: 'Beta Logistics' },
+      title: 'Fleet GPS Dashboard',
+      items: [{ name: 'Tracker App', qty: 2, rate: 1000, amount: 2000 }],
+      grandTotal: 2000
+    },
+    {
+      invoiceNumber: 'INV-DL-03',
+      date: '2026-02-01',
+      dueDate: '2026-02-10',
+      status: 'Void',
+      client: { name: 'Cancelled Client' },
+      grandTotal: 9000
+    }
+  ];
+  const testReceipts = [
+    {
+      receiptNumber: 'RCPT-DL-01',
+      date: '2026-02-16',
+      invoiceNumber: 'INV-DL-02',
+      billerId: 'biller_b',
+      client: { name: 'Beta Logistics' },
+      paymentMethod: 'bKash',
+      amount: 1200,
+      adjustment: { applied: true, amount: 800, adjustedTotal: 1200, reason: 'Discount', method: 'editable_total' }
+    },
+    {
+      receiptNumber: 'RCPT-DL-02',
+      date: '2026-01-12',
+      invoiceNumber: 'INV-DL-01',
+      billerId: 'biller_default',
+      client: { name: 'Alpha Textiles' },
+      paymentMethod: 'Cash',
+      amount: 1500
+    }
+  ];
+  const testChallans = [
+    {
+      challanNumber: 'CH-DL-01',
+      date: '2026-02-16',
+      linkedInvoice: 'INV-DL-02',
+      billerId: 'biller_b',
+      client: { name: 'Beta Logistics' },
+      items: [{ name: 'Tracker App', qty: 2 }]
+    },
+    {
+      challanNumber: 'CH-DL-02',
+      date: '2026-01-05',
+      billerId: 'biller_default',
+      client: { name: 'Delta Foods' },
+      items: [{ name: 'POS Printer', qty: 3 }]
+    }
+  ];
+  const testQuotations = [
+    {
+      quotationNumber: 'QTN-DL-01',
+      date: '2026-01-01',
+      validUntil: '2099-12-31',
+      billerId: 'biller_default',
+      subject: 'Solar Inverter Proposal',
+      to: { name: 'Zeta Corp', company: 'Zeta Industries Ltd' },
+      grandTotal: 4500
+    },
+    {
+      quotationNumber: 'QTN-DL-02',
+      date: '2026-01-05',
+      validUntil: '2026-01-15',
+      converted: true,
+      convertedToInvoice: 'INV-DL-01',
+      billerId: 'biller_default',
+      subject: 'Portal Upgrade',
+      to: { name: 'Alpha Textiles' },
+      grandTotal: 5000
+    },
+    {
+      quotationNumber: 'QTN-DL-03',
+      date: '2025-01-01',
+      validUntil: '2025-01-10',
+      billerId: 'biller_default',
+      to: { company: 'Expired Co' },
+      grandTotal: 3000
+    }
+  ];
+
+  localStorage.setItem(STORAGE_KEYS.invoices, JSON.stringify(testInvoices));
+  localStorage.setItem(STORAGE_KEYS.receipts, JSON.stringify(testReceipts));
+  localStorage.setItem(STORAGE_KEYS.challans, JSON.stringify(testChallans));
+
+  try {
+    const invAll = AutoInvoiceDocList.filterAndSortRecords(testInvoices, { type: 'invoice', sortBy: 'date_desc' });
+    const invBetaAdjusted = invAll.find(r => r.number === 'INV-DL-02');
+    const invOverdue = AutoInvoiceDocList.filterAndSortRecords(testInvoices, { type: 'invoice', status: 'overdue' });
+    const invSearchItem = AutoInvoiceDocList.filterAndSortRecords(testInvoices, { type: 'invoice', query: 'Server Node' });
+    const invDueDesc = AutoInvoiceDocList.filterAndSortRecords(testInvoices, { type: 'invoice', sortBy: 'due_desc' });
+    const invDefBiller = AutoInvoiceDocList.filterAndSortRecords(testInvoices, { type: 'invoice', billerId: 'biller_default' });
+
+    const qtnValid = AutoInvoiceDocList.filterAndSortRecords(testQuotations, { type: 'quotation', status: 'valid' });
+    const qtnConv = AutoInvoiceDocList.filterAndSortRecords(testQuotations, { type: 'quotation', status: 'converted' });
+    const qtnExp = AutoInvoiceDocList.filterAndSortRecords(testQuotations, { type: 'quotation', status: 'expired' });
+    const qtnClientAsc = AutoInvoiceDocList.filterAndSortRecords(testQuotations, { type: 'quotation', sortBy: 'client_asc' });
+    const qtnBySubj = AutoInvoiceDocList.filterAndSortRecords(testQuotations, { type: 'quotation', query: 'Solar Inverter' });
+    const qtnByCompany = AutoInvoiceDocList.filterAndSortRecords(testQuotations, { type: 'quotation', query: 'Zeta Industries' });
+
+    const multiInv = { invoiceNumber: 'INV-MC-1', billerId: 'biller_default', linkedChallan: 'CH-M1, CH-M2', grandTotal: 500, client: { name: 'MC Client' } };
+    const mcCtx = { invoicedChallans: new Map([['CH-M1', 'INV-MC-1'], ['CH-M2', 'INV-MC-1']]), billerMap: new Map() };
+    const enrichedMcInv = AutoInvoiceDocList.enrichRecord(multiInv, 'invoice', mcCtx);
+    const chOpen = AutoInvoiceDocList.filterAndSortRecords(testChallans, { type: 'challan', status: 'open' });
+    const chInvoiced = AutoInvoiceDocList.filterAndSortRecords(testChallans, { type: 'challan', status: 'invoiced' });
+
+    const rcAdj = AutoInvoiceDocList.filterAndSortRecords(testReceipts, { type: 'receipt', status: 'adjusted' });
+    const rcMethod = AutoInvoiceDocList.filterAndSortRecords(testReceipts, { type: 'receipt', method: 'bKash' });
+    const rcAmtDesc = AutoInvoiceDocList.filterAndSortRecords(testReceipts, { type: 'receipt', sortBy: 'amount_desc' });
+    const rcSur = AutoInvoiceDocList.enrichRecord({ receiptNumber: 'RCPT-SUR-X', amount: 1200, invoiceNumber: 'INV-DL-01', adjustment: { applied: true, amount: -200 } }, 'receipt');
+
+    return [
+      ok(invAll.length === 3 && invAll[0].number === 'INV-DL-02', 'Invoices sorted date_desc newest first'),
+      ok(invBetaAdjusted && invBetaAdjusted.amount === 1200 && invBetaAdjusted.isAdjusted === true && invBetaAdjusted.due === 0, 'Invoice reflects adjusted total and 0 due'),
+      ok(invOverdue.length === 1 && invOverdue[0].number === 'INV-DL-01', 'Overdue filter isolates unpaid past-due invoice'),
+      ok(invSearchItem.length === 1 && invSearchItem[0].number === 'INV-DL-01', 'Item keyword search matches invoice'),
+      ok(invDueDesc[0].number === 'INV-DL-01' && invDueDesc[0].due === 3500, 'Sort due_desc places highest balance due first'),
+      ok(invDefBiller.some(r => r.number === 'INV-DL-01') && invDefBiller.some(r => r.number === 'INV-DL-03') && !invDefBiller.some(r => r.number === 'INV-DL-02'), 'Default biller filter includes legacy missing-billerId record and isolates biller_default'),
+      ok(qtnValid.length === 1 && qtnValid[0].number === 'QTN-DL-01' && qtnValid[0].clientName === 'Zeta Corp' && qtnValid[0].title === 'Solar Inverter Proposal', 'Canonical quotation to/subject extracted & valid status filtered'),
+      ok(qtnConv.length === 1 && qtnConv[0].number === 'QTN-DL-02', 'Quotation converted status filter'),
+      ok(qtnExp.length === 1 && qtnExp[0].number === 'QTN-DL-03' && qtnExp[0].clientName === 'Expired Co', 'Quotation expired status & company fallback'),
+      ok(qtnClientAsc[0].number === 'QTN-DL-02', 'Quotation client_asc sorts Alpha before Expired/Zeta'),
+      ok(qtnBySubj.length === 1 && qtnByCompany.length === 1 && qtnBySubj[0].number === 'QTN-DL-01', 'Quotation search matches canonical subject and to.company'),
+      ok(enrichedMcInv.linkedUrl === 'challan.html?no=CH-M1', 'Comma-separated multi-challan link URL targets first challan without commas'),
+      ok(chOpen.length === 1 && chOpen[0].number === 'CH-DL-02', 'Challan open filter returns unlinked challan'),
+      ok(chInvoiced.length === 1 && chInvoiced[0].number === 'CH-DL-01', 'Challan invoiced filter returns linked challan'),
+      ok(rcAdj.length === 1 && rcAdj[0].number === 'RCPT-DL-01', 'Receipt adjusted filter isolates adjusted receipt'),
+      ok(rcMethod.length === 1 && rcMethod[0].number === 'RCPT-DL-01', 'Receipt payment method filter isolates bKash'),
+      ok(rcAmtDesc[0].number === 'RCPT-DL-02' && rcAmtDesc[0].amount === 1500, 'Receipt amount_desc sorts highest received first'),
+      ok(rcSur.metaNote.includes('+'), 'Surcharge adjustment metaNote renders + sign cleanly')
+    ];
+  } finally {
+    if (backupInvoices === null) localStorage.removeItem(STORAGE_KEYS.invoices);
+    else localStorage.setItem(STORAGE_KEYS.invoices, backupInvoices);
+    if (backupReceipts === null) localStorage.removeItem(STORAGE_KEYS.receipts);
+    else localStorage.setItem(STORAGE_KEYS.receipts, backupReceipts);
+    if (backupChallans === null) localStorage.removeItem(STORAGE_KEYS.challans);
+    else localStorage.setItem(STORAGE_KEYS.challans, backupChallans);
+  }
+});

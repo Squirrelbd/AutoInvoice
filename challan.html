@@ -12,7 +12,7 @@
 </head>
 
 <body>
-  <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#printArea">Skip to
+  <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#mainContent">Skip to
     content</a>
   <nav class="navbar navbar-expand-lg app-navbar no-print">
     <div class="container">
@@ -42,7 +42,22 @@
     </div>
   </nav>
 
-  <main class="container pb-5">
+  <main id="mainContent" tabindex="-1" class="container pb-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 mb-3 border-bottom no-print" id="docWorkspaceHeader">
+      <div class="d-flex align-items-center gap-2">
+        <h1 class="h4 fw-bold mb-0" id="pageHeading">Delivery Challans</h1>
+        <span class="badge bg-secondary-subtle text-secondary border" id="docListCountBadge">0</span>
+      </div>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <button type="button" id="backToListBtn" class="btn btn-sm btn-outline-secondary d-none">&larr; All Challans</button>
+        <button type="button" id="headerGenFromInvBtn" class="btn btn-sm btn-outline-primary">📄 Generate from Invoice</button>
+        <button type="button" id="listNewDocBtn" class="btn btn-sm btn-success">+ New Challan</button>
+      </div>
+    </div>
+
+    <section id="docListSection" class="no-print mb-3"></section>
+
+    <div id="docEditorSection" class="d-none">
     <div id="modeBadge" class="mb-2 no-print"></div>
     <!-- Company Header -->
     <section class="border rounded p-3 mb-3 print-area" id="printArea">
@@ -57,7 +72,7 @@
           </div>
         </div>
         <div class="text-end">
-          <h1 class="doc-badge-title mb-0">DELIVERY CHALLAN</h1>
+          <div class="doc-badge-title mb-0">DELIVERY CHALLAN</div>
           <div class="doc-subtitle mt-1" id="docTitleHeader">Delivery Note</div>
           <div class="qr-block-wrap mt-2">
             <div id="qrContainer"></div>
@@ -128,8 +143,16 @@
                 <tr>
                   <td class="text-muted fw-semibold"><label for="linkedInvoice">Linked Invoice #:</label></td>
                   <td>
-                    <input id="linkedInvoice" class="form-control form-control-sm no-print"
-                      placeholder="Optional (e.g. INV-2026-0001)" aria-label="Linked Invoice Number" />
+                    <div class="no-print">
+                      <div class="input-group input-group-sm">
+                        <input id="linkedInvoice" class="form-control" list="invoiceList"
+                          placeholder="Optional (e.g. INV-2026-0001)" aria-label="Linked Invoice Number" />
+                        <button type="button" id="pickInvoiceBtn" class="btn btn-outline-primary"
+                          title="Browse and generate challan from an invoice">Select Invoice</button>
+                      </div>
+                      <datalist id="invoiceList"></datalist>
+                      <div class="form-text small" id="linkedInvoiceInfo" role="status" aria-live="polite"></div>
+                    </div>
                     <span class="print-only font-monospace" id="linkedInvoicePrint">—</span>
                   </td>
                 </tr>
@@ -257,6 +280,7 @@
       <button id="duplicateChallanBtn" class="btn btn-outline-secondary">✨ Duplicate as New</button>
       <button id="exportChallanBtn" class="btn btn-outline-secondary">📥 Download JSON</button>
       <button id="resetBtn" class="btn btn-outline-danger ms-auto">Reset</button>
+    </div>
     </div>
   </main>
 
@@ -428,6 +452,7 @@
   <script src="js/catalog.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/biller.js"></script>
+  <script src="js/doc-list.js"></script>
   <script src="js/challan.js"></script>
 </body>
 

@@ -200,3 +200,37 @@ test('getDashboardKPIs calculates totalExpenses, netProfit, and profitMargin acc
 
   return [t1, t2, t3, t4, t5, t6, t7];
 });
+
+test('Adjusted invoice revenue clamps VAT scale <= 1 on surcharges and respects AIT/VDS', () => {
+  localStorage.removeItem(STORAGE_KEYS.invoices);
+  localStorage.removeItem(STORAGE_KEYS.receipts);
+
+  saveInvoice({ invoiceNumber: 'INV-PNL-DN', billerId: 'biller_default', grandTotal: 1150, vatAmount: 150, client: { name: 'PnL A' } });
+  saveReceipt({
+    receiptNumber: 'RCPT-PNL-DN',
+    invoiceNumber: 'INV-PNL-DN',
+    billerId: 'biller_default',
+    amount: 575,
+    adjustment: { applied: true, reason: 'Payment Settlement Rebate', amount: 575, originalTotal: 1150, adjustedTotal: 575, timestamp: '2026-11-10T10:00:00Z' }
+  });
+  const stDn = getInvoicePaymentStats('INV-PNL-DN');
+  const scaleDn = Math.min(1, stDn.total / 1150);
+  const vatDn = roundBDT(150 * scaleDn);
+
+  saveInvoice({ invoiceNumber: 'INV-PNL-UP', billerId: 'biller_default', grandTotal: 1150, vatAmount: 150, client: { name: 'PnL B' } });
+  saveReceipt({
+    receiptNumber: 'RCPT-PNL-UP',
+    invoiceNumber: 'INV-PNL-UP',
+    billerId: 'biller_default',
+    amount: 1380,
+    adjustment: { applied: true, reason: 'Agreed Invoice Revision', amount: -230, originalTotal: 1150, adjustedTotal: 1380, timestamp: '2026-11-10T10:00:00Z' }
+  });
+  const stUp = getInvoicePaymentStats('INV-PNL-UP');
+  const scaleUp = Math.min(1, stUp.total / 1150);
+  const vatUp = roundBDT(150 * scaleUp);
+
+  return [
+    ok(vatDn === 75, `Downward 50% rebate scales VAT proportionally to 75 (got ${vatDn})`),
+    ok(scaleUp === 1 && vatUp === 150, `Upward surcharge clamps VAT scale at 1.0 (got vat=${vatUp})`)
+  ];
+});

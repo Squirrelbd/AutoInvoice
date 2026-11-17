@@ -288,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const printAreaEl = document.getElementById('printArea');
   if (printAreaEl) {
     printAreaEl.addEventListener('input', () => { isDirty = true; });
+    printAreaEl.addEventListener('change', () => { isDirty = true; });
   }
   window.addEventListener('beforeunload', (e) => {
     if (isDirty) {
@@ -325,6 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
     itemCatalog = AutoInvoiceCatalog.setupItemCatalog({
       datalistId: 'itemList',
       onItemPicked: (item) => {
+        isDirty = true;
         addRowFromData({
           name: item.name || '',
           desc: item.desc || '',
@@ -372,9 +374,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const debouncedRenderQR = debounce(() => renderQR(qrContainer, buildQRText()), 300);
 
-  (async function initInvoicePage() {
-    const params = parseQuery();
-    if (params.no) {
+  function resetInvoiceFieldsToNew() {
+    const csEl = document.getElementById('clientSelect');
+    if (csEl) csEl.value = '';
+    if (clientNameEl) clientNameEl.value = '';
+    if (clientAddressEl) clientAddressEl.value = '';
+    if (paymentMethodEl) paymentMethodEl.value = 'Cash';
+    if (linkedChallanEl) linkedChallanEl.value = '';
+    if (poRefEl) poRefEl.value = '';
+    if (docTitleInput) docTitleInput.value = '';
+    if (docTitleHeader) docTitleHeader.textContent = '';
+    if (discountModeEl) discountModeEl.value = 'bdt';
+    if (discountInputEl) discountInputEl.value = '0';
+    if (vatModeEl) vatModeEl.value = 'excl';
+    if (vatRateInputEl) vatRateInputEl.value = '0';
+    sourceBillerId = null;
+    if (typeof setCompanyHeader === 'function') setCompanyHeader();
+    if (paymentStatusBannerEl) paymentStatusBannerEl.classList.add('d-none');
+    updateReceiptBreakdown(null);
+  }
+
+  async function loadEditorFromParams(params) {
+    activeParams = Object.assign({}, params || {});
+    if (typeof setCompanyHeader === 'function') setCompanyHeader();
+    if (params && params.no) {
       let inv = getInvoiceByNumber(params.no);
       if (!inv && typeof getDiskInvoiceByNumber === 'function') {
         try { inv = await getDiskInvoiceByNumber(params.no); } catch (e) {
@@ -495,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const expDisplay = typeof formatDisplayDate === 'function' ? formatDisplayDate(qStats.validUntil) : qStats.validUntil;
           if (!confirm(`Warning: Quotation ${q.quotationNumber} expired on ${expDisplay}. Do you still want to load and convert it into an invoice?`)) {
             if (typeof history !== 'undefined' && window.location.search) {
-              try { history.replaceState(null, '', window.location.pathname); } catch (_) { }
+              try { history.replaceState(null, '', '?new=1'); } catch (_) { }
             }
             activeParams = {};
             loadQtn = false;
@@ -549,6 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // New document flow
+    resetInvoiceFieldsToNew();
     updateModeBadge(false);
     invoiceNumberEl.value = peekNextInvoiceNumber();
 
@@ -581,6 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderQR(qrContainer, buildQRText());
             syncClientDisplay();
             syncPrintDisplayValues();
+            isDirty = false;
             return;
           } else {
             clearDraft();
@@ -610,10 +635,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     itemRowsEl.innerHTML = '';
     addRow();
+    updateGrandTotal();
     renderQR(qrContainer, buildQRText());
     syncClientDisplay();
     syncPrintDisplayValues();
-  })();
+    isDirty = false;
+  }
 
   // Update due date when invoice date changes on unsaved/new invoices
   invoiceDateEl.addEventListener('change', () => {
@@ -659,7 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  addRowBtn.addEventListener('click', () => addRow());
+  addRowBtn.addEventListener('click', () => { addRow(); isDirty = true; });
 
   // Link Doc Title input to header display and print
   if (docTitleInput && docTitleHeader) {
@@ -722,6 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (duplicateInvoiceBtn) {
     duplicateInvoiceBtn.addEventListener('click', () => {
+      if (typeof setCompanyHeader === 'function') setCompanyHeader();
       const nextNo = peekNextInvoiceNumber();
       invoiceNumberEl.value = nextNo;
       const today = new Date();
@@ -756,6 +784,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const invNo = (invoiceNumberEl.value || '').trim();
       if (!invNo) {
         showToast('Please save or specify an invoice number first.', 'warning');
+        return;
+      }
+      if (isDirty && !confirm('You have unsaved changes on this invoice. Continue to Receipt without saving these changes first?')) {
         return;
       }
       window.location.href = `receipt.html?inv=${encodeURIComponent(invNo)}`;
@@ -815,9 +846,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return invoiceNumberEl?.value || 'Invoice';
     });
   }
-  if (typeof runAutoPrintIfRequested === 'function') {
-    runAutoPrintIfRequested(prepareForPrint);
-  }
 
   const shareWhatsAppBtn = document.getElementById('shareWhatsAppBtn');
   const shareEmailBtn = document.getElementById('shareEmailBtn');
@@ -859,19 +887,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   resetBtn.addEventListener('click', () => {
     if (confirm('Clear all fields?')) {
-      const csEl = document.getElementById('clientSelect');
-      if (csEl) csEl.value = '';
-      if (clientNameEl) clientNameEl.value = '';
-      if (clientAddressEl) clientAddressEl.value = '';
-      if (paymentMethodEl) paymentMethodEl.value = 'Cash';
-      if (linkedChallanEl) linkedChallanEl.value = '';
-      if (poRefEl) poRefEl.value = '';
-      if (docTitleInput) docTitleInput.value = '';
-      if (docTitleHeader) docTitleHeader.textContent = '';
-      if (discountModeEl) discountModeEl.value = 'bdt';
-      if (discountInputEl) discountInputEl.value = '0';
-      if (vatModeEl) vatModeEl.value = 'excl';
-      if (vatRateInputEl) vatRateInputEl.value = '0';
+      resetInvoiceFieldsToNew();
       const today = new Date();
       if (invoiceDateEl) invoiceDateEl.value = formatISO(today);
       if (dueDateEl) dueDateEl.value = formatISO(addWorkingDays(today, 15));
@@ -881,14 +897,12 @@ document.addEventListener('DOMContentLoaded', () => {
       isDirty = false;
       activeParams = {};
       if (typeof history !== 'undefined' && window.location.search) {
-        try { history.replaceState(null, '', window.location.pathname); } catch (_) { }
+        try { history.replaceState(null, '', '?new=1'); } catch (_) { }
       }
       if (invoiceNumberEl) invoiceNumberEl.value = peekNextInvoiceNumber();
       renderQR(qrContainer, buildQRText());
       clearDraft();
       updateModeBadge(false);
-      updateReceiptBreakdown(null);
-      if (paymentStatusBannerEl) paymentStatusBannerEl.classList.add('d-none');
       if (typeof syncClientDisplay === 'function') syncClientDisplay();
       if (typeof syncPrintDisplayValues === 'function') syncPrintDisplayValues();
     }
@@ -1243,4 +1257,35 @@ document.addEventListener('DOMContentLoaded', () => {
     renderQR(qrContainer, buildQRText());
     syncPrintDisplayValues();
   });
+
+  if (window.AutoInvoiceDocList && typeof window.AutoInvoiceDocList.connectWorkspace === 'function') {
+    window.AutoInvoiceDocList.connectWorkspace({
+      type: 'invoice',
+      getRecords: () => (typeof loadInvoices === 'function' ? loadInvoices() : []),
+      loadDiskSummaries: typeof loadDiskInvoicesSummaries === 'function'
+        ? async () => {
+          let r = await loadDiskInvoicesSummaries();
+          if (!r.length && typeof autoDiscoverSummaries === 'function') r = await autoDiscoverSummaries('invoices');
+          return r;
+        }
+        : null,
+      isDirty: () => isDirty,
+      resetDirty: () => { isDirty = false; },
+      hasEditorParams: (p) => !!(p && (p.new === '1' || p.new === 'true' || p.no || p.ch || p.qtn || p.id || p.load || p.autoprint === '1')),
+      loadEditor: async (p) => { await loadEditorFromParams(p); },
+      onEnterList: () => { clearDraft(); activeParams = {}; },
+      onAfterMutate: (no, action) => {
+        if (action === 'delete' && activeParams?.no === no) activeParams = {};
+      },
+      afterFirstLoad: () => {
+        if (typeof runAutoPrintIfRequested === 'function') {
+          runAutoPrintIfRequested(prepareForPrint);
+        }
+      }
+    });
+  } else {
+    loadEditorFromParams(parseQuery()).then(() => {
+      if (typeof runAutoPrintIfRequested === 'function') runAutoPrintIfRequested(prepareForPrint);
+    });
+  }
 });

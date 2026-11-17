@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/print.css" />
   </head>
   <body class="receipt-page">
-    <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#printArea">Skip to content</a>
+    <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#mainContent">Skip to content</a>
     <nav class="navbar navbar-expand-lg app-navbar no-print">
       <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="index.html">
@@ -37,7 +37,22 @@
       </div>
     </nav>
 
-    <main class="container pb-5">
+    <main id="mainContent" tabindex="-1" class="container pb-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 mb-3 border-bottom no-print" id="docWorkspaceHeader">
+        <div class="d-flex align-items-center gap-2">
+          <h1 class="h4 fw-bold mb-0" id="pageHeading">Money Receipts</h1>
+          <span class="badge bg-secondary-subtle text-secondary border" id="docListCountBadge">0</span>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <button type="button" id="backToListBtn" class="btn btn-sm btn-outline-secondary d-none">&larr; All Receipts</button>
+          <button type="button" id="headerGenFromInvBtn" class="btn btn-sm btn-outline-primary">📄 Generate from Invoice</button>
+          <button type="button" id="listNewDocBtn" class="btn btn-sm btn-primary">+ New Receipt</button>
+        </div>
+      </div>
+
+      <section id="docListSection" class="no-print mb-3"></section>
+
+      <div id="docEditorSection" class="d-none">
       <div id="modeBadge" class="mb-2 no-print"></div>
       <section class="border rounded p-3 mb-3 print-area receipt-card" id="printArea">
         <!-- 1. Corporate Header Section -->
@@ -52,7 +67,7 @@
             </div>
           </div>
           <div class="text-end" style="max-width: 360px;">
-            <h1 class="doc-badge-title mb-0">MONEY RECEIPT</h1>
+            <div class="doc-badge-title mb-0">MONEY RECEIPT</div>
             <div class="doc-subtitle mt-1">Official Payment Voucher</div>
             <div id="receiptQRBlock" class="mt-2">
               <div id="receiptQR" aria-label="Payment verification QR" role="img"></div>
@@ -141,7 +156,10 @@
                     <td class="text-muted fw-semibold"><label for="linkedInvoice">Linked Invoice:</label></td>
                     <td>
                       <div class="no-print">
-                        <input id="linkedInvoice" class="form-control form-control-sm" list="invoiceList" placeholder="e.g. INV-2025-0001 (Optional)" aria-label="Linked Invoice" />
+                        <div class="input-group input-group-sm">
+                          <input id="linkedInvoice" class="form-control" list="invoiceList" placeholder="e.g. INV-2025-0001 (Optional)" aria-label="Linked Invoice" />
+                          <button type="button" id="pickInvoiceBtn" class="btn btn-outline-primary" title="Browse invoices to generate receipt">Select Invoice</button>
+                        </div>
                         <datalist id="invoiceList"></datalist>
                         <div class="form-text small" id="linkedInvoiceInfo" role="status" aria-live="polite"></div>
                       </div>
@@ -194,13 +212,18 @@
 
           <!-- Interactive Amount Received Controls (Form inputs for editing, hidden in print) -->
           <div class="card p-3 mt-2 bg-body-tertiary border-0 no-print">
-            <div class="row g-3 align-items-center">
-              <div class="col-md-5">
-                <label for="amountReceived" class="form-label fw-bold small mb-1" title="Enter payment amount for this receipt">Enter Amount Received (৳) *</label>
+            <div class="row g-3 align-items-start">
+              <div class="col-md-3">
+                <label for="adjustedInvoiceTotal" class="form-label fw-semibold small mb-1" title="Adjust agreed invoice total downward or upward when renegotiated">Agreed Invoice Amt (৳)</label>
+                <input id="adjustedInvoiceTotal" type="text" inputmode="decimal" class="form-control" aria-describedby="adjustedInvoiceHint" placeholder="No invoice" disabled />
+                <div id="adjustedInvoiceHint" class="form-text small" role="status" aria-live="polite">Link an invoice to edit total.</div>
+              </div>
+              <div class="col-md-3">
+                <label for="amountReceived" class="form-label fw-bold small mb-1" title="Enter payment amount for this receipt">Amount Received (৳) *</label>
                 <input id="amountReceived" type="text" inputmode="decimal" class="form-control" aria-describedby="dueMsg" placeholder="e.g. 2000" />
               </div>
-              <div class="col-md-4">
-                <label for="dueAmount" class="form-label small mb-1" title="Remaining due after applying this receipt">Calculated Remaining Due (৳)</label>
+              <div class="col-md-3">
+                <label for="dueAmount" class="form-label small mb-1" title="Remaining due after applying this receipt">Remaining Due (৳)</label>
                 <input id="dueAmount" class="form-control" readonly />
               </div>
               <div class="col-md-3 pt-md-3">
@@ -210,6 +233,7 @@
                 </div>
                 <select id="adjustmentReason" class="form-select form-select-sm" aria-label="Adjustment or Withholding Reason" disabled>
                   <option value="Payment Settlement Rebate">Settlement Rebate / Discount</option>
+                  <option value="Agreed Invoice Revision">Agreed Amount Revision</option>
                   <option value="AIT Deducted">AIT Deducted (Tax Withholding)</option>
                   <option value="VDS Deducted (Mushak-6.6)">VDS Deducted (Mushak-6.6)</option>
                   <option value="Other Adjustment">Other Adjustment</option>
@@ -218,6 +242,25 @@
             </div>
             <div id="dueMsg" class="form-text mt-2" role="status" aria-live="polite"></div>
           </div>
+
+          <details id="receiptInvoiceItemsRef" class="card p-2 mt-2 border no-print d-none">
+            <summary class="small fw-semibold px-1">📋 Linked Invoice Items Reference (<span id="receiptInvItemsCount">0</span> items)</summary>
+            <div class="table-responsive mt-2">
+              <table class="table table-sm table-bordered align-middle mb-0 small">
+                <caption class="visually-hidden">Line items from the linked commercial invoice</caption>
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col">Item &amp; Description</th>
+                    <th scope="col" class="text-center">Qty</th>
+                    <th scope="col" class="text-center">Unit</th>
+                    <th scope="col" class="text-end">Rate (৳)</th>
+                    <th scope="col" class="text-end">Total (৳)</th>
+                  </tr>
+                </thead>
+                <tbody id="receiptInvItemsTbody"></tbody>
+              </table>
+            </div>
+          </details>
         </div>
 
         <!-- 4. Amount in Words Box (Publication Standard) -->
@@ -266,6 +309,10 @@
           </ul>
         </div>
         <button id="downloadCsvBtn" class="btn btn-outline-secondary">Download CSV</button>
+        <button id="duplicateReceiptBtn" type="button" class="btn btn-outline-secondary">✨ Duplicate as New</button>
+        <button id="exportReceiptBtn" type="button" class="btn btn-outline-secondary">📥 Download JSON</button>
+        <button id="resetBtn" type="button" class="btn btn-outline-danger ms-auto">Reset</button>
+      </div>
       </div>
     </main>
 
@@ -330,6 +377,7 @@
     <script src="js/catalog.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/biller.js"></script>
+    <script src="js/doc-list.js"></script>
     <script src="js/receipt.js"></script>
   </body>
 </html>

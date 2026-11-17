@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const amountWordsEl = document.getElementById('amountInWords');
   const linkedInvoiceInfoEl = document.getElementById('linkedInvoiceInfo');
   const invoiceListEl = document.getElementById('invoiceList');
+  const pickInvoiceBtn = document.getElementById('pickInvoiceBtn');
+  const adjustedInvoiceTotalEl = document.getElementById('adjustedInvoiceTotal');
+  const adjustedInvoiceHintEl = document.getElementById('adjustedInvoiceHint');
+  const receiptItemsRefEl = document.getElementById('receiptInvoiceItemsRef');
+  const receiptItemsCountEl = document.getElementById('receiptInvItemsCount');
+  const receiptItemsTbodyEl = document.getElementById('receiptInvItemsTbody');
   const clientListEl = document.getElementById('clientList');
   const dueAmountEl = document.getElementById('dueAmount');
   const dueMsgEl = document.getElementById('dueMsg');
@@ -22,7 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveBtn = document.getElementById('saveReceiptBtn');
   const printBtn = document.getElementById('printBtn');
   const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+  const duplicateReceiptBtn = document.getElementById('duplicateReceiptBtn');
+  const exportReceiptBtn = document.getElementById('exportReceiptBtn');
+  const resetBtn = document.getElementById('resetBtn');
   const receiptQREl = document.getElementById('receiptQR');
+
+  let isDirty = false;
+  let currentReceiptNumber = '';
+  let currentInvoiceFull = null;
+  let _lastAppliedInvNo = '';
 
   function parseAmt(str) {
     const raw = String(str || '').trim().replace(/,/g, '');
@@ -131,21 +145,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (invNo) {
       const inv = getInvoiceByNumber(invNo) || currentInvoiceFull;
       const stats = getInvoicePaymentStats(inv || invNo, currentReceiptNumber);
-      const total = (stats && stats.status !== 'Unknown') ? stats.total : ((inv && inv.grandTotal != null) ? roundBDT(inv.grandTotal) : 0);
+      const baseTotal = inv && inv.grandTotal != null ? roundBDT(inv.grandTotal) : (stats ? stats.originalTotal || stats.total : 0);
+      const liveAdjusted = (adjustedInvoiceTotalEl && !adjustedInvoiceTotalEl.disabled && adjustedInvoiceTotalEl.value.trim() !== '')
+        ? roundBDT(parseAmt(adjustedInvoiceTotalEl.value))
+        : ((stats && stats.status !== 'Unknown') ? stats.total : baseTotal);
+      const total = Math.max(0, liveAdjusted);
       const paid = stats ? stats.paid : 0;
       const dueVal = parseAmt(dueAmountEl?.value);
+      const adjVariance = roundBDT(baseTotal - total);
+      const isAdjusted = Math.abs(adjVariance) > 0 || !!(zeroDueToggle && zeroDueToggle.checked);
+      const reason = adjustmentReasonEl?.value || 'Settlement Adjustment';
 
       if (particularsTitle) particularsTitle.textContent = `Payment for Commercial Invoice #${invNo}`;
       if (particularsSub) {
-        particularsSub.innerHTML = `Total Invoiced: <strong>${formatBDT(total)}</strong> • Prior Collections: <strong>${formatBDT(paid)}</strong>`;
+        if (Math.abs(adjVariance) > 0) {
+          particularsSub.innerHTML = `Agreed Total: <strong>${formatBDT(total)}</strong> <span class="text-muted">(Orig: ${formatBDT(baseTotal)} • ${escapeHTML(reason)})</span> • Prior Collections: <strong>${formatBDT(paid)}</strong>`;
+        } else {
+          particularsSub.innerHTML = `Total Invoiced: <strong>${formatBDT(total)}</strong> • Prior Collections: <strong>${formatBDT(paid)}</strong>`;
+        }
       }
       if (invTotalCol) invTotalCol.textContent = formatBDT(total);
       if (particularsRow) particularsRow.style.display = '';
 
       if (dueDesc) {
         if (zeroDueToggle && zeroDueToggle.checked) {
-          const reason = adjustmentReasonEl?.value || 'Settlement Adjustment';
           dueDesc.textContent = `Settled & closed (${reason})`;
+        } else if (Math.abs(adjVariance) > 0 && dueVal <= 0) {
+          dueDesc.textContent = `Settled via adjusted amount (${reason})`;
+        } else if (Math.abs(adjVariance) > 0) {
+          const kind = adjVariance > 0 ? 'rebate' : 'surcharge';
+          dueDesc.textContent = `Remaining due after ${formatBDT(Math.abs(adjVariance))} ${kind} (${reason})`;
         } else {
           dueDesc.textContent = 'Outstanding balance after this receipt';
         }
@@ -183,6 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
       nameInputId: 'clientName',
       addressInputId: 'clientAddress',
       onClientSelected: (client) => {
+        isDirty = true;
         syncReceiptPrintValues();
         updateReceiptSummaryAndQR();
       }
@@ -216,11 +246,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const params = parseQuery();
   receiptDateEl.value = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
 
   // Populate invoice suggestions (local + disk summaries, excluding Void)
-  (async function populateInvoiceList() {
+  async function populateInvoiceList() {
     try {
       const local = loadInvoices();
       let disk = [];
@@ -249,9 +278,74 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.warn('Failed to populate invoices datalist', e);
     }
-  })();
+  }
+  populateInvoiceList();
+  window.addEventListener('storagesync', populateInvoiceList);
 
-  let currentInvoiceFull = null;
+  function _setSelectReasonSafe(val) {
+    if (!adjustmentReasonEl || !val) return;
+    const exists = Array.from(adjustmentReasonEl.options).some(o => o.value === val);
+    if (!exists) {
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = val;
+      adjustmentReasonEl.appendChild(opt);
+    }
+    adjustmentReasonEl.value = val;
+  }
+
+  function renderInvoiceItemsRef(inv) {
+    if (!receiptItemsRefEl || !receiptItemsTbodyEl) return;
+    const items = (inv && inv.status !== 'Void' && Array.isArray(inv.items)) ? inv.items : [];
+    if (!items.length) {
+      receiptItemsTbodyEl.innerHTML = '';
+      if (receiptItemsCountEl) receiptItemsCountEl.textContent = '0';
+      receiptItemsRefEl.open = false;
+      receiptItemsRefEl.classList.add('d-none');
+      return;
+    }
+    if (receiptItemsCountEl) receiptItemsCountEl.textContent = String(items.length);
+    receiptItemsTbodyEl.innerHTML = items.map(it => {
+      const name = escapeHTML(it.name || 'Item');
+      const desc = it.desc ? `<div class="text-muted" style="font-size:0.85em">${escapeHTML(it.desc)}</div>` : '';
+      const qty = roundBDT(Number(it.qty || 0) || 0);
+      const unit = escapeHTML(it.unit || 'Pcs');
+      const price = roundBDT(Number(it.unitPrice || it.rate || 0) || 0);
+      const lineTotal = roundBDT(it.total != null ? Number(it.total) : (qty * price));
+      return `
+        <tr>
+          <td><div class="fw-semibold">${name}</div>${desc}</td>
+          <td class="text-center">${escapeHTML(String(qty))}</td>
+          <td class="text-center">${unit}</td>
+          <td class="text-end font-monospace">${escapeHTML(formatBDT(price))}</td>
+          <td class="text-end font-monospace fw-semibold">${escapeHTML(formatBDT(lineTotal))}</td>
+        </tr>
+      `;
+    }).join('');
+    receiptItemsRefEl.classList.remove('d-none');
+  }
+
+  function _resolveEffectiveInvoiceState(inv, amtEntered) {
+    const invNo = inv ? (inv.invoiceNumber || inv.number || '') : '';
+    const baseTotal = inv ? roundBDT(Number(inv.grandTotal || 0) || 0) : 0;
+    const priorPaid = invNo ? roundBDT(getTotalPaidForInvoice(invNo, currentReceiptNumber)) : 0;
+    const prevAdj = invNo ? getLatestAdjustmentForInvoice(invNo, currentReceiptNumber) : null;
+    const storedTotal = (prevAdj && isFinite(Number(prevAdj.adjustedTotal)))
+      ? roundBDT(Number(prevAdj.adjustedTotal))
+      : baseTotal;
+
+    let effectiveTotal = storedTotal;
+    if (zeroDueToggle && zeroDueToggle.checked) {
+      effectiveTotal = roundBDT(priorPaid + Math.max(0, amtEntered || 0));
+    } else if (adjustedInvoiceTotalEl && !adjustedInvoiceTotalEl.disabled && adjustedInvoiceTotalEl.value.trim() !== '') {
+      effectiveTotal = roundBDT(parseAmt(adjustedInvoiceTotalEl.value));
+    }
+
+    const adjVariance = roundBDT(baseTotal - effectiveTotal);
+    const remainingBefore = roundBDT(Math.max(0, effectiveTotal - priorPaid));
+    return { invNo, baseTotal, priorPaid, prevAdj, storedTotal, effectiveTotal, adjVariance, remainingBefore };
+  }
+
   function applyInvoiceData(inv) {
     if (!inv) return;
     currentInvoiceFull = inv;
@@ -266,6 +360,11 @@ document.addEventListener('DOMContentLoaded', () => {
         linkedInvoiceInfoEl.textContent = `${invNo} is VOID — Cannot accept payments`;
       }
       linkedInvoiceEl.classList.add('is-invalid');
+      if (adjustedInvoiceTotalEl) {
+        adjustedInvoiceTotalEl.value = '';
+        adjustedInvoiceTotalEl.disabled = true;
+      }
+      renderInvoiceItemsRef(null);
       if (typeof showToast === 'function') showToast(`Invoice ${invNo} is Void and cannot be paid.`, 'warning');
       updateDue();
       syncReceiptPrintValues();
@@ -273,20 +372,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     linkedInvoiceEl.classList.remove('is-invalid');
     clientNameEl.value = inv.client?.name || '';
+    const csEl = document.getElementById('clientSelect');
+    if (csEl) csEl.value = inv.client?.name || '';
     clientAddressEl.value = inv.client?.address || '';
     paymentMethodEl.value = inv.paymentMethod || 'Cash';
-    const invNo = inv.invoiceNumber || inv.number || '';
-    const stats = invNo && typeof getInvoicePaymentStats === 'function'
-      ? getInvoicePaymentStats(inv, currentReceiptNumber)
-      : null;
-    const defaultAmt = (stats && stats.status !== 'Unknown') ? stats.due : roundBDT(inv.grandTotal || 0);
+    if (zeroDueToggle) zeroDueToggle.checked = false;
+
+    const st = _resolveEffectiveInvoiceState(inv, 0);
+    if (adjustedInvoiceTotalEl) {
+      adjustedInvoiceTotalEl.disabled = false;
+      adjustedInvoiceTotalEl.value = st.storedTotal.toFixed(2);
+    }
+    if (adjustmentReasonEl && st.prevAdj && Math.abs(st.baseTotal - st.storedTotal) > 0 && st.prevAdj.reason && st.prevAdj.reason !== 'Adjustment Removed / Restored') {
+      _setSelectReasonSafe(st.prevAdj.reason);
+    } else if (adjustmentReasonEl) {
+      adjustmentReasonEl.value = 'Payment Settlement Rebate';
+    }
+    const defaultAmt = roundBDT(Math.max(0, st.storedTotal - st.priorPaid));
     amountReceivedEl.value = String(defaultAmt);
     const amt = Math.max(0, parseAmt(amountReceivedEl.value));
     amountWordsEl.textContent = numberToWordsBDT(amt);
     if (linkedInvoiceInfoEl) {
       const totalTxt = (inv.grandTotal != null) ? formatBDT(inv.grandTotal) : '';
-      linkedInvoiceInfoEl.textContent = `${inv.invoiceNumber} • ${inv.title || ''} • ${inv.date || ''} ${totalTxt ? '• ' + totalTxt : ''}`.trim();
+      linkedInvoiceInfoEl.textContent = `${inv.invoiceNumber || inv.number} • ${inv.title || ''} • ${inv.date || ''} ${totalTxt ? '• ' + totalTxt : ''}`.trim();
     }
+    renderInvoiceItemsRef(inv);
     updateDue();
     syncReceiptPrintValues();
   }
@@ -301,95 +411,152 @@ document.addEventListener('DOMContentLoaded', () => {
     return inv;
   }
 
-  let currentReceiptNumber = '';
-  const rcptNo = params.rcpt || params.no;
+  function resetReceiptFieldsToNew() {
+    currentReceiptNumber = '';
+    currentInvoiceFull = null;
+    if (typeof setCompanyHeader === 'function') setCompanyHeader();
+    if (receiptNumberEl) receiptNumberEl.value = peekNextReceiptNumber();
+    if (receiptDateEl) receiptDateEl.value = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
+    if (linkedInvoiceEl) {
+      linkedInvoiceEl.value = '';
+      linkedInvoiceEl.classList.remove('is-invalid');
+    }
+    if (linkedInvoiceInfoEl) linkedInvoiceInfoEl.textContent = '';
+    if (adjustedInvoiceTotalEl) {
+      adjustedInvoiceTotalEl.value = '';
+      adjustedInvoiceTotalEl.disabled = true;
+      adjustedInvoiceTotalEl.classList.remove('is-invalid');
+    }
+    if (adjustedInvoiceHintEl) {
+      adjustedInvoiceHintEl.textContent = 'Link an invoice to edit total.';
+      adjustedInvoiceHintEl.className = 'form-text small';
+    }
+    renderInvoiceItemsRef(null);
+    const csEl = document.getElementById('clientSelect');
+    if (csEl) csEl.value = '';
+    if (clientNameEl) clientNameEl.value = '';
+    if (clientAddressEl) clientAddressEl.value = '';
+    if (paymentMethodEl) paymentMethodEl.value = 'Cash';
+    if (trxRefEl) trxRefEl.value = '';
+    if (amountReceivedEl) amountReceivedEl.value = '';
+    if (amountWordsEl) amountWordsEl.textContent = numberToWordsBDT(0);
+    if (zeroDueToggle) zeroDueToggle.checked = false;
+    if (adjustmentReasonEl) {
+      adjustmentReasonEl.disabled = true;
+      adjustmentReasonEl.value = 'Payment Settlement Rebate';
+    }
+    updateModeBadge(false);
+    updateDue();
+    syncReceiptPrintValues();
+    updateReceiptSummaryAndQR();
+  }
 
-  if (rcptNo) {
-    const r = getReceiptByNumber(rcptNo);
-    if (r) {
-      currentReceiptNumber = r.receiptNumber;
-      receiptNumberEl.value = r.receiptNumber;
-      receiptDateEl.value = r.date || receiptDateEl.value;
-      linkedInvoiceEl.value = r.invoiceNumber || '';
-      clientNameEl.value = r.client?.name || '';
-      clientAddressEl.value = r.client?.address || '';
-      paymentMethodEl.value = r.paymentMethod || 'Cash';
-      if (trxRefEl) trxRefEl.value = r.trxRef || '';
-      amountReceivedEl.value = String(r.amount || 0);
-      amountWordsEl.textContent = numberToWordsBDT(r.amount || 0);
-      updateModeBadge(true, r.receiptNumber);
-      if (r.billerId || r.company) {
-        const rBiller = (typeof getBillerById === 'function' && r.billerId ? getBillerById(r.billerId) : null) || r.company;
-        if (rBiller) setCompanyHeader(rBiller);
-      }
-      if (r.invoiceNumber) {
-        (async () => {
+  async function loadEditorFromParams(p, navOpts) {
+    const params = p || {};
+    const preselectedInv = navOpts && navOpts._selectedInvoice;
+    const rcptNo = params.rcpt || params.no;
+
+    if (rcptNo) {
+      const r = getReceiptByNumber(rcptNo);
+      if (r) {
+        currentReceiptNumber = r.receiptNumber;
+        receiptNumberEl.value = r.receiptNumber;
+        receiptDateEl.value = r.date || (typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10));
+        linkedInvoiceEl.value = r.invoiceNumber || '';
+        linkedInvoiceEl.classList.remove('is-invalid');
+        if (linkedInvoiceInfoEl) linkedInvoiceInfoEl.textContent = '';
+        clientNameEl.value = r.client?.name || '';
+        const csEl = document.getElementById('clientSelect');
+        if (csEl) csEl.value = r.client?.name || '';
+        clientAddressEl.value = r.client?.address || '';
+        paymentMethodEl.value = r.paymentMethod || 'Cash';
+        if (trxRefEl) trxRefEl.value = r.trxRef || '';
+        amountReceivedEl.value = String(r.amount || 0);
+        amountWordsEl.textContent = numberToWordsBDT(r.amount || 0);
+        updateModeBadge(true, r.receiptNumber);
+        if (r.billerId || r.company) {
+          const rBiller = (typeof getBillerById === 'function' && r.billerId ? getBillerById(r.billerId) : null) || r.company;
+          if (rBiller) setCompanyHeader(rBiller);
+        }
+        if (zeroDueToggle) {
+          zeroDueToggle.checked = !!(r.adjustment && r.adjustment.applied && r.adjustment.method !== 'editable_total');
+        }
+        if (adjustmentReasonEl) {
+          adjustmentReasonEl.disabled = !(r.adjustment && r.adjustment.applied);
+          _setSelectReasonSafe((r.adjustment && r.adjustment.reason) || 'Payment Settlement Rebate');
+        }
+        if (r.invoiceNumber) {
           const inv = await fetchInvoiceByNumber(r.invoiceNumber);
           if (inv) {
             currentInvoiceFull = inv;
+            renderInvoiceItemsRef(inv);
             if (linkedInvoiceInfoEl) {
               const totalTxt = (inv.grandTotal != null) ? formatBDT(inv.grandTotal) : '';
-              linkedInvoiceInfoEl.textContent = `${inv.invoiceNumber} • ${inv.title || ''} • ${inv.date || ''} ${totalTxt ? '• ' + totalTxt : ''}`.trim();
+              linkedInvoiceInfoEl.textContent = `${inv.invoiceNumber || r.invoiceNumber} • ${inv.title || ''} • ${inv.date || ''} ${totalTxt ? '• ' + totalTxt : ''}`.trim();
             }
-          }
-          if (r.adjustment && r.adjustment.applied && zeroDueToggle) {
-            zeroDueToggle.checked = true;
-            if (adjustmentReasonEl) {
-              adjustmentReasonEl.disabled = false;
-              adjustmentReasonEl.value = r.adjustment.reason || 'Payment Settlement Rebate';
+            if (adjustedInvoiceTotalEl) {
+              if (inv.status === 'Void') {
+                adjustedInvoiceTotalEl.value = '';
+                adjustedInvoiceTotalEl.disabled = true;
+              } else {
+                adjustedInvoiceTotalEl.disabled = false;
+                const st = _resolveEffectiveInvoiceState(inv, r.amount || 0);
+                const restoredTotal = (r.adjustment && r.adjustment.applied && isFinite(Number(r.adjustment.adjustedTotal)))
+                  ? roundBDT(Number(r.adjustment.adjustedTotal))
+                  : st.storedTotal;
+                adjustedInvoiceTotalEl.value = restoredTotal.toFixed(2);
+              }
             }
+          } else {
+            currentInvoiceFull = null;
+            renderInvoiceItemsRef(null);
+            if (adjustedInvoiceTotalEl) { adjustedInvoiceTotalEl.value = ''; adjustedInvoiceTotalEl.disabled = true; }
           }
-          updateDue();
-          syncReceiptPrintValues();
-          updateReceiptSummaryAndQR();
-        })();
+        } else {
+          currentInvoiceFull = null;
+          renderInvoiceItemsRef(null);
+          if (adjustedInvoiceTotalEl) { adjustedInvoiceTotalEl.value = ''; adjustedInvoiceTotalEl.disabled = true; }
+        }
+        updateDue();
+        syncReceiptPrintValues();
+        updateReceiptSummaryAndQR();
       } else {
+        resetReceiptFieldsToNew();
+      }
+    } else if (params.inv || preselectedInv) {
+      resetReceiptFieldsToNew();
+      const inv = preselectedInv || await fetchInvoiceByNumber(params.inv);
+      if (inv) {
+        linkedInvoiceEl.value = inv.invoiceNumber || inv.number || params.inv || '';
+        applyInvoiceData(inv);
+      } else if (params.inv) {
+        linkedInvoiceEl.value = params.inv;
+      }
+      syncReceiptPrintValues();
+    } else if (params.qtn) {
+      resetReceiptFieldsToNew();
+      const q = getQuotationByNumber(params.qtn);
+      if (q) {
+        clientNameEl.value = q.to?.company || q.to?.name || '';
+        clientAddressEl.value = q.to?.address || '';
+        paymentMethodEl.value = 'Cash';
+        amountReceivedEl.value = String(q.grandTotal || 0);
+        amountWordsEl.textContent = numberToWordsBDT(q.grandTotal || 0);
         updateDue();
         syncReceiptPrintValues();
         updateReceiptSummaryAndQR();
       }
     } else {
-      receiptNumberEl.value = peekNextReceiptNumber();
-      updateModeBadge(false);
-      updateDue();
-      syncReceiptPrintValues();
+      resetReceiptFieldsToNew();
     }
-  } else if (params.inv) {
-    receiptNumberEl.value = peekNextReceiptNumber();
-    linkedInvoiceEl.value = params.inv;
-    updateModeBadge(false);
-    (async () => {
-      const inv = await fetchInvoiceByNumber(params.inv);
-      if (inv) applyInvoiceData(inv);
-      syncReceiptPrintValues();
-    })();
-  } else if (params.qtn) {
-    receiptNumberEl.value = peekNextReceiptNumber();
-    updateModeBadge(false);
-    const q = getQuotationByNumber(params.qtn);
-    if (q) {
-      clientNameEl.value = q.to?.company || q.to?.name || '';
-      clientAddressEl.value = q.to?.address || '';
-      paymentMethodEl.value = 'Cash';
-      amountReceivedEl.value = String(q.grandTotal || 0);
-      amountWordsEl.textContent = numberToWordsBDT(q.grandTotal || 0);
-      linkedInvoiceEl.value = '';
-      if (linkedInvoiceInfoEl) linkedInvoiceInfoEl.textContent = '';
-      updateDue();
-      syncReceiptPrintValues();
-      updateReceiptSummaryAndQR();
-    }
-  } else {
-    receiptNumberEl.value = peekNextReceiptNumber();
-    updateModeBadge(false);
-    updateDue();
-    syncReceiptPrintValues();
+    _lastAppliedInvNo = (linkedInvoiceEl?.value || '').trim();
+    isDirty = false;
   }
 
-  let isDirty = false;
   const printAreaEl = document.getElementById('printArea');
   if (printAreaEl) {
     printAreaEl.addEventListener('input', () => { isDirty = true; });
+    printAreaEl.addEventListener('change', () => { isDirty = true; });
   }
   window.addEventListener('beforeunload', (e) => {
     if (isDirty) {
@@ -407,21 +574,47 @@ document.addEventListener('DOMContentLoaded', () => {
     syncReceiptPrintValues();
     debouncedUpdateReceiptSummaryAndQR();
   });
+  if (adjustedInvoiceTotalEl) {
+    adjustedInvoiceTotalEl.addEventListener('input', () => {
+      if (zeroDueToggle && zeroDueToggle.checked) {
+        zeroDueToggle.checked = false;
+      }
+      const invNo = (linkedInvoiceEl?.value || '').trim();
+      const inv = (invNo && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(invNo) : null) || currentInvoiceFull;
+      if (inv && adjustmentReasonEl && adjustmentReasonEl.value === 'Payment Settlement Rebate') {
+        const enteredTot = roundBDT(parseAmt(adjustedInvoiceTotalEl.value));
+        const baseTot = roundBDT(Number(inv.grandTotal || 0) || 0);
+        if (enteredTot > baseTot) adjustmentReasonEl.value = 'Agreed Invoice Revision';
+      }
+      updateDue();
+      syncReceiptPrintValues();
+      debouncedUpdateReceiptSummaryAndQR();
+    });
+  }
   if (zeroDueToggle) {
     zeroDueToggle.addEventListener('change', () => {
+      const invNo = (linkedInvoiceEl?.value || '').trim();
+      const inv = (invNo && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(invNo) : null) || currentInvoiceFull;
       if (zeroDueToggle.checked) {
         const ok = confirm('Zero Due by Adjustment writes off any remaining balance on this linked invoice (or records AIT/VDS withholding), recording it as adjusted. Proceed?');
         if (!ok) {
           zeroDueToggle.checked = false;
+        } else if (inv && adjustedInvoiceTotalEl && !adjustedInvoiceTotalEl.disabled) {
+          const priorPaid = invNo ? roundBDT(getTotalPaidForInvoice(invNo, currentReceiptNumber)) : 0;
+          const enteredAmt = Math.max(0, parseAmt(amountReceivedEl.value));
+          adjustedInvoiceTotalEl.value = roundBDT(priorPaid + enteredAmt).toFixed(2);
         }
+      } else if (inv && adjustedInvoiceTotalEl && !adjustedInvoiceTotalEl.disabled) {
+        const baseSt = _resolveEffectiveInvoiceState(inv, 0);
+        adjustedInvoiceTotalEl.value = baseSt.storedTotal.toFixed(2);
       }
-      if (adjustmentReasonEl) adjustmentReasonEl.disabled = !zeroDueToggle.checked;
       updateDue();
       syncReceiptPrintValues();
     });
   }
   if (adjustmentReasonEl) {
     adjustmentReasonEl.addEventListener('change', () => {
+      updateDue();
       syncReceiptPrintValues();
     });
   }
@@ -435,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  let _lastAppliedInvNo = (linkedInvoiceEl.value || '').trim();
+  _lastAppliedInvNo = (linkedInvoiceEl.value || '').trim();
   async function handleLinkedInvoiceChange(e) {
     const no = (linkedInvoiceEl.value || '').trim();
     if (e && e.type === 'blur' && no === _lastAppliedInvNo) return;
@@ -445,11 +638,28 @@ document.addEventListener('DOMContentLoaded', () => {
       linkedInvoiceEl.classList.remove('is-invalid');
       dueAmountEl.value = '';
       if (dueMsgEl) dueMsgEl.textContent = '';
+      if (zeroDueToggle) zeroDueToggle.checked = false;
+      if (adjustedInvoiceTotalEl) {
+        adjustedInvoiceTotalEl.value = '';
+        adjustedInvoiceTotalEl.disabled = true;
+        adjustedInvoiceTotalEl.classList.remove('is-invalid');
+      }
+      if (adjustedInvoiceHintEl) {
+        adjustedInvoiceHintEl.textContent = 'Link an invoice to edit total.';
+        adjustedInvoiceHintEl.className = 'form-text small';
+      }
+      if (adjustmentReasonEl) adjustmentReasonEl.disabled = true;
+      renderInvoiceItemsRef(null);
       const amt = Math.max(0, parseAmt(amountReceivedEl.value));
       amountWordsEl.textContent = numberToWordsBDT(amt);
       currentInvoiceFull = null;
+      if (!currentReceiptNumber) {
+        if (typeof setCompanyHeader === 'function') setCompanyHeader();
+        if (receiptNumberEl) receiptNumberEl.value = peekNextReceiptNumber();
+      }
       updateDue();
       syncReceiptPrintValues();
+      updateReceiptSummaryAndQR();
       return;
     }
     const inv = await fetchInvoiceByNumber(no);
@@ -458,6 +668,9 @@ document.addEventListener('DOMContentLoaded', () => {
       updateReceiptSummaryAndQR();
       syncReceiptPrintValues();
     } else {
+      currentInvoiceFull = null;
+      renderInvoiceItemsRef(null);
+      if (adjustedInvoiceTotalEl) { adjustedInvoiceTotalEl.value = ''; adjustedInvoiceTotalEl.disabled = true; }
       if (linkedInvoiceInfoEl) linkedInvoiceInfoEl.textContent = 'Invoice not found';
       linkedInvoiceEl.classList.add('is-invalid');
       updateDue();
@@ -467,6 +680,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   linkedInvoiceEl.addEventListener('change', handleLinkedInvoiceChange);
   linkedInvoiceEl.addEventListener('blur', handleLinkedInvoiceChange);
+  if (pickInvoiceBtn && window.AutoInvoiceDocList && typeof window.AutoInvoiceDocList.openInvoicePicker === 'function') {
+    pickInvoiceBtn.addEventListener('click', () => {
+      window.AutoInvoiceDocList.openInvoicePicker({
+        mode: 'receipt',
+        onSelect: (inv) => {
+          if (!inv) return;
+          if (linkedInvoiceEl) linkedInvoiceEl.value = inv.invoiceNumber || inv.number || '';
+          _lastAppliedInvNo = (linkedInvoiceEl?.value || '').trim();
+          applyInvoiceData(inv);
+          updateReceiptSummaryAndQR();
+          syncReceiptPrintValues();
+          isDirty = true;
+        }
+      });
+    });
+  }
 
   clientNameEl.addEventListener('input', () => {
     debouncedUpdateReceiptSummaryAndQR();
@@ -518,67 +747,92 @@ document.addEventListener('DOMContentLoaded', () => {
     const amtEntered = parseAmt(amountReceivedEl.value);
     const negative = amtEntered < 0;
     const inv = (invNo ? getInvoiceByNumber(invNo) : null) || (currentInvoiceFull && (currentInvoiceFull.invoiceNumber === invNo || currentInvoiceFull.number === invNo) ? currentInvoiceFull : null);
-    if (!invNo) {
-      if (dueAmountEl) dueAmountEl.value = '';
-      if (dueMsgEl) { dueMsgEl.textContent = ''; dueMsgEl.classList.remove('text-success', 'text-warning', 'text-danger'); }
-      amountReceivedEl.classList.toggle('is-invalid', negative);
-      saveBtn.disabled = negative;
-      if (typeof syncReceiptPrintValues === 'function') syncReceiptPrintValues();
-      return;
-    }
-    if (inv && inv.status === 'Void') {
-      if (dueAmountEl) dueAmountEl.value = '';
-      if (dueMsgEl) {
-        dueMsgEl.textContent = `Invoice ${invNo} is Void — payments are disabled.`;
-        dueMsgEl.classList.remove('text-success', 'text-warning');
-        dueMsgEl.classList.add('text-danger');
+    if (!invNo || !inv || inv.status === 'Void') {
+      if (inv && inv.status === 'Void') {
+        if (dueAmountEl) dueAmountEl.value = '';
+        if (dueMsgEl) {
+          dueMsgEl.textContent = `Invoice ${invNo} is Void — payments are disabled.`;
+          dueMsgEl.classList.remove('text-success', 'text-warning');
+          dueMsgEl.classList.add('text-danger');
+        }
+        saveBtn.disabled = true;
+      } else {
+        if (dueAmountEl) dueAmountEl.value = '';
+        if (dueMsgEl) { dueMsgEl.textContent = ''; dueMsgEl.classList.remove('text-success', 'text-warning', 'text-danger'); }
+        amountReceivedEl.classList.toggle('is-invalid', negative);
+        saveBtn.disabled = negative;
       }
-      saveBtn.disabled = true;
+      if (adjustedInvoiceTotalEl) {
+        adjustedInvoiceTotalEl.value = '';
+        adjustedInvoiceTotalEl.disabled = true;
+        adjustedInvoiceTotalEl.classList.remove('is-invalid');
+      }
+      if (adjustedInvoiceHintEl) {
+        adjustedInvoiceHintEl.textContent = inv && inv.status === 'Void' ? 'Void invoice cannot be adjusted.' : 'Link an invoice to edit total.';
+        adjustedInvoiceHintEl.className = 'form-text small';
+      }
+      if (adjustmentReasonEl && !zeroDueToggle?.checked) adjustmentReasonEl.disabled = true;
       if (typeof syncReceiptPrintValues === 'function') syncReceiptPrintValues();
       return;
     }
-    let stats = null;
-    if (inv) {
-      stats = getInvoicePaymentStats(inv, currentReceiptNumber);
-    } else {
-      if (dueAmountEl) dueAmountEl.value = '';
-      if (dueMsgEl) { dueMsgEl.textContent = ''; dueMsgEl.classList.remove('text-success', 'text-warning', 'text-danger'); }
-      amountReceivedEl.classList.toggle('is-invalid', negative);
-      saveBtn.disabled = negative;
-      if (typeof syncReceiptPrintValues === 'function') syncReceiptPrintValues();
-      return;
-    }
-    const entered = amtEntered;
-    const remainingBefore = roundBDT(Math.max(0, stats.total - stats.paid));
-    const overpay = entered > remainingBefore;
+
+    const entered = Math.max(0, amtEntered);
     const adjustOn = !!(zeroDueToggle && zeroDueToggle.checked);
-    const prevAdj = invNo ? getLatestAdjustmentForInvoice(invNo, currentReceiptNumber) : null;
-    const prevAdjTxt = prevAdj ? ` • Prior Adj: ${formatBDT(prevAdj.amount || 0)}` : '';
+    const st = _resolveEffectiveInvoiceState(inv, entered);
+    if (adjustOn && adjustedInvoiceTotalEl && !adjustedInvoiceTotalEl.disabled) {
+      adjustedInvoiceTotalEl.value = st.effectiveTotal.toFixed(2);
+    }
+
+    const invalidAdjusted = !!(adjustedInvoiceTotalEl && !adjustedInvoiceTotalEl.disabled && adjustedInvoiceTotalEl.value.trim() !== '')
+      && (st.effectiveTotal < 0 || st.effectiveTotal < st.priorPaid);
+    const remainingBefore = st.remainingBefore;
+    const overpay = !adjustOn && !invalidAdjusted && (entered > remainingBefore);
+    const prevAdjTxt = st.prevAdj ? ` • Prior Adj: ${formatBDT(st.prevAdj.amount || 0)}` : '';
+    const hasAdj = adjustOn || Math.abs(st.adjVariance) > 0;
+
+    if (adjustmentReasonEl) adjustmentReasonEl.disabled = !hasAdj;
+
+    if (adjustedInvoiceHintEl) {
+      if (invalidAdjusted) {
+        adjustedInvoiceHintEl.textContent = `Cannot be less than prior payments (${formatBDT(st.priorPaid)})`;
+        adjustedInvoiceHintEl.className = 'form-text small text-danger fw-semibold';
+      } else if (st.adjVariance > 0) {
+        adjustedInvoiceHintEl.textContent = `-${formatBDT(st.adjVariance)} rebate vs orig ${formatBDT(st.baseTotal)}`;
+        adjustedInvoiceHintEl.className = 'form-text small text-warning-emphasis';
+      } else if (st.adjVariance < 0) {
+        adjustedInvoiceHintEl.textContent = `+${formatBDT(Math.abs(st.adjVariance))} surcharge vs orig ${formatBDT(st.baseTotal)}`;
+        adjustedInvoiceHintEl.className = 'form-text small text-primary';
+      } else {
+        adjustedInvoiceHintEl.textContent = `Matches original ${formatBDT(st.baseTotal)}`;
+        adjustedInvoiceHintEl.className = 'form-text small text-muted';
+      }
+    }
 
     if (adjustOn) {
       if (dueAmountEl) dueAmountEl.value = '0.00';
       if (dueMsgEl) {
-        const writeOff = roundBDT(Math.max(0, remainingBefore - entered));
         const reason = adjustmentReasonEl?.value || 'Settlement Rebate';
-        dueMsgEl.textContent = `${reason} active • Adjustment: ${formatBDT(writeOff)}${prevAdjTxt}`;
+        dueMsgEl.textContent = `${reason} active • Cumulative Variance: ${formatBDT(st.adjVariance)}${prevAdjTxt}`;
         dueMsgEl.classList.remove('text-success', 'text-danger');
         dueMsgEl.classList.add('text-warning');
       }
     } else {
-      const remainingAfter = roundBDT(Math.max(0, remainingBefore - entered));
-      if (dueAmountEl) dueAmountEl.value = String(remainingAfter.toFixed(2));
+      const remainingAfter = invalidAdjusted ? 0 : roundBDT(Math.max(0, remainingBefore - entered));
+      if (dueAmountEl) dueAmountEl.value = invalidAdjusted ? '—' : String(remainingAfter.toFixed(2));
       if (dueMsgEl) {
-        const paidTxt = `Paid to date: ${formatBDT(stats.paid)}`;
+        const paidTxt = `Paid to date: ${formatBDT(st.priorPaid)}`;
         const beforeTxt = `Remaining before this receipt: ${formatBDT(remainingBefore)}`;
-        const fullTxt = remainingAfter === 0 ? ' • Paid in full' : '';
+        const fullTxt = !invalidAdjusted && remainingAfter === 0 && !overpay ? ' • Paid in full' : '';
         dueMsgEl.textContent = `${paidTxt} • ${beforeTxt}${fullTxt}${prevAdjTxt}${overpay ? ' • Overpayment detected, reduce amount' : ''}`;
-        dueMsgEl.classList.toggle('text-success', remainingAfter === 0 && !overpay);
-        if (remainingAfter !== 0) dueMsgEl.classList.remove('text-success');
-        dueMsgEl.classList.remove('text-warning', 'text-danger');
+        dueMsgEl.classList.toggle('text-success', !invalidAdjusted && remainingAfter === 0 && !overpay);
+        if (invalidAdjusted || remainingAfter !== 0 || overpay) dueMsgEl.classList.remove('text-success');
+        dueMsgEl.classList.toggle('text-danger', overpay || invalidAdjusted);
+        dueMsgEl.classList.remove('text-warning');
       }
     }
+    if (adjustedInvoiceTotalEl) adjustedInvoiceTotalEl.classList.toggle('is-invalid', invalidAdjusted);
     amountReceivedEl.classList.toggle('is-invalid', overpay || negative);
-    saveBtn.disabled = overpay || negative;
+    saveBtn.disabled = overpay || negative || invalidAdjusted;
     if (typeof syncReceiptPrintValues === 'function') syncReceiptPrintValues();
   }
 
@@ -596,21 +850,27 @@ document.addEventListener('DOMContentLoaded', () => {
       amountReceivedEl.classList.add('is-invalid');
       return;
     }
-    let remainingBefore = null;
+    const adjustOn = !!(zeroDueToggle && zeroDueToggle.checked);
+    let resolvedState = null;
     if (inv) {
-      const stats = getInvoicePaymentStats(inv, currentReceiptNumber);
-      remainingBefore = roundBDT(Math.max(0, stats.total - stats.paid));
-      if (amt > remainingBefore) {
-        showToast('Overpayment prevented. Reduce amount to remaining due.', 'warning');
+      resolvedState = _resolveEffectiveInvoiceState(inv, amt);
+      if (resolvedState.effectiveTotal < resolvedState.priorPaid) {
+        showToast(`Agreed invoice total cannot be less than prior payments (${formatBDT(resolvedState.priorPaid)}).`, 'danger');
+        if (adjustedInvoiceTotalEl) adjustedInvoiceTotalEl.classList.add('is-invalid');
         return;
       }
-    }
-    const adjustOn = !!(zeroDueToggle && zeroDueToggle.checked);
-    if (adjustOn && inv) {
-      const prevAdj = invNo ? getLatestAdjustmentForInvoice(invNo, currentReceiptNumber) : null;
-      if (prevAdj) {
-        const proceed = confirm(`This invoice already had an adjustment of ${formatBDT(prevAdj.amount || 0)} on ${prevAdj.timestamp?.slice(0, 10) || 'an earlier date'}. Are you sure you want to apply a new adjustment?`);
-        if (!proceed) return;
+      if (!adjustOn && amt > resolvedState.remainingBefore) {
+        showToast('Overpayment prevented. Reduce amount to remaining due or adjust Agreed Invoice Amt.', 'warning');
+        return;
+      }
+      if (resolvedState.prevAdj) {
+        const prevEff = isFinite(Number(resolvedState.prevAdj.adjustedTotal))
+          ? roundBDT(Number(resolvedState.prevAdj.adjustedTotal))
+          : resolvedState.baseTotal;
+        if (Math.abs(roundBDT(prevEff - resolvedState.effectiveTotal)) > 0) {
+          const proceed = confirm(`This invoice already has an adjustment (${formatBDT(resolvedState.prevAdj.amount || 0)}, Agreed Total ${formatBDT(prevEff)}). Update agreed total to ${formatBDT(resolvedState.effectiveTotal)}?`);
+          if (!proceed) return;
+        }
       }
     }
     const { existingRc, bId: activeBillerId, biller: activeBiller } = _resolveReceiptBiller();
@@ -633,19 +893,21 @@ document.addEventListener('DOMContentLoaded', () => {
       qrData,
       company: companySnap
     };
-    if (adjustOn && inv && remainingBefore != null) {
-      const priorPaid = getTotalPaidForInvoice(invNo, currentReceiptNumber);
-      const originalTotal = roundBDT(remainingBefore + priorPaid);
-      const adjustmentAmt = roundBDT(Math.max(0, roundBDT(remainingBefore - amt)));
-      rc.adjustment = {
-        applied: true,
-        reason: adjustmentReasonEl?.value || 'Payment Settlement Rebate',
-        amount: adjustmentAmt,
-        originalTotal,
-        adjustedTotal: roundBDT(Math.max(0, roundBDT(originalTotal - adjustmentAmt))),
-        timestamp: new Date().toISOString(),
-        method: 'toggle'
-      };
+    if (inv && resolvedState) {
+      const hasAdj = adjustOn || Math.abs(resolvedState.adjVariance) > 0;
+      if (hasAdj || resolvedState.prevAdj) {
+        rc.adjustment = {
+          applied: true,
+          reason: !hasAdj && resolvedState.prevAdj
+            ? 'Adjustment Removed / Restored'
+            : (adjustmentReasonEl?.value || (resolvedState.adjVariance < 0 ? 'Agreed Invoice Revision' : 'Payment Settlement Rebate')),
+          amount: resolvedState.adjVariance,
+          originalTotal: resolvedState.baseTotal,
+          adjustedTotal: resolvedState.effectiveTotal,
+          timestamp: new Date().toISOString(),
+          method: adjustOn ? 'toggle' : 'editable_total'
+        };
+      }
     }
     saveReceipt(rc);
     finalizeReceiptNumber(rc.receiptNumber, rc.billerId);
@@ -708,9 +970,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return receiptNumberEl?.value || 'Receipt';
     });
   }
-  if (typeof runAutoPrintIfRequested === 'function') {
-    runAutoPrintIfRequested(prepareForPrint);
-  }
 
   // Global Ctrl+S shortcut to save
   window.addEventListener('keydown', (e) => {
@@ -735,6 +994,57 @@ document.addEventListener('DOMContentLoaded', () => {
       downloadCSV(`receipt_${receiptNumberEl.value}.csv`, rows);
     }
   });
+
+  if (duplicateReceiptBtn) {
+    duplicateReceiptBtn.addEventListener('click', () => {
+      currentReceiptNumber = '';
+      const { bId, biller } = _resolveReceiptBiller();
+      if (typeof setCompanyHeader === 'function') setCompanyHeader(biller);
+      const nextNo = peekNextReceiptNumber(bId);
+      receiptNumberEl.value = nextNo;
+      receiptDateEl.value = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
+      isDirty = true;
+      updateModeBadge(false);
+      updateDue();
+      syncReceiptPrintValues();
+      updateReceiptSummaryAndQR();
+      showToast(`Duplicated as new receipt ${nextNo}. Click Save when ready.`, 'info');
+    });
+  }
+
+  if (exportReceiptBtn) {
+    exportReceiptBtn.addEventListener('click', () => {
+      const rcNo = (receiptNumberEl?.value || 'receipt').trim();
+      const existingRc = currentReceiptNumber ? getReceiptByNumber(currentReceiptNumber) : null;
+      const amt = Math.max(0, parseAmt(amountReceivedEl?.value));
+      const payload = existingRc || {
+        _type: 'receipt',
+        receiptNumber: rcNo,
+        date: receiptDateEl?.value || '',
+        invoiceNumber: (linkedInvoiceEl?.value || '').trim(),
+        client: { name: (clientNameEl?.value || '').trim(), address: (clientAddressEl?.value || '').trim() },
+        paymentMethod: paymentMethodEl?.value || 'Cash',
+        trxRef: (trxRefEl?.value || '').trim(),
+        amount: amt,
+        amountInWords: numberToWordsBDT(amt)
+      };
+      const slug = slugify(payload.client?.name || '');
+      downloadJSON(`receipt_${rcNo}${slug ? '_' + slug : ''}.json`, payload);
+      showToast('Receipt JSON downloaded.', 'info');
+    });
+  }
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (confirm('Clear all fields?')) {
+        resetReceiptFieldsToNew();
+        if (typeof history !== 'undefined' && window.location.search) {
+          try { history.replaceState(null, '', '?new=1'); } catch (_) { }
+        }
+        isDirty = false;
+      }
+    });
+  }
 
   const shareWhatsAppBtn = document.getElementById('shareWhatsAppBtn');
   const shareEmailBtn = document.getElementById('shareEmailBtn');
@@ -821,4 +1131,36 @@ document.addEventListener('DOMContentLoaded', () => {
     syncReceiptPrintValues();
     updateReceiptSummaryAndQR();
   });
+
+  if (window.AutoInvoiceDocList && typeof window.AutoInvoiceDocList.connectWorkspace === 'function') {
+    window.AutoInvoiceDocList.connectWorkspace({
+      type: 'receipt',
+      getRecords: () => (typeof loadReceipts === 'function' ? loadReceipts() : []),
+      loadDiskSummaries: null,
+      isDirty: () => isDirty,
+      resetDirty: () => { isDirty = false; },
+      hasEditorParams: (p) => !!(p && (p.new === '1' || p.new === 'true' || p.no || p.rcpt || p.inv || p.qtn || p.id || p.load || p.autoprint === '1')),
+      loadEditor: async (p, navOpts) => { await loadEditorFromParams(p, navOpts); },
+      onEnterList: () => { currentReceiptNumber = ''; currentInvoiceFull = null; },
+      onGenerateFromInvoice: async (inv, ctx) => {
+        if (!inv) return;
+        await ctx.openEditor({ inv: inv.invoiceNumber || inv.number }, { _selectedInvoice: inv });
+      },
+      onAfterMutate: (no, action) => {
+        if (action === 'delete' && currentReceiptNumber === no) {
+          currentReceiptNumber = '';
+          currentInvoiceFull = null;
+        }
+      },
+      afterFirstLoad: () => {
+        if (typeof runAutoPrintIfRequested === 'function') {
+          runAutoPrintIfRequested(prepareForPrint);
+        }
+      }
+    });
+  } else {
+    loadEditorFromParams(parseQuery()).then(() => {
+      if (typeof runAutoPrintIfRequested === 'function') runAutoPrintIfRequested(prepareForPrint);
+    });
+  }
 });

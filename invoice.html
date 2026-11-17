@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/print.css" />
   </head>
   <body>
-    <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#printArea">Skip to content</a>
+    <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#mainContent">Skip to content</a>
     <nav class="navbar navbar-expand-lg app-navbar no-print">
       <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="index.html">
@@ -37,7 +37,21 @@
       </div>
     </nav>
 
-    <main class="container pb-5">
+    <main id="mainContent" tabindex="-1" class="container pb-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 mb-3 border-bottom no-print" id="docWorkspaceHeader">
+        <div class="d-flex align-items-center gap-2">
+          <h1 class="h4 fw-bold mb-0" id="pageHeading">Invoices</h1>
+          <span class="badge bg-secondary-subtle text-secondary border" id="docListCountBadge">0</span>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <button type="button" id="backToListBtn" class="btn btn-sm btn-outline-secondary d-none">&larr; All Invoices</button>
+          <button type="button" id="listNewDocBtn" class="btn btn-sm btn-primary">+ New Invoice</button>
+        </div>
+      </div>
+
+      <section id="docListSection" class="no-print mb-3"></section>
+
+      <div id="docEditorSection" class="d-none">
       <div id="modeBadge" class="mb-2 no-print"></div>
       <div id="paymentStatusBanner" class="mb-3 no-print d-none"></div>
       <!-- Company Header & Printable Invoice Document -->
@@ -54,7 +68,7 @@
             </div>
           </div>
           <div class="text-end">
-            <h1 class="doc-badge-title mb-0">INVOICE</h1>
+            <div class="doc-badge-title mb-0">INVOICE</div>
             <div class="doc-subtitle mt-1" id="docTitleHeader">Product Delivery</div>
             <div class="qr-block-wrap mt-2">
               <div id="qrContainer"></div>
@@ -317,6 +331,7 @@
         <button id="exportInvoiceBtn" class="btn btn-outline-secondary">📥 Download JSON</button>
         <button id="resetBtn" class="btn btn-outline-danger ms-auto">Reset</button>
       </div>
+      </div>
     </main>
 
     <!-- Client Onboarding Modal -->
@@ -469,6 +484,7 @@
     <script src="js/catalog.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/biller.js"></script>
+    <script src="js/doc-list.js"></script>
     <script src="js/invoice.js"></script>
   </body>
 </html>

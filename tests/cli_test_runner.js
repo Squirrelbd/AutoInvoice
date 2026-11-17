@@ -189,6 +189,7 @@ const coreFiles = [
   'js/utils.js',
   'js/catalog.js',
   'js/biller.js',
+  'js/doc-list.js',
   'js/receipt.js',
   'js/statement.js'
 ];

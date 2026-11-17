@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const docTitleInput = document.getElementById('docTitle');
   const docTitleHeader = document.getElementById('docTitleHeader');
   const linkedInvoiceEl = document.getElementById('linkedInvoice');
+  const linkedInvoiceInfoEl = document.getElementById('linkedInvoiceInfo');
+  const invoiceListEl = document.getElementById('invoiceList');
+  const pickInvoiceBtn = document.getElementById('pickInvoiceBtn');
   const vehicleNoEl = document.getElementById('vehicleNo');
   const driverInfoEl = document.getElementById('driverInfo');
   const packageCountEl = document.getElementById('packageCount');
@@ -19,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const qrContainer = document.getElementById('qrContainer');
   const addRowBtn = document.getElementById('addRowBtn');
   const partialDispatchBannerEl = document.getElementById('partialDispatchBanner');
+  let currentLinkedInvoiceFull = null;
 
   function renderPartialDispatchBanner(inv, excludeChNo) {
     if (!partialDispatchBannerEl) return;
@@ -104,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const duplicateChallanBtn = document.getElementById('duplicateChallanBtn');
   const LAST_CLIENT_KEY = 'ai_last_client_challan';
   let activeParams = parseQuery();
+  let _lastAppliedInvNo = '';
 
   function getDraftKey() {
     const num = (challanNumberEl ? challanNumberEl.value.trim() : '');
@@ -130,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const printAreaEl = document.getElementById('printArea');
   if (printAreaEl) {
     printAreaEl.addEventListener('input', () => { isDirty = true; });
+    printAreaEl.addEventListener('change', () => { isDirty = true; });
   }
   window.addEventListener('beforeunload', (e) => {
     if (isDirty) {
@@ -167,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     itemCatalog = AutoInvoiceCatalog.setupItemCatalog({
       datalistId: 'itemList',
       onItemPicked: (item) => {
+        isDirty = true;
         addRowFromData({
           name: item.name || '',
           desc: item.desc || '',
@@ -194,8 +201,155 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const debouncedRenderQR = debounce(() => renderQR(qrContainer, buildQRText()), 300);
 
-  (async function initChallanPage() {
-    const params = parseQuery();
+  async function populateInvoiceList() {
+    if (!invoiceListEl || typeof loadInvoices !== 'function') return;
+    try {
+      const local = loadInvoices();
+      let disk = [];
+      if (typeof loadDiskInvoicesSummaries === 'function') {
+        disk = await loadDiskInvoicesSummaries();
+        if (!disk.length && typeof autoDiscoverSummaries === 'function') {
+          disk = await autoDiscoverSummaries('invoices');
+        }
+      }
+      const byNo = new Map();
+      [...(local || []), ...(disk || [])].forEach(inv => {
+        if (inv.status === 'Void') return;
+        const no = inv.invoiceNumber || inv.number;
+        if (!no || byNo.has(no)) return;
+        byNo.set(no, inv);
+      });
+      invoiceListEl.innerHTML = '';
+      for (const [no, inv] of byNo.entries()) {
+        const opt = document.createElement('option');
+        opt.value = no;
+        opt.label = `${no} — ${(inv.client?.name || inv.title || '')} (${inv.date || ''})`;
+        invoiceListEl.appendChild(opt);
+      }
+    } catch (e) {
+      console.warn('Failed to populate challan invoice datalist', e);
+    }
+  }
+  populateInvoiceList();
+  window.addEventListener('storagesync', populateInvoiceList);
+
+  async function fetchInvoiceByNumber(no) {
+    let inv = typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(no) : null;
+    if (!inv && typeof getDiskInvoiceByNumber === 'function') {
+      try { inv = await getDiskInvoiceByNumber(no); } catch (e) {
+        console.warn('Failed to fetch disk invoice', no, e);
+      }
+    }
+    return inv;
+  }
+
+  function _hasManualChallanContent() {
+    if ((clientNameEl?.value || '').trim()) return true;
+    return Array.from(itemRowsEl.querySelectorAll('tr')).some(tr => {
+      const n = (tr.querySelector('.item-name-input')?.value || '').trim();
+      const d = (tr.querySelector('.item-desc-input')?.value || '').trim();
+      const q = parseFloat(String(tr.querySelector('.qty')?.value || '0').replace(/[^0-9.]/g, '')) || 0;
+      return !!(n || d || q > 0);
+    });
+  }
+
+  function applyInvoiceToChallan(inv, opts = {}) {
+    if (!inv) return false;
+    const invNo = inv.invoiceNumber || inv.number || '';
+    if (inv.status === 'Void') {
+      currentLinkedInvoiceFull = null;
+      if (linkedInvoiceInfoEl) linkedInvoiceInfoEl.textContent = `${invNo} is VOID — Cannot generate challan`;
+      if (linkedInvoiceEl) linkedInvoiceEl.classList.add('is-invalid');
+      if (typeof showToast === 'function') showToast(`Invoice ${invNo} is Void and cannot generate a challan.`, 'warning');
+      renderPartialDispatchBanner(null, '');
+      return false;
+    }
+
+    currentLinkedInvoiceFull = inv;
+    _lastAppliedInvNo = invNo;
+    if (linkedInvoiceEl) {
+      linkedInvoiceEl.value = invNo;
+      linkedInvoiceEl.classList.remove('is-invalid');
+    }
+    if (linkedInvoiceInfoEl) {
+      linkedInvoiceInfoEl.textContent = `${invNo} • ${inv.client?.name || ''} ${inv.title ? '• ' + inv.title : ''} • ${inv.date || ''}`.trim();
+    }
+
+    const shouldReplace = !opts.confirmReplace
+      || !_hasManualChallanContent()
+      || confirm(`Replace current challan client and items with remaining items from Invoice ${invNo}?`);
+
+    if (!shouldReplace) {
+      renderPartialDispatchBanner(inv, activeParams?.no || '');
+      syncPrintDisplayValues();
+      renderQR(qrContainer, buildQRText());
+      return true;
+    }
+
+    if (!activeParams?.no) {
+      const invBiller = (typeof getBillerById === 'function' && inv.billerId ? getBillerById(inv.billerId) : null) || inv.company;
+      if (invBiller && typeof setCompanyHeader === 'function') setCompanyHeader(invBiller);
+      if (challanNumberEl) challanNumberEl.value = peekNextChallanNumber(inv.billerId);
+    }
+
+    if (challanDateEl) {
+      challanDateEl.value = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
+    }
+    if (clientNameEl) clientNameEl.value = inv.client?.name || '';
+    const csEl = document.getElementById('clientSelect');
+    if (csEl) csEl.value = inv.client?.name || '';
+    if (deliveryAddressEl) deliveryAddressEl.value = inv.client?.address || '';
+    if (docTitleInput) docTitleInput.value = inv.title || '';
+    if (docTitleHeader) docTitleHeader.textContent = inv.title || '';
+
+    const ds = typeof getInvoiceDispatchStats === 'function' ? getInvoiceDispatchStats(inv, activeParams?.no || '') : null;
+    itemRowsEl.innerHTML = '';
+    if (ds && ds.challans.length > 0) {
+      const remainingItems = ds.items.filter(it => it.remainingQty > 0);
+      if (remainingItems.length > 0) {
+        remainingItems.forEach(it => {
+          addRowFromData({
+            name: it.name || '',
+            desc: it.desc || '',
+            qty: it.remainingQty,
+            unit: it.unit || 'Pcs'
+          });
+        });
+      } else {
+        addRow();
+        if (typeof showToast === 'function') {
+          showToast(`Invoice ${invNo} is already fully dispatched across prior challan(s).`, 'warning');
+        }
+      }
+    } else {
+      (inv.items || []).forEach(it => {
+        const catItem = (typeof getItemByName === 'function' && it.name) ? getItemByName(it.name) : null;
+        addRowFromData({
+          name: it.name || '',
+          desc: it.desc || '',
+          qty: it.qty || 1,
+          unit: it.unit || catItem?.unit || 'Pcs'
+        });
+      });
+      if (!(inv.items || []).length) addRow();
+    }
+
+    renderPartialDispatchBanner(inv, activeParams?.no || '');
+    renderQR(qrContainer, buildQRText());
+    syncPrintDisplayValues();
+    adjustColumnWidths();
+    return true;
+  }
+
+  async function loadEditorFromParams(p, navOpts) {
+    const params = p || {};
+    const preselectedInv = navOpts && navOpts._selectedInvoice;
+    activeParams = Object.assign({}, params);
+    _lastAppliedInvNo = '';
+    currentLinkedInvoiceFull = null;
+    if (linkedInvoiceEl) linkedInvoiceEl.classList.remove('is-invalid');
+    if (linkedInvoiceInfoEl) linkedInvoiceInfoEl.textContent = '';
+    if (typeof setCompanyHeader === 'function') setCompanyHeader();
     if (params.no) {
       let ch = getChallanByNumber(params.no);
       if (!ch && typeof getDiskChallanByNumber === 'function') {
@@ -223,8 +377,15 @@ document.addEventListener('DOMContentLoaded', () => {
           if (chBiller) setCompanyHeader(chBiller);
         }
         if (ch.linkedInvoice) {
-          const linkedInv = typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(ch.linkedInvoice) : null;
-          if (linkedInv) renderPartialDispatchBanner(linkedInv, ch.challanNumber);
+          _lastAppliedInvNo = ch.linkedInvoice;
+          const linkedInv = await fetchInvoiceByNumber(ch.linkedInvoice);
+          if (linkedInv) {
+            currentLinkedInvoiceFull = linkedInv;
+            renderPartialDispatchBanner(linkedInv, ch.challanNumber);
+            if (linkedInvoiceInfoEl) {
+              linkedInvoiceInfoEl.textContent = `${linkedInv.invoiceNumber || ch.linkedInvoice} • ${linkedInv.client?.name || ''} ${linkedInv.title ? '• ' + linkedInv.title : ''} • ${linkedInv.date || ''}`.trim();
+            }
+          }
         }
         const existingDraft = localStorage.getItem(`ai_challan_draft_${ch.challanNumber}`);
         if (existingDraft) {
@@ -272,60 +433,27 @@ document.addEventListener('DOMContentLoaded', () => {
         syncPrintDisplayValues();
         return;
       }
-    } else if (params.inv) {
-      let inv = getInvoiceByNumber(params.inv);
-      if (!inv && typeof getDiskInvoiceByNumber === 'function') {
-        try { inv = await getDiskInvoiceByNumber(params.inv); } catch (e) { }
-      }
+    } else if (params.inv || preselectedInv) {
+      updateModeBadge(false);
+      const inv = preselectedInv || await fetchInvoiceByNumber(params.inv);
       if (inv) {
-        const invBiller = (typeof getBillerById === 'function' && inv.billerId ? getBillerById(inv.billerId) : null) || inv.company;
-        if (invBiller) setCompanyHeader(invBiller);
-        challanNumberEl.value = peekNextChallanNumber(inv.billerId);
-        challanDateEl.value = inv.date || (typeof toLocalISODate === 'function' ? toLocalISODate() : '');
-        clientNameEl.value = inv.client?.name || '';
-        deliveryAddressEl.value = inv.client?.address || '';
-        if (docTitleInput) docTitleInput.value = inv.title || '';
-        if (docTitleHeader) docTitleHeader.textContent = inv.title || '';
-        if (linkedInvoiceEl) linkedInvoiceEl.value = inv.invoiceNumber || params.inv;
-        const ds = typeof getInvoiceDispatchStats === 'function' ? getInvoiceDispatchStats(inv) : null;
-        itemRowsEl.innerHTML = '';
-        if (ds && ds.challans.length > 0) {
-          const remainingItems = ds.items.filter(it => it.remainingQty > 0);
-          if (remainingItems.length > 0) {
-            remainingItems.forEach(it => {
-              addRowFromData({
-                name: it.name || '',
-                desc: it.desc || '',
-                qty: it.remainingQty,
-                unit: it.unit || 'Pcs'
-              });
-            });
-          } else {
-            addRow();
-            if (typeof showToast === 'function') {
-              showToast(`Invoice ${inv.invoiceNumber || params.inv} is already fully dispatched across prior challan(s).`, 'warning');
-            }
-          }
-        } else {
-          (inv.items || []).forEach(it => {
-            const catItem = (typeof getItemByName === 'function' && it.name) ? getItemByName(it.name) : null;
-            addRowFromData({
-              name: it.name || '',
-              desc: it.desc || '',
-              qty: it.qty || 1,
-              unit: it.unit || catItem?.unit || 'Pcs'
-            });
-          });
-        }
-        renderPartialDispatchBanner(inv, '');
-        renderQR(qrContainer, buildQRText());
-        updateModeBadge(false);
-        syncPrintDisplayValues();
+        applyInvoiceToChallan(inv, { confirmReplace: false });
         return;
       }
     }
 
     // New document flow
+    const csEl = document.getElementById('clientSelect');
+    if (csEl) csEl.value = '';
+    clientNameEl.value = '';
+    deliveryAddressEl.value = '';
+    if (docTitleInput) docTitleInput.value = '';
+    if (docTitleHeader) docTitleHeader.textContent = '';
+    if (linkedInvoiceEl) linkedInvoiceEl.value = '';
+    if (vehicleNoEl) vehicleNoEl.value = '';
+    if (driverInfoEl) driverInfoEl.value = '';
+    if (packageCountEl) packageCountEl.value = '';
+    renderPartialDispatchBanner(null, '');
     updateModeBadge(false);
     challanNumberEl.value = peekNextChallanNumber();
 
@@ -348,8 +476,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (packageCountEl && draft.logistics?.packageCount) packageCountEl.value = draft.logistics.packageCount;
             itemRowsEl.innerHTML = '';
             (draft.items || []).forEach(addRowFromData);
+            if (!(draft.items || []).length) addRow();
             renderQR(qrContainer, buildQRText());
             syncPrintDisplayValues();
+            isDirty = false;
             return;
           } else {
             clearDraft();
@@ -378,7 +508,8 @@ document.addEventListener('DOMContentLoaded', () => {
     addRow();
     renderQR(qrContainer, buildQRText());
     syncPrintDisplayValues();
-  })();
+    isDirty = false;
+  }
 
   // Toggle auto/manual numbering
   numberModeEl.addEventListener('change', () => {
@@ -408,16 +539,56 @@ document.addEventListener('DOMContentLoaded', () => {
   [linkedInvoiceEl, vehicleNoEl, driverInfoEl, packageCountEl].forEach(el => {
     if (el) el.addEventListener('input', syncPrintDisplayValues);
   });
+  async function handleLinkedInvoiceChange(e) {
+    if (!linkedInvoiceEl) return;
+    const no = linkedInvoiceEl.value.trim();
+    if (e && e.type === 'blur' && no === _lastAppliedInvNo) return;
+    _lastAppliedInvNo = no;
+    if (!no) {
+      currentLinkedInvoiceFull = null;
+      if (linkedInvoiceInfoEl) linkedInvoiceInfoEl.textContent = '';
+      linkedInvoiceEl.classList.remove('is-invalid');
+      renderPartialDispatchBanner(null, '');
+      if (!activeParams?.no) {
+        if (typeof setCompanyHeader === 'function') setCompanyHeader();
+        if (challanNumberEl) challanNumberEl.value = peekNextChallanNumber();
+        syncPrintDisplayValues();
+        renderQR(qrContainer, buildQRText());
+      }
+      return;
+    }
+    const inv = await fetchInvoiceByNumber(no);
+    if (!inv) {
+      currentLinkedInvoiceFull = null;
+      if (linkedInvoiceInfoEl) linkedInvoiceInfoEl.textContent = 'Invoice not found';
+      linkedInvoiceEl.classList.add('is-invalid');
+      renderPartialDispatchBanner(null, '');
+      return;
+    }
+    if (applyInvoiceToChallan(inv, { confirmReplace: true })) {
+      isDirty = true;
+    }
+  }
+
   if (linkedInvoiceEl) {
-    linkedInvoiceEl.addEventListener('change', () => {
-      const no = linkedInvoiceEl.value.trim();
-      const inv = no && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(no) : null;
-      renderPartialDispatchBanner(inv, activeParams?.no || '');
+    linkedInvoiceEl.addEventListener('change', handleLinkedInvoiceChange);
+    linkedInvoiceEl.addEventListener('blur', handleLinkedInvoiceChange);
+  }
+  if (pickInvoiceBtn && window.AutoInvoiceDocList && typeof window.AutoInvoiceDocList.openInvoicePicker === 'function') {
+    pickInvoiceBtn.addEventListener('click', () => {
+      window.AutoInvoiceDocList.openInvoicePicker({
+        mode: 'challan',
+        onSelect: (inv) => {
+          if (applyInvoiceToChallan(inv, { confirmReplace: true })) {
+            isDirty = true;
+          }
+        }
+      });
     });
   }
 
   if (addRowBtn) {
-    addRowBtn.addEventListener('click', () => addRow());
+    addRowBtn.addEventListener('click', () => { addRow(); isDirty = true; });
   }
 
   // Auto-save every 5s with draft isolation (only after user edits)
@@ -442,6 +613,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const record = buildChallanRecord();
     const validMsg = validateRecord(record);
     if (validMsg) { showToast(validMsg, 'warning'); return; }
+    const linkedInvNoCheck = (record.linkedInvoice || '').trim();
+    const linkedInvCheck = linkedInvNoCheck && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(linkedInvNoCheck) : null;
+    if (linkedInvCheck && linkedInvCheck.status === 'Void') {
+      showToast(`Invoice ${linkedInvNoCheck} is Void and cannot accept challans.`, 'danger');
+      if (linkedInvoiceEl) linkedInvoiceEl.classList.add('is-invalid');
+      return;
+    }
     saveChallan(record);
     localStorage.setItem(LAST_CLIENT_KEY, JSON.stringify(record.client));
     finalizeChallanNumber(record.challanNumber, record.billerId);
@@ -500,11 +678,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (duplicateChallanBtn) {
     duplicateChallanBtn.addEventListener('click', () => {
-      const nextNo = peekNextChallanNumber();
+      activeParams = {}; // switch to fresh draft scope
+      const linkedInvNo = linkedInvoiceEl ? linkedInvoiceEl.value.trim() : '';
+      const linkedInvObj = (linkedInvNo && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(linkedInvNo) : null)
+        || (currentLinkedInvoiceFull && (currentLinkedInvoiceFull.invoiceNumber === linkedInvNo || currentLinkedInvoiceFull.number === linkedInvNo) ? currentLinkedInvoiceFull : null);
+      const targetBillerId = linkedInvObj?.billerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
+      const targetBiller = (typeof getBillerById === 'function' && targetBillerId ? getBillerById(targetBillerId) : null) || linkedInvObj?.company;
+      if (typeof setCompanyHeader === 'function') setCompanyHeader(targetBiller || undefined);
+      const nextNo = peekNextChallanNumber(targetBillerId);
       challanNumberEl.value = nextNo;
       const today = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
       challanDateEl.value = today;
-      activeParams = {}; // switch to fresh draft scope
       clearDraft();
       updateModeBadge(false);
       isDirty = true;
@@ -534,9 +718,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return challanNumberEl?.value || 'Challan';
     });
   }
-  if (typeof runAutoPrintIfRequested === 'function') {
-    runAutoPrintIfRequested(prepareForPrint);
-  }
   resetBtn.addEventListener('click', () => {
     if (confirm('Clear all fields?')) {
       const csEl = document.getElementById('clientSelect');
@@ -545,7 +726,14 @@ document.addEventListener('DOMContentLoaded', () => {
       deliveryAddressEl.value = '';
       if (docTitleInput) docTitleInput.value = '';
       if (docTitleHeader) docTitleHeader.textContent = '';
-      if (linkedInvoiceEl) linkedInvoiceEl.value = '';
+      if (linkedInvoiceEl) {
+        linkedInvoiceEl.value = '';
+        linkedInvoiceEl.classList.remove('is-invalid');
+      }
+      if (linkedInvoiceInfoEl) linkedInvoiceInfoEl.textContent = '';
+      _lastAppliedInvNo = '';
+      currentLinkedInvoiceFull = null;
+      renderPartialDispatchBanner(null, '');
       if (vehicleNoEl) vehicleNoEl.value = '';
       if (driverInfoEl) driverInfoEl.value = '';
       if (packageCountEl) packageCountEl.value = '';
@@ -555,7 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
       isDirty = false;
       activeParams = {};
       if (typeof history !== 'undefined' && window.location.search) {
-        try { history.replaceState(null, '', window.location.pathname); } catch (_) { }
+        try { history.replaceState(null, '', '?new=1'); } catch (_) { }
       }
       if (challanNumberEl) challanNumberEl.value = peekNextChallanNumber();
       renderQR(qrContainer, buildQRText());
@@ -704,6 +892,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('Are you sure you want to remove this item row?')) return;
       }
       tr.remove();
+      isDirty = true;
       debouncedRenderQR();
       adjustColumnWidths();
     });
@@ -734,10 +923,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function _resolveChallanBiller() {
     const existingCh = challanNumberEl.value ? getChallanByNumber(challanNumberEl.value) : null;
     const linkedInvNo = linkedInvoiceEl ? linkedInvoiceEl.value.trim() : '';
-    const linkedInvObj = linkedInvNo && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(linkedInvNo) : null;
+    const linkedInvObj = (linkedInvNo && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(linkedInvNo) : null)
+      || (currentLinkedInvoiceFull && (currentLinkedInvoiceFull.invoiceNumber === linkedInvNo || currentLinkedInvoiceFull.number === linkedInvNo) ? currentLinkedInvoiceFull : null);
     const bId = existingCh?.billerId || linkedInvObj?.billerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
     const biller = (typeof getBillerById === 'function' && bId ? getBillerById(bId) : null)
       || existingCh?.company
+      || linkedInvObj?.company
       || (typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {}));
     return { existingCh, linkedInvNo, bId, biller };
   }
@@ -870,4 +1061,39 @@ document.addEventListener('DOMContentLoaded', () => {
     syncPrintDisplayValues();
     renderQR(qrContainer, buildQRText());
   });
+
+  if (window.AutoInvoiceDocList && typeof window.AutoInvoiceDocList.connectWorkspace === 'function') {
+    window.AutoInvoiceDocList.connectWorkspace({
+      type: 'challan',
+      getRecords: () => (typeof loadChallans === 'function' ? loadChallans() : []),
+      loadDiskSummaries: typeof loadDiskChallansSummaries === 'function'
+        ? async () => {
+          let r = await loadDiskChallansSummaries();
+          if (!r.length && typeof autoDiscoverSummaries === 'function') r = await autoDiscoverSummaries('challans');
+          return r;
+        }
+        : null,
+      isDirty: () => isDirty,
+      resetDirty: () => { isDirty = false; },
+      hasEditorParams: (p) => !!(p && (p.new === '1' || p.new === 'true' || p.no || p.ch || p.inv || p.qtn || p.id || p.load || p.autoprint === '1')),
+      loadEditor: async (p, navOpts) => { await loadEditorFromParams(p, navOpts); },
+      onEnterList: () => { clearDraft(); activeParams = {}; currentLinkedInvoiceFull = null; },
+      onGenerateFromInvoice: async (inv, ctx) => {
+        if (!inv) return;
+        await ctx.openEditor({ inv: inv.invoiceNumber || inv.number }, { _selectedInvoice: inv });
+      },
+      onAfterMutate: (no, action) => {
+        if (action === 'delete' && activeParams?.no === no) activeParams = {};
+      },
+      afterFirstLoad: () => {
+        if (typeof runAutoPrintIfRequested === 'function') {
+          runAutoPrintIfRequested(prepareForPrint);
+        }
+      }
+    });
+  } else {
+    loadEditorFromParams(parseQuery()).then(() => {
+      if (typeof runAutoPrintIfRequested === 'function') runAutoPrintIfRequested(prepareForPrint);
+    });
+  }
 });

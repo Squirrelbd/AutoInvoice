@@ -201,7 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isNaN(minAmtQ)) okAmount = okAmount && (amt >= minAmtQ);
         if (!isNaN(maxAmtQ)) okAmount = okAmount && (amt <= maxAmtQ);
       } else if (rec.__type === 'invoice') {
-        const amt = Number(rec.grandTotal || 0) || 0;
+        const stats = rec.status === 'Void' ? null : getInvoicePaymentStats(rec);
+        const amt = stats ? stats.total : (Number(rec.grandTotal || 0) || 0);
         if (!isNaN(minAmtQ)) okAmount = okAmount && (amt >= minAmtQ);
         if (!isNaN(maxAmtQ)) okAmount = okAmount && (amt <= maxAmtQ);
       }
@@ -279,13 +280,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const bObj = (typeof getBillerById === 'function' ? getBillerById(rec.billerId || 'biller_default') : null);
       const bName = bObj?.name || (rec.company?.name || 'Default');
       let amt = 0;
-      if (rec.__type === 'invoice' || rec.__type === 'quotation') amt = rec.grandTotal || 0;
-      else if (rec.__type === 'receipt') amt = rec.amount || 0;
+      let invStats = null;
+      if (rec.__type === 'invoice') {
+        invStats = rec.status === 'Void' ? null : getInvoicePaymentStats(rec);
+        amt = invStats ? invStats.total : (rec.grandTotal || 0);
+      } else if (rec.__type === 'quotation') {
+        amt = rec.grandTotal || 0;
+      } else if (rec.__type === 'receipt') {
+        amt = rec.amount || 0;
+      }
       let status = 'Recorded';
       if (rec.status === 'Void') {
         status = 'Void';
       } else if (rec.__type === 'invoice') {
-        const stats = getInvoicePaymentStats(rec);
+        const stats = invStats || getInvoicePaymentStats(rec);
         status = stats.isOverdue ? 'Overdue' : stats.status;
       } else if (rec.__type === 'quotation') {
         const qStats = typeof getQuotationStatus === 'function' ? getQuotationStatus(rec) : null;
@@ -320,8 +328,16 @@ document.addEventListener('DOMContentLoaded', () => {
               : rec.__type === 'quotation' ? ((rec.quotationNumber || rec.number) || '')
                 : '';
 
+        const isVoid = rec.status === 'Void';
+        const invStatsRow = (rec.__type === 'invoice' && !isVoid) ? getInvoicePaymentStats(rec) : null;
         let amtDisplay = '—';
-        if (rec.__type === 'invoice' || rec.__type === 'quotation') {
+        if (rec.__type === 'invoice') {
+          const effAmt = invStatsRow ? invStatsRow.total : (rec.grandTotal || 0);
+          amtDisplay = formatBDT(effAmt);
+          if (invStatsRow && Math.abs(invStatsRow.adjustmentAmount || 0) > 0) {
+            amtDisplay += ` (Orig: ${formatBDT(invStatsRow.originalTotal)})`;
+          }
+        } else if (rec.__type === 'quotation') {
           amtDisplay = formatBDT(rec.grandTotal || 0);
         } else if (rec.__type === 'receipt') {
           amtDisplay = formatBDT(rec.amount || 0);
@@ -330,13 +346,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const bObj = (typeof getBillerById === 'function' ? getBillerById(rec.billerId || 'biller_default') : null);
         const bName = bObj?.name || (rec.company?.name || 'Default');
         const bColor = bObj?.themeColor || '#0b3969';
-        const isVoid = rec.status === 'Void';
 
         let statusBadge = '';
         if (isVoid) {
           statusBadge = '<span class="badge bg-dark">Void</span>';
         } else if (rec.__type === 'invoice') {
-          const stats = getInvoicePaymentStats(rec);
+          const stats = invStatsRow || getInvoicePaymentStats(rec);
           if (stats.isOverdue) {
             statusBadge = '<span class="badge bg-danger">Overdue</span>';
           } else if (stats.status === 'Paid') {
@@ -892,14 +907,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const bObj = typeof getBillerById === 'function' ? getBillerById(rc.billerId || 'biller_default') : null;
       const bName = bObj?.name || (rc.company?.name || 'Default');
       const rcNum = rc.receiptNumber || rc.number || '';
+      const effCredit = roundBDT(rc._effectiveCredit != null ? rc._effectiveCredit : (rc.amount || 0));
+      let adjTxt = '';
+      if (rc._adjAmt) {
+        adjTxt = rc._adjAmt < 0
+          ? ` [Surcharge Adj: +${formatBDT(Math.abs(rc._adjAmt))}]`
+          : ` [Adj: ${formatBDT(rc._adjAmt)}]`;
+      }
       timeline.push({
         date: rc.date || '',
         type: 'Receipt',
         ref: rcNum,
         biller: bName,
-        desc: `Payment Received (${rc.paymentMethod || 'Cash'})${rc.invoiceNumber ? ` for ${rc.invoiceNumber}` : ''}${rc._adjAmt ? ` [Adj: ${formatBDT(rc._adjAmt)}]` : ''}`,
-        debit: 0,
-        credit: roundBDT(rc._effectiveCredit != null ? rc._effectiveCredit : (rc.amount || 0))
+        desc: `Payment Received (${rc.paymentMethod || 'Cash'})${rc.invoiceNumber ? ` for ${rc.invoiceNumber}` : ''}${adjTxt}`,
+        debit: effCredit < 0 ? roundBDT(Math.abs(effCredit)) : 0,
+        credit: effCredit >= 0 ? effCredit : 0
       });
     });
 

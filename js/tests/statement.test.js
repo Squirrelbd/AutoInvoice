@@ -180,3 +180,71 @@ test('computeClientStatementData excludes Void docs and prevents double-counting
   const t3 = ok(bCredit === 500, `toDate cutoff keeps Sep-05 adjustment (400+100=500, got ${bCredit})`);
   return [t1, t2, t3];
 });
+
+test('StatementEngine handles cumulative editable adjustments and upward surcharges cleanly', () => {
+  saveInvoice({ invoiceNumber: 'INV-SUR-1', date: '2026-11-01', client: { name: 'Surcharge Co' }, grandTotal: 1000 });
+  saveReceipt({
+    receiptNumber: 'RCPT-SUR-1',
+    date: '2026-11-02',
+    invoiceNumber: 'INV-SUR-1',
+    client: { name: 'Surcharge Co' },
+    paymentMethod: 'Cash',
+    amount: 100,
+    adjustment: { applied: true, reason: 'Agreed Invoice Revision', amount: -200, originalTotal: 1000, adjustedTotal: 1200, timestamp: '2026-11-02T10:00:00Z', method: 'editable_total' }
+  });
+  const d1 = computeClientStatementData({ clientName: 'Surcharge Co' });
+  const rcRow = window.StatementEngine.buildReceiptStatementRow(d1.periodReceipts[0]);
+  const invDebit1 = d1.periodInvoices.reduce((s, i) => roundBDT(s + i._effectiveTotal), 0);
+  const netBal1 = roundBDT(d1.openingBalance + invDebit1 + rcRow.debit - rcRow.credit);
+  const t1 = ok(rcRow.debit === 100 && rcRow.credit === 0 && rcRow.desc.includes('Surcharge Adj') && netBal1 === 1100, `Partial receipt under +200 surcharge shows positive Debit 100 and balance 1100 (got debit=${rcRow.debit}, bal=${netBal1})`);
+
+  saveReceipt({
+    receiptNumber: 'RCPT-SUR-2',
+    date: '2026-11-03',
+    invoiceNumber: 'INV-SUR-1',
+    client: { name: 'Surcharge Co' },
+    paymentMethod: 'Bank Transfer',
+    amount: 1100,
+    adjustment: { applied: true, reason: 'Agreed Invoice Revision', amount: -200, originalTotal: 1000, adjustedTotal: 1200, timestamp: '2026-11-03T10:00:00Z', method: 'editable_total' }
+  });
+  const d2 = computeClientStatementData({ clientName: 'Surcharge Co' });
+  const rows2 = d2.periodReceipts.map(r => window.StatementEngine.buildReceiptStatementRow(r));
+  const invDebit2 = d2.periodInvoices.reduce((s, i) => roundBDT(s + i._effectiveTotal), 0);
+  const netBal2 = roundBDT(d2.openingBalance + invDebit2 + rows2.reduce((s, r) => roundBDT(s + r.debit - r.credit), 0));
+  const t2 = ok(netBal2 === 0, `Final settlement of surcharged invoice zeroes closing balance (got ${netBal2})`);
+
+  // Downward cumulative installments (10000 -> 8500 across 2 receipts, then restored back to 10000 in 3rd receipt)
+  saveInvoice({ invoiceNumber: 'INV-CUM-1', date: '2026-11-01', client: { name: 'Cum Co' }, grandTotal: 10000 });
+  saveReceipt({
+    receiptNumber: 'RCPT-CUM-1',
+    date: '2026-11-02',
+    invoiceNumber: 'INV-CUM-1',
+    client: { name: 'Cum Co' },
+    amount: 4000,
+    adjustment: { applied: true, amount: 1500, originalTotal: 10000, adjustedTotal: 8500, timestamp: '2026-11-02T10:00:00Z', method: 'editable_total' }
+  });
+  saveReceipt({
+    receiptNumber: 'RCPT-CUM-2',
+    date: '2026-11-03',
+    invoiceNumber: 'INV-CUM-1',
+    client: { name: 'Cum Co' },
+    amount: 4500,
+    adjustment: { applied: true, amount: 1500, originalTotal: 10000, adjustedTotal: 8500, timestamp: '2026-11-03T10:00:00Z', method: 'editable_total' }
+  });
+  const dc1 = computeClientStatementData({ clientName: 'Cum Co' });
+  const cr1 = dc1.periodReceipts.reduce((s, r) => roundBDT(s + r._effectiveCredit), 0);
+  const t3 = ok(cr1 === 10000, `Downward cumulative adjustments credit 1500 once (4000+4500+1500=10000, got ${cr1})`);
+
+  saveReceipt({
+    receiptNumber: 'RCPT-CUM-3',
+    date: '2026-11-04',
+    invoiceNumber: 'INV-CUM-1',
+    client: { name: 'Cum Co' },
+    amount: 1000,
+    adjustment: { applied: true, amount: 0, originalTotal: 10000, adjustedTotal: 10000, timestamp: '2026-11-04T10:00:00Z', method: 'editable_total' }
+  });
+  const dc2 = computeClientStatementData({ clientName: 'Cum Co' });
+  const cr2 = dc2.periodReceipts.reduce((s, r) => roundBDT(s + r._effectiveCredit), 0);
+  const t4 = ok(cr2 === 9500, `Adjustment removal overrides prior 1500 credit (4000+4500+1000=9500, got ${cr2})`);
+  return [t1, t2, t3, t4];
+});
