@@ -1,23 +1,23 @@
 # Graph Report - AutoInvoice  (2026-11-18)
 
 ## Corpus Check
-- 116 files · ~411,096 words
+- 116 files · ~412,016 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 12 file(s) not represented in the graph (top: (none) 6, .css 3, .db 1)
 
 ## Summary
-- 1911 nodes · 3005 edges · 116 communities (86 shown, 30 thin omitted)
+- 1912 nodes · 3011 edges · 115 communities (88 shown, 27 thin omitted)
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 202 edges (avg confidence: 0.91)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f3eccdc0`
+- Built from commit: `67901c86`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - bootstrap.bundle.min.js
-- Es
+- runSearch
 - catalog.js
 - :arrows_counterclockwise: Your Workflow Process
 - storage.js
@@ -93,9 +93,8 @@
 - extraction-spec.md
 - workflows/graphify.md
 - AutoInvoice (Bangladesh Format)
-- us
+- AutoInvoice v2.5 — Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)
 - sqlite_db.test.js
-- 📄 2. PDF Generation Options & Generated PDF Visual Inspection
 - or
 - Product Sprint Prioritizer Agent
 - ðŸ“’ Bookkeeper & Controller Agent
@@ -114,8 +113,8 @@
 - Workflow: AutoInvoice Implementation (`/implement`)
 - Jn
 - escapeHTML
-- Implementation Rules
-- AutoInvoice Test Suite
+- Workflow: AutoInvoice Planning (`/plan`)
+- 🧪 Test Architecture & Isolation
 - AutoInvoice Reality Checker & Finish Gatekeeper
 - AutoInvoice Test Automation & QA Evidence Engineer
 - Project State
@@ -148,11 +147,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (116 total, 30 thin omitted)
+## Communities (115 total, 27 thin omitted)
 
 ### Community 0 - "bootstrap.bundle.min.js"
-Cohesion: 0.07
-Nodes (53): Ae(), be(), Ce(), D(), De(), di(), $e(), Ee() (+45 more)
+Cohesion: 0.06
+Nodes (55): Ae(), be(), Ce(), D(), De(), di(), $e(), Ee() (+47 more)
+
+### Community 1 - "runSearch"
+Cohesion: 0.26
+Nodes (9): [2.2.0] - 2026-10-23, ♿ Accessibility & UI Consistency, 🪚 Ponytail Minimalism & Codebase Pruning, badgeColorStyle(), buildReports(), buildRevenueBreakdown(), populateStatementClients(), renderClientStatement() (+1 more)
 
 ### Community 2 - "catalog.js"
 Cohesion: 0.38
@@ -165,6 +168,10 @@ Nodes (43): Agent Collaboration Protocol, :arrows_counterclockwise: Learning & M
 ### Community 4 - "storage.js"
 Cohesion: 0.07
 Nodes (102): Architectural Responsibilities, AutoInvoice Systems & UX Architect, 🚦 1. Executive Summary & Automated Test Baseline, 🔴 3. Critical & High-Severity Data-Driven QA/QC Defects, 🎨 4. UI/UX, Accessibility & New Feature Summary, 🏛️ AutoInvoice v2.5.0 — Data-Driven QA/QC, UI/UX, PDF Output & Feature Audit Report, [2.0.0] - 2026-10-08, 🚀 Bangladeshi Commercial Features (Phase 4) (+94 more)
+
+### Community 5 - "xt"
+Cohesion: 0.09
+Nodes (3): Es, parents(), xt
 
 ### Community 8 - "invoice.js"
 Cohesion: 0.18
@@ -187,12 +194,12 @@ Cohesion: 0.05
 Nodes (37): 🚀 Advanced Pipeline Capabilities, AgentsOrchestrator Agent Personality, Autonomous Operation, 🤖 Available Specialist Agents, Completion Summary Template, Context-Aware Agent Spawning, 🚨 Critical Rules You Must Follow, 🎨 Design & UX Agents (+29 more)
 
 ### Community 15 - "challan.js"
-Cohesion: 0.21
+Cohesion: 0.22
 Nodes (21): addRow(), addRowFromData(), adjustColumnWidths(), applyInvoiceToChallan(), attachRowEvents(), buildChallanRecord(), buildQRText(), clearDraft() (+13 more)
 
 ### Community 16 - "db.js"
-Cohesion: 0.10
-Nodes (39): 🛡️ Data Integrity, SQLite Sync & Security Hardening (Phase 1), 🛡️ Security, Persistence & Test Isolation, ALLOWED_TABLES, clearAllTables(), DB_DIR, deleteRecord(), fs, getAll() (+31 more)
+Cohesion: 0.09
+Nodes (45): [1.0.0] - 2025-06-25, [2.1.0] - 2026-10-08, [2.3.0] - 2026-10-23, [2.5.0] - 2026-11-17, [2.6.0] - 2026-11-17, 🚀 Added, 📊 Advanced Reports & Enhanced Downloads, 🚀 Bangladeshi Commercial Features & Workflows (+37 more)
 
 ### Community 17 - "W"
 Cohesion: 0.14
@@ -287,8 +294,8 @@ Cohesion: 0.11
 Nodes (17): 🚀 Advanced Capabilities, CI: Sharded, Traced, Merge-Blocking (GitHub Actions), 🚨 Critical Rules You Must Follow, Deterministic Playwright Test (No Sleeps, API Setup, Role Selectors), Flake Triage Table, Framework Depth, 🔄 Learning & Memory, Suite Operations at Scale (+9 more)
 
 ### Community 48 - "remove"
-Cohesion: 0.18
-Nodes (3): d(), on(), remove()
+Cohesion: 0.17
+Nodes (4): getElementFromSelector(), d(), on(), remove()
 
 ### Community 49 - "Project Manager Agent Personality"
 Cohesion: 0.14
@@ -307,8 +314,8 @@ Cohesion: 0.18
 Nodes (10): 🔴 Blockers (Must Fix), Code Reviewer Agent, 💬 Communication Style, 🔧 Critical Rules, 💭 Nits (Nice to Have), 📋 Review Checklist, 📝 Review Comment Format, 🟡 Suggestions (Should Fix) (+2 more)
 
 ### Community 53 - "expenses.js"
-Cohesion: 0.07
-Nodes (35): [1.0.0] - 2025-06-25, [2.1.0] - 2026-10-08, [2.2.0] - 2026-10-23, [2.3.0] - 2026-10-23, [2.5.0] - 2026-11-17, [2.6.0] - 2026-11-17, ♿ Accessibility & UI Consistency, 🚀 Added (+27 more)
+Cohesion: 0.25
+Nodes (12): 💰 Financial Accuracy & Multi-Biller Accounting (Phase 2), getFilteredExpenses(), openEditExpenseModal(), openNewExpenseModal(), populateBillerDropdowns(), populateCategoryDropdowns(), populatePayeeDatalist(), refreshExpensesUI() (+4 more)
 
 ### Community 54 - "biller.js"
 Cohesion: 0.51
@@ -335,8 +342,8 @@ Cohesion: 0.22
 Nodes (8): Boundaries, Intensity, Output, Persistence, Ponytail, Rules, The ladder, When NOT to be lazy
 
 ### Community 60 - "doc-list.js"
-Cohesion: 0.21
-Nodes (26): _buildBillerMap(), _buildContext(), connectWorkspace(), enterList(), isEditorVisible(), openEditor(), showEditor(), enrichRecord() (+18 more)
+Cohesion: 0.20
+Nodes (27): _buildBillerMap(), _buildContext(), connectWorkspace(), enterList(), isEditorVisible(), openEditor(), showEditor(), enrichRecord() (+19 more)
 
 ### Community 62 - "Ponytail Help"
 Cohesion: 0.25
@@ -347,8 +354,8 @@ Cohesion: 0.07
 Nodes (29): Advanced Secure Code Review, Application Security Engineer, Code Review Standards, Compliance as Code, Dependency Vulnerability Management, Developer Security Education, Development Practices, OWASP Top 10 Secure Coding Patterns (+21 more)
 
 ### Community 64 - "roundBDT"
-Cohesion: 0.17
-Nodes (20): AutoInvoice Commercial Documents & Financial Specialist, Domain Standards, 🟡 Architecture & Code Quality (Phase 3), 🛡️ Security & Mathematical Precision, 🧮 5. Financial Math & Precision Standards, formatBDT(), numberToWordsBDT(), integerToWords() (+12 more)
+Cohesion: 0.14
+Nodes (24): AutoInvoice Commercial Documents & Financial Specialist, Domain Standards, AutoInvoice Surgical Implementation Specialist, Implementation Rules, 2. Ponytail Minimalism Gate, 🟡 Architecture & Code Quality (Phase 3), 🛡️ Security & Mathematical Precision, 🧮 5. Financial Math & Precision Standards (+16 more)
 
 ### Community 66 - "ref_fs"
 Cohesion: 0.33
@@ -398,13 +405,13 @@ Nodes (3): Boundaries, Output, Scan
 Cohesion: 0.14
 Nodes (13): 1. Document Generation Suite, 4. Standardized QR Code Verification, 5. Modern UI, UX & Accessibility, 6. Precision Print & PDF Output (`css/print.css`), AutoInvoice (Bangladesh Format), 🏢 Company & Brand Customization, 🚀 How to Run, 🌟 Key Features (+5 more)
 
+### Community 88 - "AutoInvoice v2.5 — Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)"
+Cohesion: 0.22
+Nodes (8): AutoInvoice v2.5 — Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features), 📦 Phase 1: Critical SQLite Sync, Backup & Data-Loss Immunity, 🧮 Phase 2: Financial Math, Multi-Biller Isolation, Accounting & Ponytail Deduplication, 🎨 Phase 3: UI/UX Polish & Print CSS (`@media print`) Hardening, 🚀 Phase 4: Bangladeshi Commercial Features & 5-Gate QC Verification, 🎯 Scope & Objectives, Tasks, Tasks
+
 ### Community 89 - "sqlite_db.test.js"
 Cohesion: 0.06
 Nodes (30): ref_assert, allClients, allItems, assert, billerDump, db, deletedExp, deletedInv (+22 more)
-
-### Community 90 - "📄 2. PDF Generation Options & Generated PDF Visual Inspection"
-Cohesion: 0.33
-Nodes (6): 📄 2. PDF Generation Options & Generated PDF Visual Inspection, Empirical Defects Verified in Generated A4 PDFs (Chrome `Page.printToPDF`), Print & PDF Trigger Audit, Recommended PDF Architecture, setPrintDocumentTitle(), slugify()
 
 ### Community 92 - "or"
 Cohesion: 0.07
@@ -447,8 +454,8 @@ Cohesion: 0.15
 Nodes (12): 1. Domain Discovery, 2. Domain Modeling Guidance, 3. Architecture Selection, 4. Dependency & Boundary Rules, 5. Quality Attribute Analysis, 📋 Architecture Decision Record Template, 💬 Communication Style, 🔧 Critical Rules (+4 more)
 
 ### Community 103 - "utils.js"
-Cohesion: 0.17
-Nodes (17): 💰 Financial Accuracy & Date Normalization, addWorkingDaysLocal(), buildPrintableHtmlSnapshot(), checkPdfEndpointAvailable(), downloadCSV(), downloadRenderedPdf(), formatDisplayDate(), generateSharePayload() (+9 more)
+Cohesion: 0.15
+Nodes (19): 💰 Financial Accuracy & Date Normalization, addWorkingDaysLocal(), buildPrintableHtmlSnapshot(), checkPdfEndpointAvailable(), downloadCSV(), downloadRenderedPdf(), formatDisplayDate(), generateSharePayload() (+11 more)
 
 ### Community 105 - "Core Requirements"
 Cohesion: 0.29
@@ -472,19 +479,19 @@ Nodes (5): 1. Surgical Implementation, 2. Knowledge Graph Sync, 3. Automated Dev
 
 ### Community 110 - "Jn"
 Cohesion: 0.06
-Nodes (5): focusableChildren(), H, Jn, sn, ui()
+Nodes (5): focusableChildren(), H, Jn, sn, st
 
 ### Community 111 - "escapeHTML"
-Cohesion: 0.27
-Nodes (9): AutoInvoice Quality Control (QC) & Security Auditor, Classification, QC Audit Checklist, escapeAttr(), escapeHTML(), renderBillerSignature(), renderRemittanceBlock(), setCompanyHeader() (+1 more)
-
-### Community 112 - "Implementation Rules"
 Cohesion: 0.18
-Nodes (9): AutoInvoice Surgical Implementation Specialist, Implementation Rules, 1. Graphify Knowledge Graph Discovery, 2. Ponytail Minimalism Gate, 3. Guardrail & Impact Check, 4. Phased Task Breakdown, Workflow: AutoInvoice Planning (`/plan`), buildQRPayload() (+1 more)
+Nodes (13): AutoInvoice Quality Control (QC) & Security Auditor, Classification, QC Audit Checklist, 📄 2. PDF Generation Options & Generated PDF Visual Inspection, Empirical Defects Verified in Generated A4 PDFs (Chrome `Page.printToPDF`), Print & PDF Trigger Audit, Recommended PDF Architecture, escapeAttr() (+5 more)
 
-### Community 113 - "AutoInvoice Test Suite"
-Cohesion: 0.50
-Nodes (3): AutoInvoice Test Suite, 🚀 How to Run Tests, In Any Browser
+### Community 112 - "Workflow: AutoInvoice Planning (`/plan`)"
+Cohesion: 0.40
+Nodes (4): 1. Graphify Knowledge Graph Discovery, 3. Guardrail & Impact Check, 4. Phased Task Breakdown, Workflow: AutoInvoice Planning (`/plan`)
+
+### Community 113 - "🧪 Test Architecture & Isolation"
+Cohesion: 0.40
+Nodes (4): AutoInvoice Test Suite, 🚀 How to Run Tests, In Any Browser, 🧪 Test Architecture & Isolation
 
 ### Community 116 - "AutoInvoice Test Automation & QA Evidence Engineer"
 Cohesion: 0.50
@@ -497,22 +504,22 @@ Nodes (3): Current Position, Project State, Verification Summary
 ## Knowledge Gaps
 - **791 isolated node(s):** `path`, `fs`, `DB_DIR`, `ALLOWED_TABLES`, `COMPANY` (+786 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1001 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **30 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **27 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `roundBDT()` connect `roundBDT` to `storage.js`, `utils.js`, `AutoInvoice Planning & Task Breakdown Specialist`, `Workflow: AutoInvoice Quality Control (`/qc`)`, `Milestone v2.4: Multi-Biller, Statements, Expenses, SQLite & Full QC Suite`, `Workflow: AutoInvoice Implementation (`/implement`)`, `escapeHTML`, `Implementation Rules`, `AutoInvoice Reality Checker & Finish Gatekeeper`, `AutoInvoice Developer & Architecture Guide`, `Agency Agents & Subagents Framework`, `AGENTS.md — AutoInvoice Agent Operating Guide`?**
-  _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `🛡️ Security, Persistence & Test Isolation` connect `db.js` to `server.js`, `storage.js`, `expenses.js`, `utils.js`?**
+- **Why does `roundBDT()` connect `roundBDT` to `storage.js`, `utils.js`, `AutoInvoice Planning & Task Breakdown Specialist`, `Workflow: AutoInvoice Quality Control (`/qc`)`, `Milestone v2.4: Multi-Biller, Statements, Expenses, SQLite & Full QC Suite`, `Workflow: AutoInvoice Implementation (`/implement`)`, `escapeHTML`, `Workflow: AutoInvoice Planning (`/plan`)`, `🧪 Test Architecture & Isolation`, `AutoInvoice Reality Checker & Finish Gatekeeper`, `AutoInvoice Developer & Architecture Guide`, `Agency Agents & Subagents Framework`, `AGENTS.md — AutoInvoice Agent Operating Guide`?**
+  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+- **Why does `🛡️ Security, Persistence & Test Isolation` connect `db.js` to `server.js`, `storage.js`, `utils.js`?**
   _High betweenness centrality (0.009) - this node is a cross-community bridge._
-- **Why does `🔴 3. Critical & High-Severity Data-Driven QA/QC Defects` connect `storage.js` to `server.js`, `records.js`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **Why does `Tasks` connect `escapeHTML` to `roundBDT`, `runSearch`, `utils.js`, `expenses.js`, `AutoInvoice v2.5 — Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)`?**
+  _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **Are the 26 inferred relationships involving `roundBDT()` (e.g. with `🤖 3. Project Subagents (`.agents/agents/`)` and `🛡️ 6. Core Development Guardrails`) actually correct?**
   _`roundBDT()` has 26 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `path`, `fs`, `DB_DIR` to the rest of the system?**
   _791 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `bootstrap.bundle.min.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.07199297629499561 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05740740740740741 - nodes in this community are weakly interconnected._
 - **Should `:arrows_counterclockwise: Your Workflow Process` be split into smaller, more focused modules?**
   _Cohesion score 0.045454545454545456 - nodes in this community are weakly interconnected._

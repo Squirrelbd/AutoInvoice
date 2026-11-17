@@ -673,6 +673,22 @@ html[data-bs-theme="dark"] .input-group-text {
     border-color: rgba(255, 255, 255, 0.1) !important;
   }
 
+  html[data-bs-theme="dark"] .table-success.receipt-amount-row,
+  html[data-bs-theme="dark"] .table-success.receipt-amount-row td {
+    --bs-table-bg: #0f392b !important;
+    background-color: #0f392b !important;
+    color: #4ade80 !important;
+  }
+
+  html[data-bs-theme="dark"] .table-success.receipt-amount-row .text-success {
+    color: #4ade80 !important;
+  }
+
+  html[data-bs-theme="dark"] .table-success.receipt-amount-row #receiptPaymentModeDesc,
+  html[data-bs-theme="dark"] .table-success.receipt-amount-row .text-muted {
+    color: #86efac !important;
+  }
+
   html[data-bs-theme="dark"] .list-group-item {
     background-color: #151e32;
     border-color: rgba(255, 255, 255, 0.08);
@@ -1185,5 +1201,21 @@ input[type=number] {
 
   .signature-line {
     width: 130px;
+  }
+
+  /* Document List View mobile optimizations */
+  .doc-list-shell .table td,
+  .doc-list-shell .table th {
+    padding: 0.35rem 0.3rem;
+    font-size: 0.8rem;
+  }
+
+  .doc-list-shell .dl-client-cell {
+    max-width: 100px;
+  }
+
+  .doc-list-shell .btn-group-sm > .btn {
+    padding: 0.2rem 0.35rem;
+    font-size: 0.72rem;
   }
 }

@@ -260,10 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const qp = qParams || {};
     if (typeof setCompanyHeader === 'function') setCompanyHeader();
     if (qp.no) {
-      let q = getQuotationByNumber(qp.no);
-      if (!q && typeof _getDiskRecordByNumber === 'function') {
-        try { q = await _getDiskRecordByNumber('quotations', qp.no); } catch (_) {}
-      }
+      const q = getQuotationByNumber(qp.no);
       if (q) {
         currentQuotationRecord = q;
         quotationNumberEl.value = q.quotationNumber;

@@ -369,7 +369,7 @@
 
     modalEl = document.createElement('div');
     modalEl.id = 'invoicePickerModal';
-    modalEl.className = 'modal fade no-print';
+    modalEl.className = 'modal no-print';
     modalEl.tabIndex = -1;
     modalEl.setAttribute('aria-labelledby', 'invoicePickerModalTitle');
     modalEl.setAttribute('aria-hidden', 'true');
@@ -406,9 +406,9 @@
                 <thead class="table-light">
                   <tr>
                     <th scope="col">Invoice #</th>
-                    <th scope="col">Date</th>
+                    <th scope="col" class="d-none d-sm-table-cell">Date</th>
                     <th scope="col">Client</th>
-                    <th scope="col">Biller</th>
+                    <th scope="col" class="d-none d-md-table-cell">Biller</th>
                     <th scope="col" class="text-end">Total (৳)</th>
                     <th scope="col" id="invPickerMetricCol">Status / Remaining</th>
                     <th scope="col" class="text-end">Action</th>
@@ -529,13 +529,16 @@
           : '';
         return `
           <tr>
-            <td class="fw-semibold text-nowrap">${_escHtml(row.number)}${row.isDiskOnly ? ' <span class="badge bg-light text-dark border">Disk</span>' : ''}</td>
-            <td class="text-nowrap small">${_escHtml(_fmtDate(row.date))}</td>
+            <td class="fw-semibold text-nowrap">
+              ${_escHtml(row.number)}${row.isDiskOnly ? ' <span class="badge bg-secondary-subtle text-body border">Disk</span>' : ''}
+              <div class="small text-muted d-sm-none" style="font-size:0.72em">${_escHtml(_fmtDate(row.date))}</div>
+            </td>
+            <td class="text-nowrap small d-none d-sm-table-cell">${_escHtml(_fmtDate(row.date))}</td>
             <td>
               <div class="fw-medium">${_escHtml(row.clientName || '—')}</div>
               ${row.title ? `<div class="small text-muted text-truncate" style="max-width:220px">${_escHtml(row.title)}</div>` : ''}
             </td>
-            <td class="small text-muted">${_escHtml(row.billerName)}</td>
+            <td class="small text-muted d-none d-md-table-cell">${_escHtml(row.billerName)}</td>
             <td class="text-end text-nowrap">${_escHtml(_fmtBDT(row.amount))}${origNote}</td>
             <td>${metricHtml}</td>
             <td class="text-end">
@@ -571,7 +574,13 @@
         if (!inv) return;
         if (root.bootstrap && root.bootstrap.Modal) {
           const inst = root.bootstrap.Modal.getOrCreateInstance(modalEl);
-          inst.hide();
+          if (inst._isTransitioning) {
+            modalEl.addEventListener('shown.bs.modal', () => {
+              try { inst.hide(); } catch (_) {}
+            }, { once: true });
+          } else {
+            try { inst.hide(); } catch (_) {}
+          }
         }
         if (typeof _pickerState.onSelect === 'function') {
           _pickerState.onSelect(inv);
@@ -672,12 +681,12 @@
               <thead class="table-light">
                 <tr>
                   <th scope="col">${_escHtml(meta.singular)} #</th>
-                  <th scope="col">Date</th>
+                  <th scope="col" class="d-none d-sm-table-cell">Date</th>
                   <th scope="col">Client / Subject</th>
-                  <th scope="col">Biller</th>
-                  <th scope="col">Linked Ref</th>
+                  <th scope="col" class="d-none d-md-table-cell">Biller</th>
+                  <th scope="col" class="d-none d-lg-table-cell">Linked Ref</th>
                   <th scope="col" class="text-end">${_escHtml(meta.amountCol)}</th>
-                  <th scope="col">Status</th>
+                  <th scope="col" class="d-none d-sm-table-cell">Status</th>
                   <th scope="col" class="text-end">Actions</th>
                 </tr>
               </thead>
@@ -790,16 +799,16 @@
         if (row.due > 0) {
           btns.push(`<a href="receipt.html?inv=${encodeURIComponent(row.number)}" class="btn btn-outline-success" title="Receive Payment" aria-label="Receive payment for ${_escAttr(row.number)}">Receipt</a>`);
         }
-        btns.push(`<a href="challan.html?inv=${encodeURIComponent(row.number)}" class="btn btn-outline-secondary" title="Create Challan" aria-label="Create challan for ${_escAttr(row.number)}">Challan</a>`);
+        btns.push(`<a href="challan.html?inv=${encodeURIComponent(row.number)}" class="btn btn-outline-secondary d-none d-sm-inline-block" title="Create Challan" aria-label="Create challan for ${_escAttr(row.number)}">Challan</a>`);
       } else if (type === 'challan' && row.canConvert) {
         btns.push(`<a href="invoice.html?ch=${encodeURIComponent(row.number)}" class="btn btn-outline-success" title="Convert to Invoice" aria-label="Convert ${_escAttr(row.number)} to Invoice">Invoice</a>`);
       }
       if (!row.isDiskOnly) {
         const voidLabel = row.isVoid ? 'Restore' : 'Void';
-        btns.push(`<button type="button" class="btn btn-outline-warning dl-void-btn" data-no="${no}" aria-label="${voidLabel} ${_escAttr(row.number)}">${voidLabel}</button>`);
-        btns.push(`<button type="button" class="btn btn-outline-danger dl-del-btn" data-no="${no}" aria-label="Delete ${_escAttr(row.number)}">Del</button>`);
+        btns.push(`<button type="button" class="btn btn-outline-warning dl-void-btn d-none d-md-inline-block" data-no="${no}" aria-label="${voidLabel} ${_escAttr(row.number)}">${voidLabel}</button>`);
+        btns.push(`<button type="button" class="btn btn-outline-danger dl-del-btn d-none d-md-inline-block" data-no="${no}" aria-label="Delete ${_escAttr(row.number)}">Del</button>`);
       }
-      return `<div class="btn-group btn-group-sm" role="group" aria-label="Actions for ${_escAttr(row.number)}">${btns.join('')}</div>`;
+      return `<div class="btn-group btn-group-sm dl-action-group" role="group" aria-label="Actions for ${_escAttr(row.number)}">${btns.join('')}</div>`;
     }
 
     function refresh() {
@@ -866,20 +875,26 @@
         return `
           <tr class="${row.isVoid ? 'opacity-75' : ''}">
             <td class="text-nowrap">
-              <button type="button" class="btn btn-link btn-sm p-0 fw-semibold text-decoration-none dl-open-btn" data-no="${_escAttr(row.number)}">
-                ${_escHtml(row.number)}
-              </button>
-              ${row.isDiskOnly ? '<div><span class="badge bg-light text-dark border" style="font-size:0.65em">Disk</span></div>' : ''}
+              <div>
+                <button type="button" class="btn btn-link btn-sm p-0 fw-semibold text-decoration-none dl-open-btn" data-no="${_escAttr(row.number)}">
+                  ${_escHtml(row.number)}
+                </button>
+              </div>
+              <div class="small text-muted" style="font-size:0.72em">
+                <span class="badge ${_escAttr(row.statusBadgeClass)} d-sm-none me-1" style="font-size:0.85em">${_escHtml(row.status)}</span>
+                <span class="d-sm-none">${_escHtml(_fmtDate(row.date))}</span>
+              </div>
+              ${row.isDiskOnly ? '<div><span class="badge bg-secondary-subtle text-body border" style="font-size:0.65em">Disk</span></div>' : ''}
             </td>
-            <td class="text-nowrap small">${_escHtml(_fmtDate(row.date))}</td>
+            <td class="text-nowrap small d-none d-sm-table-cell">${_escHtml(_fmtDate(row.date))}</td>
             <td>
-              <div class="fw-medium">${_escHtml(row.clientName || '—')}</div>
-              ${row.title ? `<div class="small text-muted text-truncate" style="max-width:240px">${_escHtml(row.title)}</div>` : ''}
+              <div class="fw-medium text-truncate dl-client-cell" style="max-width:105px">${_escHtml(row.clientName || '—')}</div>
+              ${row.title ? `<div class="small text-muted text-truncate d-none d-sm-block" style="max-width:240px">${_escHtml(row.title)}</div>` : ''}
             </td>
-            <td class="small text-muted">${_escHtml(row.billerName)}</td>
-            <td>${linkedHtml}</td>
+            <td class="small text-muted d-none d-md-table-cell">${_escHtml(row.billerName)}</td>
+            <td class="d-none d-lg-table-cell">${linkedHtml}</td>
             <td class="text-end text-nowrap">${amtHtml}</td>
-            <td>
+            <td class="d-none d-sm-table-cell">
               <span class="badge ${_escAttr(row.statusBadgeClass)}">${_escHtml(row.status)}</span>
               ${metaNoteHtml}
             </td>

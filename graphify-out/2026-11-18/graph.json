@@ -4,15 +4,15 @@
   "graph": {},
   "nodes": [
     {
-      "id": "assets_vendor_bootstrap_bundle_min_es",
-      "label": "Es",
+      "id": "assets_vendor_bootstrap_bundle_min_ui",
+      "label": "ui()",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 1,
-      "community_name": "Es",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
       "file_type": "code",
-      "norm_label": "es",
+      "norm_label": "ui()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -69,15 +69,15 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_ui",
-      "label": "ui()",
+      "id": "assets_vendor_bootstrap_bundle_min_st",
+      "label": "st",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 110,
       "community_name": "Jn",
       "file_type": "code",
-      "norm_label": "ui()",
+      "norm_label": "st",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -134,6 +134,19 @@
       "source_location": "L6"
     },
     {
+      "id": "assets_vendor_bootstrap_bundle_min_us",
+      "label": "us",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": "us",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
       "id": "assets_vendor_bootstrap_bundle_min_on",
       "label": "on()",
       "_callable": true,
@@ -147,15 +160,15 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_st",
-      "label": "st",
+      "id": "assets_vendor_bootstrap_bundle_min_es",
+      "label": "Es",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
       "community_name": "xt",
       "file_type": "code",
-      "norm_label": "st",
+      "norm_label": "es",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -225,19 +238,6 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_us",
-      "label": "us",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "us",
-      "file_type": "code",
-      "norm_label": "us",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
       "id": "assets_vendor_bootstrap_bundle_min_cn",
       "label": "cn",
       "_callable": true,
@@ -283,6 +283,18 @@
       "community_name": "bootstrap.bundle.min.js",
       "file_type": "code",
       "norm_label": "ce()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_cs_update",
+      "label": ".update()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": ".update()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -403,6 +415,18 @@
       "community_name": "bootstrap.bundle.min.js",
       "file_type": "code",
       "norm_label": "getmultipleelementsfromselector()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_getselectorfromelement",
+      "label": "getSelectorFromElement()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": "getselectorfromelement()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -827,6 +851,114 @@
       "source_location": "L6"
     },
     {
+      "id": "assets_vendor_bootstrap_bundle_min_ui_append",
+      "label": "._append()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": "._append()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_ui_configaftermerge",
+      "label": "._configAfterMerge()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": "._configaftermerge()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_ui_default",
+      "label": ".Default()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": ".default()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_ui_defaulttype",
+      "label": ".DefaultType()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": ".defaulttype()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_ui_dispose",
+      "label": ".dispose()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": ".dispose()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_ui_emulateanimation",
+      "label": "._emulateAnimation()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": "._emulateanimation()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_ui_getelement",
+      "label": "._getElement()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": "._getelement()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_ui_hide",
+      "label": ".hide()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": ".hide()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_ui_name",
+      "label": ".NAME()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": ".name()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
       "id": "assets_vendor_bootstrap_bundle_min_ui_s",
       "label": "s()",
       "_callable": true,
@@ -835,6 +967,18 @@
       "community_name": "bootstrap.bundle.min.js",
       "file_type": "code",
       "norm_label": "s()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_ui_show",
+      "label": ".show()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "bootstrap.bundle.min.js",
+      "file_type": "code",
+      "norm_label": ".show()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -1043,184 +1187,100 @@
       "source_location": "L1"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_es_activateparents",
-      "label": "._activateParents()",
+      "id": "js_search_badgecolorstyle",
+      "label": "badgeColorStyle()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Es",
+      "community_name": "runSearch",
       "file_type": "code",
-      "norm_label": "._activateparents()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
+      "norm_label": "badgecolorstyle()",
+      "source_file": "js/search.js",
+      "source_location": "L79"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_es_clearactiveclass",
-      "label": "._clearActiveClass()",
+      "id": "js_search_buildreports",
+      "label": "buildReports()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Es",
+      "community_name": "runSearch",
       "file_type": "code",
-      "norm_label": "._clearactiveclass()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
+      "norm_label": "buildreports()",
+      "source_file": "js/search.js",
+      "source_location": "L632"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_es_constructor",
-      "label": ".constructor()",
+      "id": "js_search_buildrevenuebreakdown",
+      "label": "buildRevenueBreakdown()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Es",
+      "community_name": "runSearch",
       "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
+      "norm_label": "buildrevenuebreakdown()",
+      "source_file": "js/search.js",
+      "source_location": "L747"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_es_default",
-      "label": ".Default()",
+      "id": "js_search_populatebillerfilter",
+      "label": "populateBillerFilter()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Es",
+      "community_name": "runSearch",
       "file_type": "code",
-      "norm_label": ".default()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
+      "norm_label": "populatebillerfilter()",
+      "source_file": "js/search.js",
+      "source_location": "L43"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_es_defaulttype",
-      "label": ".DefaultType()",
+      "id": "js_search_populatestatementclients",
+      "label": "populateStatementClients()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Es",
+      "community_name": "runSearch",
       "file_type": "code",
-      "norm_label": ".defaulttype()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
+      "norm_label": "populatestatementclients()",
+      "source_file": "js/search.js",
+      "source_location": "L830"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_es_getnewobserver",
-      "label": "._getNewObserver()",
+      "id": "js_search_renderclientstatement",
+      "label": "renderClientStatement()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Es",
+      "community_name": "runSearch",
       "file_type": "code",
-      "norm_label": "._getnewobserver()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
+      "norm_label": "renderclientstatement()",
+      "source_file": "js/search.js",
+      "source_location": "L871"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_es_initializetargetsandobservables",
-      "label": "._initializeTargetsAndObservables()",
+      "id": "js_search_runsearch",
+      "label": "runSearch()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Es",
+      "community_name": "runSearch",
       "file_type": "code",
-      "norm_label": "._initializetargetsandobservables()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
+      "norm_label": "runsearch()",
+      "source_file": "js/search.js",
+      "source_location": "L126"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_es_jqueryinterface",
-      "label": ".jQueryInterface()",
+      "id": "js_search_verifyqrstring",
+      "label": "verifyQrString()",
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "Es",
+      "community_name": "runSearch",
       "file_type": "code",
-      "norm_label": ".jqueryinterface()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_es_maybeenablesmoothscroll",
-      "label": "._maybeEnableSmoothScroll()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Es",
-      "file_type": "code",
-      "norm_label": "._maybeenablesmoothscroll()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_es_name",
-      "label": ".NAME()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Es",
-      "file_type": "code",
-      "norm_label": ".name()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_es_observercallback",
-      "label": "._observerCallback()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Es",
-      "file_type": "code",
-      "norm_label": "._observercallback()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_es_process",
-      "label": "._process()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Es",
-      "file_type": "code",
-      "norm_label": "._process()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_es_refresh",
-      "label": ".refresh()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Es",
-      "file_type": "code",
-      "norm_label": ".refresh()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_parents",
-      "label": "parents()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "Es",
-      "file_type": "code",
-      "norm_label": "parents()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_getelementfromselector",
-      "label": "getElementFromSelector()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "Ks",
-      "file_type": "code",
-      "norm_label": "getelementfromselector()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
+      "norm_label": "verifyqrstring()",
+      "source_file": "js/search.js",
+      "source_location": "L996"
     },
     {
       "id": "assets_vendor_bootstrap_bundle_min_ks_activate",
@@ -1243,18 +1303,6 @@
       "community_name": "Ks",
       "file_type": "code",
       "norm_label": ".constructor()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_ks_deactivate",
-      "label": "._deactivate()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 10,
-      "community_name": "Ks",
-      "file_type": "code",
-      "norm_label": "._deactivate()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -1607,6 +1655,30 @@
       "source_location": "L619"
     },
     {
+      "id": "js_utils_sanitizeqrfield",
+      "label": "sanitizeQrField()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "utils.js",
+      "file_type": "code",
+      "norm_label": "sanitizeqrfield()",
+      "source_file": "js/utils.js",
+      "source_location": "L140"
+    },
+    {
+      "id": "js_utils_setprintdocumenttitle",
+      "label": "setPrintDocumentTitle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 103,
+      "community_name": "utils.js",
+      "file_type": "code",
+      "norm_label": "setprintdocumenttitle()",
+      "source_file": "js/utils.js",
+      "source_location": "L646"
+    },
+    {
       "id": "js_utils_sharedocumentemail",
       "label": "shareDocumentEmail()",
       "_callable": true,
@@ -1631,16 +1703,16 @@
       "source_location": "L609"
     },
     {
-      "id": "js_utils_showtoast",
-      "label": "showToast()",
+      "id": "js_utils_slugify",
+      "label": "slugify()",
       "_callable": true,
       "_origin": "ast",
       "community": 103,
       "community_name": "utils.js",
       "file_type": "code",
-      "norm_label": "showtoast()",
+      "norm_label": "slugify()",
       "source_file": "js/utils.js",
-      "source_location": "L66"
+      "source_location": "L418"
     },
     {
       "id": "js_utils_tolocalisodate",
@@ -1655,18 +1727,6 @@
       "source_location": "L31"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_cs_createtipelement",
-      "label": "._createTipElement()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 110,
-      "community_name": "Jn",
-      "file_type": "code",
-      "norm_label": "._createtipelement()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
       "id": "assets_vendor_bootstrap_bundle_min_cs_getconfig",
       "label": "._getConfig()",
       "_callable": true,
@@ -1675,18 +1735,6 @@
       "community_name": "Jn",
       "file_type": "code",
       "norm_label": "._getconfig()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_cs_gettemplatefactory",
-      "label": "._getTemplateFactory()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 110,
-      "community_name": "Jn",
-      "file_type": "code",
-      "norm_label": "._gettemplatefactory()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -2099,26 +2147,146 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_ui_append",
-      "label": "._append()",
+      "id": "assets_vendor_bootstrap_bundle_min_st_constructor",
+      "label": ".constructor()",
       "_callable": true,
       "_origin": "ast",
       "community": 110,
       "community_name": "Jn",
       "file_type": "code",
-      "norm_label": "._append()",
+      "norm_label": ".constructor()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_ui_configaftermerge",
-      "label": "._configAfterMerge()",
+      "id": "assets_vendor_bootstrap_bundle_min_st_default",
+      "label": ".Default()",
       "_callable": true,
       "_origin": "ast",
       "community": 110,
       "community_name": "Jn",
       "file_type": "code",
-      "norm_label": "._configaftermerge()",
+      "norm_label": ".default()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_st_defaulttype",
+      "label": ".DefaultType()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "Jn",
+      "file_type": "code",
+      "norm_label": ".defaulttype()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_st_dispose",
+      "label": ".dispose()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "Jn",
+      "file_type": "code",
+      "norm_label": ".dispose()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_st_end",
+      "label": "._end()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "Jn",
+      "file_type": "code",
+      "norm_label": "._end()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_st_eventispointerpentouch",
+      "label": "._eventIsPointerPenTouch()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "Jn",
+      "file_type": "code",
+      "norm_label": "._eventispointerpentouch()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_st_handleswipe",
+      "label": "._handleSwipe()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "Jn",
+      "file_type": "code",
+      "norm_label": "._handleswipe()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_st_initevents",
+      "label": "._initEvents()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "Jn",
+      "file_type": "code",
+      "norm_label": "._initevents()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_st_issupported",
+      "label": ".isSupported()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "Jn",
+      "file_type": "code",
+      "norm_label": ".issupported()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_st_move",
+      "label": "._move()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "Jn",
+      "file_type": "code",
+      "norm_label": "._move()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_st_name",
+      "label": ".NAME()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "Jn",
+      "file_type": "code",
+      "norm_label": ".name()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_st_start",
+      "label": "._start()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "Jn",
+      "file_type": "code",
+      "norm_label": "._start()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -2131,102 +2299,6 @@
       "community_name": "Jn",
       "file_type": "code",
       "norm_label": ".constructor()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_ui_default",
-      "label": ".Default()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 110,
-      "community_name": "Jn",
-      "file_type": "code",
-      "norm_label": ".default()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_ui_defaulttype",
-      "label": ".DefaultType()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 110,
-      "community_name": "Jn",
-      "file_type": "code",
-      "norm_label": ".defaulttype()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_ui_dispose",
-      "label": ".dispose()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 110,
-      "community_name": "Jn",
-      "file_type": "code",
-      "norm_label": ".dispose()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_ui_emulateanimation",
-      "label": "._emulateAnimation()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 110,
-      "community_name": "Jn",
-      "file_type": "code",
-      "norm_label": "._emulateanimation()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_ui_getelement",
-      "label": "._getElement()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 110,
-      "community_name": "Jn",
-      "file_type": "code",
-      "norm_label": "._getelement()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_ui_hide",
-      "label": ".hide()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 110,
-      "community_name": "Jn",
-      "file_type": "code",
-      "norm_label": ".hide()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_ui_name",
-      "label": ".NAME()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 110,
-      "community_name": "Jn",
-      "file_type": "code",
-      "norm_label": ".name()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_ui_show",
-      "label": ".show()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 110,
-      "community_name": "Jn",
-      "file_type": "code",
-      "norm_label": ".show()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -2315,30 +2387,6 @@
       "source_location": "L202"
     },
     {
-      "id": "js_utils_buildqrpayload",
-      "label": "buildQRPayload()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 112,
-      "community_name": "Implementation Rules",
-      "file_type": "code",
-      "norm_label": "buildqrpayload()",
-      "source_file": "js/utils.js",
-      "source_location": "L145"
-    },
-    {
-      "id": "js_utils_sanitizeqrfield",
-      "label": "sanitizeQrField()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 112,
-      "community_name": "Implementation Rules",
-      "file_type": "code",
-      "norm_label": "sanitizeqrfield()",
-      "source_file": "js/utils.js",
-      "source_location": "L140"
-    },
-    {
       "id": "js_receipt_applyinvoicedata",
       "label": "applyInvoiceData()",
       "_callable": true,
@@ -2348,7 +2396,7 @@
       "file_type": "code",
       "norm_label": "applyinvoicedata()",
       "source_file": "js/receipt.js",
-      "source_location": "L348"
+      "source_location": "L349"
     },
     {
       "id": "js_receipt_buildinvoicestyleqrforreceipt",
@@ -2360,7 +2408,7 @@
       "file_type": "code",
       "norm_label": "buildinvoicestyleqrforreceipt()",
       "source_file": "js/receipt.js",
-      "source_location": "L708"
+      "source_location": "L719"
     },
     {
       "id": "js_receipt_fetchinvoicebynumber",
@@ -2372,7 +2420,7 @@
       "file_type": "code",
       "norm_label": "fetchinvoicebynumber()",
       "source_file": "js/receipt.js",
-      "source_location": "L398"
+      "source_location": "L404"
     },
     {
       "id": "js_receipt_getsharedata",
@@ -2384,7 +2432,7 @@
       "file_type": "code",
       "norm_label": "getsharedata()",
       "source_file": "js/receipt.js",
-      "source_location": "L1039"
+      "source_location": "L1052"
     },
     {
       "id": "js_receipt_handlelinkedinvoicechange",
@@ -2396,7 +2444,7 @@
       "file_type": "code",
       "norm_label": "handlelinkedinvoicechange()",
       "source_file": "js/receipt.js",
-      "source_location": "L626"
+      "source_location": "L632"
     },
     {
       "id": "js_receipt_loadeditorfromparams",
@@ -2408,7 +2456,7 @@
       "file_type": "code",
       "norm_label": "loadeditorfromparams()",
       "source_file": "js/receipt.js",
-      "source_location": "L448"
+      "source_location": "L454"
     },
     {
       "id": "js_receipt_parseamt",
@@ -2432,7 +2480,7 @@
       "file_type": "code",
       "norm_label": "populateinvoicelist()",
       "source_file": "js/receipt.js",
-      "source_location": "L251"
+      "source_location": "L252"
     },
     {
       "id": "js_receipt_prepareforprint",
@@ -2444,7 +2492,7 @@
       "file_type": "code",
       "norm_label": "prepareforprint()",
       "source_file": "js/receipt.js",
-      "source_location": "L916"
+      "source_location": "L927"
     },
     {
       "id": "js_receipt_printwithguard",
@@ -2456,7 +2504,7 @@
       "file_type": "code",
       "norm_label": "printwithguard()",
       "source_file": "js/receipt.js",
-      "source_location": "L935"
+      "source_location": "L946"
     },
     {
       "id": "js_receipt_renderinvoiceitemsref",
@@ -2468,7 +2516,7 @@
       "file_type": "code",
       "norm_label": "renderinvoiceitemsref()",
       "source_file": "js/receipt.js",
-      "source_location": "L296"
+      "source_location": "L297"
     },
     {
       "id": "js_receipt_resetreceiptfieldstonew",
@@ -2480,7 +2528,7 @@
       "file_type": "code",
       "norm_label": "resetreceiptfieldstonew()",
       "source_file": "js/receipt.js",
-      "source_location": "L408"
+      "source_location": "L414"
     },
     {
       "id": "js_receipt_resolveeffectiveinvoicestate",
@@ -2492,7 +2540,7 @@
       "file_type": "code",
       "norm_label": "_resolveeffectiveinvoicestate()",
       "source_file": "js/receipt.js",
-      "source_location": "L327"
+      "source_location": "L328"
     },
     {
       "id": "js_receipt_resolvereceiptbiller",
@@ -2504,7 +2552,7 @@
       "file_type": "code",
       "norm_label": "_resolvereceiptbiller()",
       "source_file": "js/receipt.js",
-      "source_location": "L697"
+      "source_location": "L708"
     },
     {
       "id": "js_receipt_setselectreasonsafe",
@@ -2516,7 +2564,7 @@
       "file_type": "code",
       "norm_label": "_setselectreasonsafe()",
       "source_file": "js/receipt.js",
-      "source_location": "L284"
+      "source_location": "L285"
     },
     {
       "id": "js_receipt_syncclientdisplay",
@@ -2552,7 +2600,7 @@
       "file_type": "code",
       "norm_label": "updatedue()",
       "source_file": "js/receipt.js",
-      "source_location": "L734"
+      "source_location": "L745"
     },
     {
       "id": "js_receipt_updatemodebadge",
@@ -2576,7 +2624,7 @@
       "file_type": "code",
       "norm_label": "updatereceiptsummaryandqr()",
       "source_file": "js/receipt.js",
-      "source_location": "L722"
+      "source_location": "L733"
     },
     {
       "id": "js_quotation_addrow",
@@ -2588,7 +2636,7 @@
       "file_type": "code",
       "norm_label": "addrow()",
       "source_file": "js/quotation.js",
-      "source_location": "L400"
+      "source_location": "L397"
     },
     {
       "id": "js_quotation_addrowfromdata",
@@ -2600,7 +2648,7 @@
       "file_type": "code",
       "norm_label": "addrowfromdata()",
       "source_file": "js/quotation.js",
-      "source_location": "L369"
+      "source_location": "L366"
     },
     {
       "id": "js_quotation_attachrowevents",
@@ -2612,7 +2660,7 @@
       "file_type": "code",
       "norm_label": "attachrowevents()",
       "source_file": "js/quotation.js",
-      "source_location": "L407"
+      "source_location": "L404"
     },
     {
       "id": "js_quotation_buildqrtext",
@@ -2624,7 +2672,7 @@
       "file_type": "code",
       "norm_label": "buildqrtext()",
       "source_file": "js/quotation.js",
-      "source_location": "L547"
+      "source_location": "L544"
     },
     {
       "id": "js_quotation_buildrecord",
@@ -2636,7 +2684,7 @@
       "file_type": "code",
       "norm_label": "buildrecord()",
       "source_file": "js/quotation.js",
-      "source_location": "L488"
+      "source_location": "L485"
     },
     {
       "id": "js_quotation_computedaysfromvaliduntil",
@@ -2672,7 +2720,7 @@
       "file_type": "code",
       "norm_label": "getgrandtotalnumber()",
       "source_file": "js/quotation.js",
-      "source_location": "L468"
+      "source_location": "L465"
     },
     {
       "id": "js_quotation_getrowindex",
@@ -2684,7 +2732,7 @@
       "file_type": "code",
       "norm_label": "getrowindex()",
       "source_file": "js/quotation.js",
-      "source_location": "L365"
+      "source_location": "L362"
     },
     {
       "id": "js_quotation_getsharedata",
@@ -2696,7 +2744,7 @@
       "file_type": "code",
       "norm_label": "getsharedata()",
       "source_file": "js/quotation.js",
-      "source_location": "L684"
+      "source_location": "L682"
     },
     {
       "id": "js_quotation_loadeditorfromparams",
@@ -2720,7 +2768,7 @@
       "file_type": "code",
       "norm_label": "openwithqtn()",
       "source_file": "js/quotation.js",
-      "source_location": "L728"
+      "source_location": "L726"
     },
     {
       "id": "js_quotation_prepareforprint",
@@ -2732,7 +2780,7 @@
       "file_type": "code",
       "norm_label": "prepareforprint()",
       "source_file": "js/quotation.js",
-      "source_location": "L621"
+      "source_location": "L619"
     },
     {
       "id": "js_quotation_printwithguard",
@@ -2744,7 +2792,7 @@
       "file_type": "code",
       "norm_label": "printwithguard()",
       "source_file": "js/quotation.js",
-      "source_location": "L641"
+      "source_location": "L639"
     },
     {
       "id": "js_quotation_resetquotationfieldstonew",
@@ -2780,7 +2828,7 @@
       "file_type": "code",
       "norm_label": "syncquotationrowmirrors()",
       "source_file": "js/quotation.js",
-      "source_location": "L349"
+      "source_location": "L346"
     },
     {
       "id": "js_quotation_updateconversionbadge",
@@ -2804,7 +2852,7 @@
       "file_type": "code",
       "norm_label": "updategrandtotal()",
       "source_file": "js/quotation.js",
-      "source_location": "L480"
+      "source_location": "L477"
     },
     {
       "id": "js_quotation_updatemodebadge",
@@ -2840,7 +2888,7 @@
       "file_type": "code",
       "norm_label": "validaterecord()",
       "source_file": "js/quotation.js",
-      "source_location": "L538"
+      "source_location": "L535"
     },
     {
       "id": "js_challan_addrow",
@@ -2852,7 +2900,7 @@
       "file_type": "code",
       "norm_label": "addrow()",
       "source_file": "js/challan.js",
-      "source_location": "L836"
+      "source_location": "L857"
     },
     {
       "id": "js_challan_addrowfromdata",
@@ -2864,7 +2912,7 @@
       "file_type": "code",
       "norm_label": "addrowfromdata()",
       "source_file": "js/challan.js",
-      "source_location": "L807"
+      "source_location": "L828"
     },
     {
       "id": "js_challan_adjustcolumnwidths",
@@ -2876,7 +2924,7 @@
       "file_type": "code",
       "norm_label": "adjustcolumnwidths()",
       "source_file": "js/challan.js",
-      "source_location": "L968"
+      "source_location": "L989"
     },
     {
       "id": "js_challan_applyinvoicetochallan",
@@ -2900,7 +2948,7 @@
       "file_type": "code",
       "norm_label": "attachrowevents()",
       "source_file": "js/challan.js",
-      "source_location": "L838"
+      "source_location": "L859"
     },
     {
       "id": "js_challan_buildchallanrecord",
@@ -2912,7 +2960,7 @@
       "file_type": "code",
       "norm_label": "buildchallanrecord()",
       "source_file": "js/challan.js",
-      "source_location": "L931"
+      "source_location": "L952"
     },
     {
       "id": "js_challan_buildqrtext",
@@ -2924,7 +2972,7 @@
       "file_type": "code",
       "norm_label": "buildqrtext()",
       "source_file": "js/challan.js",
-      "source_location": "L915"
+      "source_location": "L936"
     },
     {
       "id": "js_challan_cleardraft",
@@ -2972,7 +3020,7 @@
       "file_type": "code",
       "norm_label": "getsharedata()",
       "source_file": "js/challan.js",
-      "source_location": "L747"
+      "source_location": "L768"
     },
     {
       "id": "js_challan_handlelinkedinvoicechange",
@@ -3032,7 +3080,7 @@
       "file_type": "code",
       "norm_label": "prepareforprint()",
       "source_file": "js/challan.js",
-      "source_location": "L1007"
+      "source_location": "L1028"
     },
     {
       "id": "js_challan_renderpartialdispatchbanner",
@@ -3056,7 +3104,7 @@
       "file_type": "code",
       "norm_label": "_resolvechallanbiller()",
       "source_file": "js/challan.js",
-      "source_location": "L902"
+      "source_location": "L923"
     },
     {
       "id": "js_challan_syncchallanrowmirrors",
@@ -3068,7 +3116,7 @@
       "file_type": "code",
       "norm_label": "syncchallanrowmirrors()",
       "source_file": "js/challan.js",
-      "source_location": "L791"
+      "source_location": "L812"
     },
     {
       "id": "js_challan_syncclientdisplay",
@@ -3116,7 +3164,7 @@
       "file_type": "code",
       "norm_label": "validaterecord()",
       "source_file": "js/challan.js",
-      "source_location": "L1022"
+      "source_location": "L1043"
     },
     {
       "id": "db_clearalltables",
@@ -5159,6 +5207,18 @@
       "source_location": "L6"
     },
     {
+      "id": "assets_vendor_bootstrap_bundle_min_cs_createtipelement",
+      "label": "._createTipElement()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": "._createtipelement()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
       "id": "assets_vendor_bootstrap_bundle_min_cs_default",
       "label": ".Default()",
       "_callable": true,
@@ -5243,6 +5303,18 @@
       "source_location": "L6"
     },
     {
+      "id": "assets_vendor_bootstrap_bundle_min_cs_getcontentfortemplate",
+      "label": "._getContentForTemplate()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": "._getcontentfortemplate()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
       "id": "assets_vendor_bootstrap_bundle_min_cs_getdelegateconfig",
       "label": "._getDelegateConfig()",
       "_callable": true,
@@ -5267,6 +5339,18 @@
       "source_location": "L6"
     },
     {
+      "id": "assets_vendor_bootstrap_bundle_min_cs_gettemplatefactory",
+      "label": "._getTemplateFactory()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": "._gettemplatefactory()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
       "id": "assets_vendor_bootstrap_bundle_min_cs_gettipelement",
       "label": "._getTipElement()",
       "_callable": true,
@@ -5275,6 +5359,18 @@
       "community_name": "cs",
       "file_type": "code",
       "norm_label": "._gettipelement()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_cs_gettitle",
+      "label": "._getTitle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": "._gettitle()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -5323,6 +5419,18 @@
       "community_name": "cs",
       "file_type": "code",
       "norm_label": "._iswithactivetrigger()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_cs_iswithcontent",
+      "label": "._isWithContent()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": "._iswithcontent()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -5399,18 +5507,6 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_cs_update",
-      "label": ".update()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 46,
-      "community_name": "cs",
-      "file_type": "code",
-      "norm_label": ".update()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
       "id": "assets_vendor_bootstrap_bundle_min_on_initializebackdrop",
       "label": "._initializeBackDrop()",
       "_callable": true,
@@ -5443,6 +5539,114 @@
       "community_name": "cs",
       "file_type": "code",
       "norm_label": ".show()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_us_default",
+      "label": ".Default()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": ".default()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_us_defaulttype",
+      "label": ".DefaultType()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": ".defaulttype()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_us_getcontent",
+      "label": "._getContent()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": "._getcontent()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_us_getcontentfortemplate",
+      "label": "._getContentForTemplate()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": "._getcontentfortemplate()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_us_iswithcontent",
+      "label": "._isWithContent()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": "._iswithcontent()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_us_name",
+      "label": ".NAME()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 46,
+      "community_name": "cs",
+      "file_type": "code",
+      "norm_label": ".name()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_bt_hide",
+      "label": ".hide()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 48,
+      "community_name": "remove",
+      "file_type": "code",
+      "norm_label": ".hide()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_getelementfromselector",
+      "label": "getElementFromSelector()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 48,
+      "community_name": "remove",
+      "file_type": "code",
+      "norm_label": "getelementfromselector()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_ks_deactivate",
+      "label": "._deactivate()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 48,
+      "community_name": "remove",
+      "file_type": "code",
+      "norm_label": "._deactivate()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -5627,18 +5831,6 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_qn_show",
-      "label": ".show()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 48,
-      "community_name": "remove",
-      "file_type": "code",
-      "norm_label": ".show()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
       "id": "assets_vendor_bootstrap_bundle_min_remove",
       "label": "remove()",
       "_callable": true,
@@ -5663,7 +5855,31 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_st_constructor",
+      "id": "assets_vendor_bootstrap_bundle_min_es_activateparents",
+      "label": "._activateParents()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "xt",
+      "file_type": "code",
+      "norm_label": "._activateparents()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_es_clearactiveclass",
+      "label": "._clearActiveClass()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "xt",
+      "file_type": "code",
+      "norm_label": "._clearactiveclass()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_es_constructor",
       "label": ".constructor()",
       "_callable": true,
       "_origin": "ast",
@@ -5675,7 +5891,7 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_st_default",
+      "id": "assets_vendor_bootstrap_bundle_min_es_default",
       "label": ".Default()",
       "_callable": true,
       "_origin": "ast",
@@ -5687,7 +5903,7 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_st_defaulttype",
+      "id": "assets_vendor_bootstrap_bundle_min_es_defaulttype",
       "label": ".DefaultType()",
       "_callable": true,
       "_origin": "ast",
@@ -5699,91 +5915,55 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_st_dispose",
-      "label": ".dispose()",
+      "id": "assets_vendor_bootstrap_bundle_min_es_getnewobserver",
+      "label": "._getNewObserver()",
       "_callable": true,
       "_origin": "ast",
       "community": 5,
       "community_name": "xt",
       "file_type": "code",
-      "norm_label": ".dispose()",
+      "norm_label": "._getnewobserver()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_st_end",
-      "label": "._end()",
+      "id": "assets_vendor_bootstrap_bundle_min_es_initializetargetsandobservables",
+      "label": "._initializeTargetsAndObservables()",
       "_callable": true,
       "_origin": "ast",
       "community": 5,
       "community_name": "xt",
       "file_type": "code",
-      "norm_label": "._end()",
+      "norm_label": "._initializetargetsandobservables()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_st_eventispointerpentouch",
-      "label": "._eventIsPointerPenTouch()",
+      "id": "assets_vendor_bootstrap_bundle_min_es_jqueryinterface",
+      "label": ".jQueryInterface()",
       "_callable": true,
       "_origin": "ast",
       "community": 5,
       "community_name": "xt",
       "file_type": "code",
-      "norm_label": "._eventispointerpentouch()",
+      "norm_label": ".jqueryinterface()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_st_handleswipe",
-      "label": "._handleSwipe()",
+      "id": "assets_vendor_bootstrap_bundle_min_es_maybeenablesmoothscroll",
+      "label": "._maybeEnableSmoothScroll()",
       "_callable": true,
       "_origin": "ast",
       "community": 5,
       "community_name": "xt",
       "file_type": "code",
-      "norm_label": "._handleswipe()",
+      "norm_label": "._maybeenablesmoothscroll()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_st_initevents",
-      "label": "._initEvents()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "xt",
-      "file_type": "code",
-      "norm_label": "._initevents()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_st_issupported",
-      "label": ".isSupported()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "xt",
-      "file_type": "code",
-      "norm_label": ".issupported()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_st_move",
-      "label": "._move()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "xt",
-      "file_type": "code",
-      "norm_label": "._move()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_st_name",
+      "id": "assets_vendor_bootstrap_bundle_min_es_name",
       "label": ".NAME()",
       "_callable": true,
       "_origin": "ast",
@@ -5795,14 +5975,50 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_st_start",
-      "label": "._start()",
+      "id": "assets_vendor_bootstrap_bundle_min_es_observercallback",
+      "label": "._observerCallback()",
       "_callable": true,
       "_origin": "ast",
       "community": 5,
       "community_name": "xt",
       "file_type": "code",
-      "norm_label": "._start()",
+      "norm_label": "._observercallback()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_es_process",
+      "label": "._process()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "xt",
+      "file_type": "code",
+      "norm_label": "._process()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_es_refresh",
+      "label": ".refresh()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "xt",
+      "file_type": "code",
+      "norm_label": ".refresh()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_parents",
+      "label": "parents()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "xt",
+      "file_type": "code",
+      "norm_label": "parents()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -5851,6 +6067,18 @@
       "community_name": "xt",
       "file_type": "code",
       "norm_label": "._configaftermerge()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_xt_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "xt",
+      "file_type": "code",
+      "norm_label": ".constructor()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -6043,6 +6271,18 @@
       "community_name": "xt",
       "file_type": "code",
       "norm_label": ".pause()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_xt_prev",
+      "label": ".prev()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "xt",
+      "file_type": "code",
+      "norm_label": ".prev()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
@@ -6249,102 +6489,6 @@
       "norm_label": "updateperioddates()",
       "source_file": "js/expenses.js",
       "source_location": "L94"
-    },
-    {
-      "id": "js_search_badgecolorstyle",
-      "label": "badgeColorStyle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "code",
-      "norm_label": "badgecolorstyle()",
-      "source_file": "js/search.js",
-      "source_location": "L79"
-    },
-    {
-      "id": "js_search_buildreports",
-      "label": "buildReports()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "code",
-      "norm_label": "buildreports()",
-      "source_file": "js/search.js",
-      "source_location": "L632"
-    },
-    {
-      "id": "js_search_buildrevenuebreakdown",
-      "label": "buildRevenueBreakdown()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "code",
-      "norm_label": "buildrevenuebreakdown()",
-      "source_file": "js/search.js",
-      "source_location": "L747"
-    },
-    {
-      "id": "js_search_populatebillerfilter",
-      "label": "populateBillerFilter()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "code",
-      "norm_label": "populatebillerfilter()",
-      "source_file": "js/search.js",
-      "source_location": "L43"
-    },
-    {
-      "id": "js_search_populatestatementclients",
-      "label": "populateStatementClients()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "code",
-      "norm_label": "populatestatementclients()",
-      "source_file": "js/search.js",
-      "source_location": "L830"
-    },
-    {
-      "id": "js_search_renderclientstatement",
-      "label": "renderClientStatement()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "code",
-      "norm_label": "renderclientstatement()",
-      "source_file": "js/search.js",
-      "source_location": "L871"
-    },
-    {
-      "id": "js_search_runsearch",
-      "label": "runSearch()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "code",
-      "norm_label": "runsearch()",
-      "source_file": "js/search.js",
-      "source_location": "L126"
-    },
-    {
-      "id": "js_search_verifyqrstring",
-      "label": "verifyQrString()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "code",
-      "norm_label": "verifyqrstring()",
-      "source_file": "js/search.js",
-      "source_location": "L989"
     },
     {
       "id": "js_biller_applyactivetheme",
@@ -6911,6 +7055,18 @@
       "source_location": "L6"
     },
     {
+      "id": "assets_vendor_bootstrap_bundle_min_us_jqueryinterface",
+      "label": ".jQueryInterface()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "qi",
+      "file_type": "code",
+      "norm_label": ".jqueryinterface()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
       "id": "assets_vendor_bootstrap_bundle_min_w_getinstance",
       "label": ".getInstance()",
       "_callable": true,
@@ -6935,18 +7091,6 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_xt_prev",
-      "label": ".prev()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "qi",
-      "file_type": "code",
-      "norm_label": ".prev()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
       "id": "js_doc_list_buildbillermap",
       "label": "_buildBillerMap()",
       "_callable": true,
@@ -6956,7 +7100,7 @@
       "file_type": "code",
       "norm_label": "_buildbillermap()",
       "source_file": "js/doc-list.js",
-      "source_location": "L53"
+      "source_location": "L55"
     },
     {
       "id": "js_doc_list_buildcontext",
@@ -6968,7 +7112,7 @@
       "file_type": "code",
       "norm_label": "_buildcontext()",
       "source_file": "js/doc-list.js",
-      "source_location": "L241"
+      "source_location": "L255"
     },
     {
       "id": "js_doc_list_connectworkspace",
@@ -6980,7 +7124,7 @@
       "file_type": "code",
       "norm_label": "connectworkspace()",
       "source_file": "js/doc-list.js",
-      "source_location": "L981"
+      "source_location": "L1004"
     },
     {
       "id": "js_doc_list_connectworkspace_enterlist",
@@ -6992,7 +7136,7 @@
       "file_type": "code",
       "norm_label": "enterlist()",
       "source_file": "js/doc-list.js",
-      "source_location": "L1032"
+      "source_location": "L1055"
     },
     {
       "id": "js_doc_list_connectworkspace_iseditorvisible",
@@ -7004,7 +7148,7 @@
       "file_type": "code",
       "norm_label": "iseditorvisible()",
       "source_file": "js/doc-list.js",
-      "source_location": "L994"
+      "source_location": "L1017"
     },
     {
       "id": "js_doc_list_connectworkspace_openeditor",
@@ -7016,7 +7160,7 @@
       "file_type": "code",
       "norm_label": "openeditor()",
       "source_file": "js/doc-list.js",
-      "source_location": "L1007"
+      "source_location": "L1030"
     },
     {
       "id": "js_doc_list_connectworkspace_showeditor",
@@ -7028,7 +7172,7 @@
       "file_type": "code",
       "norm_label": "showeditor()",
       "source_file": "js/doc-list.js",
-      "source_location": "L998"
+      "source_location": "L1021"
     },
     {
       "id": "js_doc_list_enrichrecord",
@@ -7040,7 +7184,7 @@
       "file_type": "code",
       "norm_label": "enrichrecord()",
       "source_file": "js/doc-list.js",
-      "source_location": "L67"
+      "source_location": "L69"
     },
     {
       "id": "js_doc_list_ensureinvoicepickermodal",
@@ -7052,7 +7196,7 @@
       "file_type": "code",
       "norm_label": "_ensureinvoicepickermodal()",
       "source_file": "js/doc-list.js",
-      "source_location": "L356"
+      "source_location": "L366"
     },
     {
       "id": "js_doc_list_escattr",
@@ -7064,7 +7208,7 @@
       "file_type": "code",
       "norm_label": "_escattr()",
       "source_file": "js/doc-list.js",
-      "source_location": "L14"
+      "source_location": "L15"
     },
     {
       "id": "js_doc_list_eschtml",
@@ -7088,7 +7232,7 @@
       "file_type": "code",
       "norm_label": "filterandsortrecords()",
       "source_file": "js/doc-list.js",
-      "source_location": "L265"
+      "source_location": "L275"
     },
     {
       "id": "js_doc_list_fmtbdt",
@@ -7100,7 +7244,7 @@
       "file_type": "code",
       "norm_label": "_fmtbdt()",
       "source_file": "js/doc-list.js",
-      "source_location": "L24"
+      "source_location": "L26"
     },
     {
       "id": "js_doc_list_fmtdate",
@@ -7112,7 +7256,7 @@
       "file_type": "code",
       "norm_label": "_fmtdate()",
       "source_file": "js/doc-list.js",
-      "source_location": "L28"
+      "source_location": "L30"
     },
     {
       "id": "js_doc_list_getbillername",
@@ -7124,7 +7268,7 @@
       "file_type": "code",
       "norm_label": "_getbillername()",
       "source_file": "js/doc-list.js",
-      "source_location": "L46"
+      "source_location": "L48"
     },
     {
       "id": "js_doc_list_getdocnumber",
@@ -7136,7 +7280,7 @@
       "file_type": "code",
       "norm_label": "getdocnumber()",
       "source_file": "js/doc-list.js",
-      "source_location": "L40"
+      "source_location": "L42"
     },
     {
       "id": "js_doc_list_init",
@@ -7148,7 +7292,7 @@
       "file_type": "code",
       "norm_label": "init()",
       "source_file": "js/doc-list.js",
-      "source_location": "L580"
+      "source_location": "L602"
     },
     {
       "id": "js_doc_list_init_getallrawrecords",
@@ -7160,7 +7304,7 @@
       "file_type": "code",
       "norm_label": "getallrawrecords()",
       "source_file": "js/doc-list.js",
-      "source_location": "L699"
+      "source_location": "L721"
     },
     {
       "id": "js_doc_list_init_populatebillers",
@@ -7172,7 +7316,7 @@
       "file_type": "code",
       "norm_label": "populatebillers()",
       "source_file": "js/doc-list.js",
-      "source_location": "L691"
+      "source_location": "L713"
     },
     {
       "id": "js_doc_list_init_refresh",
@@ -7184,7 +7328,7 @@
       "file_type": "code",
       "norm_label": "refresh()",
       "source_file": "js/doc-list.js",
-      "source_location": "L792"
+      "source_location": "L814"
     },
     {
       "id": "js_doc_list_init_renderactionbuttons",
@@ -7196,7 +7340,7 @@
       "file_type": "code",
       "norm_label": "renderactionbuttons()",
       "source_file": "js/doc-list.js",
-      "source_location": "L770"
+      "source_location": "L792"
     },
     {
       "id": "js_doc_list_init_renderkpis",
@@ -7208,7 +7352,7 @@
       "file_type": "code",
       "norm_label": "renderkpis()",
       "source_file": "js/doc-list.js",
-      "source_location": "L713"
+      "source_location": "L735"
     },
     {
       "id": "js_doc_list_openinvoicepicker",
@@ -7220,7 +7364,7 @@
       "file_type": "code",
       "norm_label": "openinvoicepicker()",
       "source_file": "js/doc-list.js",
-      "source_location": "L424"
+      "source_location": "L434"
     },
     {
       "id": "js_doc_list_openinvoicepicker_renderrows",
@@ -7232,7 +7376,7 @@
       "file_type": "code",
       "norm_label": "renderrows()",
       "source_file": "js/doc-list.js",
-      "source_location": "L471"
+      "source_location": "L484"
     },
     {
       "id": "js_doc_list_paramstosearch",
@@ -7244,7 +7388,19 @@
       "file_type": "code",
       "norm_label": "_paramstosearch()",
       "source_file": "js/doc-list.js",
-      "source_location": "L964"
+      "source_location": "L987"
+    },
+    {
+      "id": "js_doc_list_parsechallanlist",
+      "label": "_parseChallanList()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 60,
+      "community_name": "doc-list.js",
+      "file_type": "code",
+      "norm_label": "_parsechallanlist()",
+      "source_file": "js/doc-list.js",
+      "source_location": "L244"
     },
     {
       "id": "js_doc_list_round",
@@ -7256,7 +7412,7 @@
       "file_type": "code",
       "norm_label": "_round()",
       "source_file": "js/doc-list.js",
-      "source_location": "L18"
+      "source_location": "L20"
     },
     {
       "id": "assets_vendor_bootstrap_bundle_min_on_constructor",
@@ -7367,28 +7523,28 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_qn_toggle",
-      "label": ".toggle()",
+      "id": "assets_vendor_bootstrap_bundle_min_qn_show",
+      "label": ".show()",
       "_callable": true,
       "_origin": "ast",
       "community": 61,
       "community_name": "qn",
       "file_type": "code",
-      "norm_label": ".toggle()",
+      "norm_label": ".show()",
       "source_file": "assets/vendor/bootstrap.bundle.min.js",
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_xt_constructor",
-      "label": ".constructor()",
+      "id": "js_utils_buildqrpayload",
+      "label": "buildQRPayload()",
       "_callable": true,
       "_origin": "ast",
-      "community": 61,
-      "community_name": "qn",
+      "community": 64,
+      "community_name": "roundBDT",
       "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
+      "norm_label": "buildqrpayload()",
+      "source_file": "js/utils.js",
+      "source_location": "L145"
     },
     {
       "id": "js_utils_formatbdt",
@@ -7461,6 +7617,18 @@
       "norm_label": "roundbdt()",
       "source_file": "js/utils.js",
       "source_location": "L4"
+    },
+    {
+      "id": "js_utils_showtoast",
+      "label": "showToast()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 64,
+      "community_name": "roundBDT",
+      "file_type": "code",
+      "norm_label": "showtoast()",
+      "source_file": "js/utils.js",
+      "source_location": "L66"
     },
     {
       "id": "assets_vendor_bootstrap_bundle_min_ao_cleartimeout",
@@ -7607,6 +7775,18 @@
       "source_location": "L6"
     },
     {
+      "id": "assets_vendor_bootstrap_bundle_min_bt_toggle",
+      "label": ".toggle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": ".hide",
+      "file_type": "code",
+      "norm_label": ".toggle()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
       "id": "assets_vendor_bootstrap_bundle_min_es_dispose",
       "label": ".dispose()",
       "_callable": true,
@@ -7656,6 +7836,18 @@
     },
     {
       "id": "assets_vendor_bootstrap_bundle_min_qi_toggle",
+      "label": ".toggle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": ".hide",
+      "file_type": "code",
+      "norm_label": ".toggle()",
+      "source_file": "assets/vendor/bootstrap.bundle.min.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "assets_vendor_bootstrap_bundle_min_qn_toggle",
       "label": ".toggle()",
       "_callable": true,
       "_origin": "ast",
@@ -7763,18 +7955,6 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_bt_hide",
-      "label": ".hide()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 79,
-      "community_name": "Bt",
-      "file_type": "code",
-      "norm_label": ".hide()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
       "id": "assets_vendor_bootstrap_bundle_min_bt_initializechildren",
       "label": "._initializeChildren()",
       "_callable": true,
@@ -7835,18 +8015,6 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_bt_toggle",
-      "label": ".toggle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 79,
-      "community_name": "Bt",
-      "file_type": "code",
-      "norm_label": ".toggle()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
       "id": "assets_vendor_bootstrap_bundle_min_cs_enter",
       "label": "._enter()",
       "_callable": true,
@@ -7895,18 +8063,6 @@
       "source_location": "L6"
     },
     {
-      "id": "assets_vendor_bootstrap_bundle_min_getselectorfromelement",
-      "label": "getSelectorFromElement()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 79,
-      "community_name": "Bt",
-      "file_type": "code",
-      "norm_label": "getselectorfromelement()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
       "id": "js_invoice_addrow",
       "label": "addRow()",
       "_callable": true,
@@ -7916,7 +8072,7 @@
       "file_type": "code",
       "norm_label": "addrow()",
       "source_file": "js/invoice.js",
-      "source_location": "L974"
+      "source_location": "L975"
     },
     {
       "id": "js_invoice_addrowfromdata",
@@ -7928,7 +8084,7 @@
       "file_type": "code",
       "norm_label": "addrowfromdata()",
       "source_file": "js/invoice.js",
-      "source_location": "L939"
+      "source_location": "L940"
     },
     {
       "id": "js_invoice_addworkingdays",
@@ -7940,7 +8096,7 @@
       "file_type": "code",
       "norm_label": "addworkingdays()",
       "source_file": "js/invoice.js",
-      "source_location": "L1245"
+      "source_location": "L1246"
     },
     {
       "id": "js_invoice_adjustcolumnwidths",
@@ -7952,7 +8108,7 @@
       "file_type": "code",
       "norm_label": "adjustcolumnwidths()",
       "source_file": "js/invoice.js",
-      "source_location": "L1186"
+      "source_location": "L1187"
     },
     {
       "id": "js_invoice_attachrowevents",
@@ -7964,7 +8120,7 @@
       "file_type": "code",
       "norm_label": "attachrowevents()",
       "source_file": "js/invoice.js",
-      "source_location": "L980"
+      "source_location": "L981"
     },
     {
       "id": "js_invoice_buildinvoicerecord",
@@ -7976,7 +8132,7 @@
       "file_type": "code",
       "norm_label": "buildinvoicerecord()",
       "source_file": "js/invoice.js",
-      "source_location": "L1129"
+      "source_location": "L1130"
     },
     {
       "id": "js_invoice_buildqrtext",
@@ -7988,7 +8144,7 @@
       "file_type": "code",
       "norm_label": "buildqrtext()",
       "source_file": "js/invoice.js",
-      "source_location": "L1112"
+      "source_location": "L1113"
     },
     {
       "id": "js_invoice_cleardraft",
@@ -8012,7 +8168,7 @@
       "file_type": "code",
       "norm_label": "formatiso()",
       "source_file": "js/invoice.js",
-      "source_location": "L1244"
+      "source_location": "L1245"
     },
     {
       "id": "js_invoice_getdraftkey",
@@ -8036,7 +8192,7 @@
       "file_type": "code",
       "norm_label": "getgrandtotalnumber()",
       "source_file": "js/invoice.js",
-      "source_location": "L1181"
+      "source_location": "L1182"
     },
     {
       "id": "js_invoice_getinvoicetotalsbreakdown",
@@ -8048,7 +8204,7 @@
       "file_type": "code",
       "norm_label": "getinvoicetotalsbreakdown()",
       "source_file": "js/invoice.js",
-      "source_location": "L1060"
+      "source_location": "L1061"
     },
     {
       "id": "js_invoice_getsharedata",
@@ -8060,7 +8216,7 @@
       "file_type": "code",
       "norm_label": "getsharedata()",
       "source_file": "js/invoice.js",
-      "source_location": "L852"
+      "source_location": "L853"
     },
     {
       "id": "js_invoice_loadeditorfromparams",
@@ -8084,7 +8240,7 @@
       "file_type": "code",
       "norm_label": "parseiso()",
       "source_file": "js/invoice.js",
-      "source_location": "L1243"
+      "source_location": "L1244"
     },
     {
       "id": "js_invoice_populatechallandatalist",
@@ -8108,7 +8264,7 @@
       "file_type": "code",
       "norm_label": "prepareforprint()",
       "source_file": "js/invoice.js",
-      "source_location": "L1226"
+      "source_location": "L1227"
     },
     {
       "id": "js_invoice_renderpaymentstatusbanner",
@@ -8144,7 +8300,7 @@
       "file_type": "code",
       "norm_label": "_resolveinvoicebiller()",
       "source_file": "js/invoice.js",
-      "source_location": "L1103"
+      "source_location": "L1104"
     },
     {
       "id": "js_invoice_syncclientdisplay",
@@ -8180,7 +8336,7 @@
       "file_type": "code",
       "norm_label": "syncrowprintmirrors()",
       "source_file": "js/invoice.js",
-      "source_location": "L920"
+      "source_location": "L921"
     },
     {
       "id": "js_invoice_updategrandtotal",
@@ -8192,7 +8348,7 @@
       "file_type": "code",
       "norm_label": "updategrandtotal()",
       "source_file": "js/invoice.js",
-      "source_location": "L1093"
+      "source_location": "L1094"
     },
     {
       "id": "js_invoice_updatemodebadge",
@@ -8228,127 +8384,7 @@
       "file_type": "code",
       "norm_label": "validaterecord()",
       "source_file": "js/invoice.js",
-      "source_location": "L1173"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_cs_getcontentfortemplate",
-      "label": "._getContentForTemplate()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "us",
-      "file_type": "code",
-      "norm_label": "._getcontentfortemplate()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_cs_gettitle",
-      "label": "._getTitle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "us",
-      "file_type": "code",
-      "norm_label": "._gettitle()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_cs_iswithcontent",
-      "label": "._isWithContent()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "us",
-      "file_type": "code",
-      "norm_label": "._iswithcontent()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_us_default",
-      "label": ".Default()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "us",
-      "file_type": "code",
-      "norm_label": ".default()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_us_defaulttype",
-      "label": ".DefaultType()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "us",
-      "file_type": "code",
-      "norm_label": ".defaulttype()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_us_getcontent",
-      "label": "._getContent()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "us",
-      "file_type": "code",
-      "norm_label": "._getcontent()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_us_getcontentfortemplate",
-      "label": "._getContentForTemplate()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "us",
-      "file_type": "code",
-      "norm_label": "._getcontentfortemplate()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_us_iswithcontent",
-      "label": "._isWithContent()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "us",
-      "file_type": "code",
-      "norm_label": "._iswithcontent()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_us_jqueryinterface",
-      "label": ".jQueryInterface()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "us",
-      "file_type": "code",
-      "norm_label": ".jqueryinterface()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "assets_vendor_bootstrap_bundle_min_us_name",
-      "label": ".NAME()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 88,
-      "community_name": "us",
-      "file_type": "code",
-      "norm_label": ".name()",
-      "source_file": "assets/vendor/bootstrap.bundle.min.js",
-      "source_location": "L6"
+      "source_location": "L1174"
     },
     {
       "id": "tests_sqlite_db_test_cleanupdbfiles",
@@ -8495,30 +8531,6 @@
       "source_location": "L6"
     },
     {
-      "id": "js_utils_setprintdocumenttitle",
-      "label": "setPrintDocumentTitle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 90,
-      "community_name": "\ud83d\udcc4 2. PDF Generation Options & Generated PDF Visual Inspection",
-      "file_type": "code",
-      "norm_label": "setprintdocumenttitle()",
-      "source_file": "js/utils.js",
-      "source_location": "L646"
-    },
-    {
-      "id": "js_utils_slugify",
-      "label": "slugify()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 90,
-      "community_name": "\ud83d\udcc4 2. PDF Generation Options & Generated PDF Visual Inspection",
-      "file_type": "code",
-      "norm_label": "slugify()",
-      "source_file": "js/utils.js",
-      "source_location": "L418"
-    },
-    {
       "id": "server_findheadlessbrowser",
       "label": "findHeadlessBrowser()",
       "_callable": true,
@@ -8599,6 +8611,53 @@
       "norm_label": "qrcode.min.js",
       "source_file": "js/vendor/qrcode.min.js",
       "source_location": "L1"
+    },
+    {
+      "id": "js_search",
+      "label": "search.js",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "runSearch",
+      "file_type": "code",
+      "norm_label": "search.js",
+      "source_file": "js/search.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "changelog_2_2_0_2026_10_23",
+      "label": "[2.2.0] - 2026-10-23",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "runSearch",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "[2.2.0] - 2026-10-23",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L79"
+    },
+    {
+      "id": "changelog_accessibility_ui_consistency",
+      "label": "\u267f Accessibility & UI Consistency",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "runSearch",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\u267f accessibility & ui consistency",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L88"
+    },
+    {
+      "id": "changelog_ponytail_minimalism_codebase_pruning",
+      "label": "\ud83e\ude9a Ponytail Minimalism & Codebase Pruning",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "runSearch",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83e\ude9a ponytail minimalism & codebase pruning",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L93"
     },
     {
       "id": "agents_skills_agency_product_manager_skill",
@@ -10094,6 +10153,54 @@
       "source_location": "L19"
     },
     {
+      "id": "audit_report_2_pdf_generation_options_generated_pdf_visual_inspection",
+      "label": "\ud83d\udcc4 2. PDF Generation Options & Generated PDF Visual Inspection",
+      "_origin": "ast",
+      "community": 111,
+      "community_name": "escapeHTML",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\udcc4 2. pdf generation options & generated pdf visual inspection",
+      "source_file": "AUDIT_REPORT.md",
+      "source_location": "L23"
+    },
+    {
+      "id": "audit_report_empirical_defects_verified_in_generated_a4_pdfs_chrome_page_printtopdf",
+      "label": "Empirical Defects Verified in Generated A4 PDFs (Chrome `Page.printToPDF`)",
+      "_origin": "ast",
+      "community": 111,
+      "community_name": "escapeHTML",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "empirical defects verified in generated a4 pdfs (chrome `page.printtopdf`)",
+      "source_file": "AUDIT_REPORT.md",
+      "source_location": "L29"
+    },
+    {
+      "id": "audit_report_print_pdf_trigger_audit",
+      "label": "Print & PDF Trigger Audit",
+      "_origin": "ast",
+      "community": 111,
+      "community_name": "escapeHTML",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "print & pdf trigger audit",
+      "source_file": "AUDIT_REPORT.md",
+      "source_location": "L25"
+    },
+    {
+      "id": "audit_report_recommended_pdf_architecture",
+      "label": "Recommended PDF Architecture",
+      "_origin": "ast",
+      "community": 111,
+      "community_name": "escapeHTML",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "recommended pdf architecture",
+      "source_file": "AUDIT_REPORT.md",
+      "source_location": "L36"
+    },
+    {
       "id": "planning_phases_04_continuous_qc_planning_automation_plan_tasks_38",
       "label": "Tasks",
       "_origin": "ast",
@@ -10106,37 +10213,11 @@
       "source_location": "L38"
     },
     {
-      "id": "agents_agents_autoinvoice_implementer",
-      "label": "autoinvoice-implementer.md",
-      "_origin": "ast",
-      "community": 112,
-      "community_name": "Implementation Rules",
-      "file_type": "document",
-      "frontmatter": {
-        "name": "autoinvoice-implementer",
-        "description": "AutoInvoice implementation specialist: writes minimal-diff vanilla JS/HTML/CSS and Node/SQLite code.",
-        "subagent": true,
-        "mainAgent": false,
-        "tools": [
-          "read_file",
-          "edit_file",
-          "write_file",
-          "run_command",
-          "manage_task",
-          "search_web"
-        ]
-      },
-      "node_kind": "page",
-      "norm_label": "autoinvoice-implementer.md",
-      "source_file": ".agents/agents/autoinvoice-implementer.md",
-      "source_location": "L1"
-    },
-    {
       "id": "agents_workflows_plan",
       "label": "plan.md",
       "_origin": "ast",
       "community": 112,
-      "community_name": "Implementation Rules",
+      "community_name": "Workflow: AutoInvoice Planning (`/plan`)",
       "file_type": "document",
       "frontmatter": {
         "name": "plan",
@@ -10148,35 +10229,11 @@
       "source_location": "L1"
     },
     {
-      "id": "agents_agents_autoinvoice_implementer_autoinvoice_surgical_implementation_specialist",
-      "label": "AutoInvoice Surgical Implementation Specialist",
-      "_origin": "ast",
-      "community": 112,
-      "community_name": "Implementation Rules",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "autoinvoice surgical implementation specialist",
-      "source_file": ".agents/agents/autoinvoice-implementer.md",
-      "source_location": "L15"
-    },
-    {
-      "id": "agents_agents_autoinvoice_implementer_implementation_rules",
-      "label": "Implementation Rules",
-      "_origin": "ast",
-      "community": 112,
-      "community_name": "Implementation Rules",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "implementation rules",
-      "source_file": ".agents/agents/autoinvoice-implementer.md",
-      "source_location": "L19"
-    },
-    {
       "id": "agents_workflows_plan_1_graphify_knowledge_graph_discovery",
       "label": "1. Graphify Knowledge Graph Discovery",
       "_origin": "ast",
       "community": 112,
-      "community_name": "Implementation Rules",
+      "community_name": "Workflow: AutoInvoice Planning (`/plan`)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "1. graphify knowledge graph discovery",
@@ -10184,23 +10241,11 @@
       "source_location": "L10"
     },
     {
-      "id": "agents_workflows_plan_2_ponytail_minimalism_gate",
-      "label": "2. Ponytail Minimalism Gate",
-      "_origin": "ast",
-      "community": 112,
-      "community_name": "Implementation Rules",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "2. ponytail minimalism gate",
-      "source_file": ".agents/workflows/plan.md",
-      "source_location": "L17"
-    },
-    {
       "id": "agents_workflows_plan_3_guardrail_impact_check",
       "label": "3. Guardrail & Impact Check",
       "_origin": "ast",
       "community": 112,
-      "community_name": "Implementation Rules",
+      "community_name": "Workflow: AutoInvoice Planning (`/plan`)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "3. guardrail & impact check",
@@ -10212,7 +10257,7 @@
       "label": "4. Phased Task Breakdown",
       "_origin": "ast",
       "community": 112,
-      "community_name": "Implementation Rules",
+      "community_name": "Workflow: AutoInvoice Planning (`/plan`)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "4. phased task breakdown",
@@ -10224,7 +10269,7 @@
       "label": "Workflow: AutoInvoice Planning (`/plan`)",
       "_origin": "ast",
       "community": 112,
-      "community_name": "Implementation Rules",
+      "community_name": "Workflow: AutoInvoice Planning (`/plan`)",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "workflow: autoinvoice planning (`/plan`)",
@@ -10236,7 +10281,7 @@
       "label": "tests/README.md",
       "_origin": "ast",
       "community": 113,
-      "community_name": "AutoInvoice Test Suite",
+      "community_name": "\ud83e\uddea Test Architecture & Isolation",
       "file_type": "document",
       "node_kind": "page",
       "norm_label": "tests/readme.md",
@@ -10248,7 +10293,7 @@
       "label": "AutoInvoice Test Suite",
       "_origin": "ast",
       "community": 113,
-      "community_name": "AutoInvoice Test Suite",
+      "community_name": "\ud83e\uddea Test Architecture & Isolation",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "autoinvoice test suite",
@@ -10260,7 +10305,7 @@
       "label": "\ud83d\ude80 How to Run Tests",
       "_origin": "ast",
       "community": 113,
-      "community_name": "AutoInvoice Test Suite",
+      "community_name": "\ud83e\uddea Test Architecture & Isolation",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "\ud83d\ude80 how to run tests",
@@ -10272,12 +10317,24 @@
       "label": "In Any Browser",
       "_origin": "ast",
       "community": 113,
-      "community_name": "AutoInvoice Test Suite",
+      "community_name": "\ud83e\uddea Test Architecture & Isolation",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "in any browser",
       "source_file": "tests/README.md",
       "source_location": "L9"
+    },
+    {
+      "id": "tests_readme_test_architecture_isolation",
+      "label": "\ud83e\uddea Test Architecture & Isolation",
+      "_origin": "ast",
+      "community": 113,
+      "community_name": "\ud83e\uddea Test Architecture & Isolation",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83e\uddea test architecture & isolation",
+      "source_file": "tests/README.md",
+      "source_location": "L20"
     },
     {
       "id": "agents_agents_autoinvoice_reality_checker",
@@ -11024,6 +11081,138 @@
       "source_location": "L5"
     },
     {
+      "id": "changelog",
+      "label": "CHANGELOG.md",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "changelog.md",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "changelog_1_0_0_2025_06_25",
+      "label": "[1.0.0] - 2025-06-25",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "[1.0.0] - 2025-06-25",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L167"
+    },
+    {
+      "id": "changelog_2_1_0_2026_10_08",
+      "label": "[2.1.0] - 2026-10-08",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "[2.1.0] - 2026-10-08",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L101"
+    },
+    {
+      "id": "changelog_2_3_0_2026_10_23",
+      "label": "[2.3.0] - 2026-10-23",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "[2.3.0] - 2026-10-23",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L61"
+    },
+    {
+      "id": "changelog_2_5_0_2026_11_17",
+      "label": "[2.5.0] - 2026-11-17",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "[2.5.0] - 2026-11-17",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "changelog_2_6_0_2026_11_17",
+      "label": "[2.6.0] - 2026-11-17",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "[2.6.0] - 2026-11-17",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "changelog_added",
+      "label": "\ud83d\ude80 Added",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\ude80 added",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L103"
+    },
+    {
+      "id": "changelog_advanced_reports_enhanced_downloads",
+      "label": "\ud83d\udcca Advanced Reports & Enhanced Downloads",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\udcca advanced reports & enhanced downloads",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L70"
+    },
+    {
+      "id": "changelog_bangladeshi_commercial_features_workflows",
+      "label": "\ud83d\ude80 Bangladeshi Commercial Features & Workflows",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\ude80 bangladeshi commercial features & workflows",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "changelog_changed",
+      "label": "\ud83d\udd04 Changed",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\udd04 changed",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L122"
+    },
+    {
+      "id": "changelog_changelog",
+      "label": "Changelog",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "changelog",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1"
+    },
+    {
       "id": "changelog_data_integrity_sqlite_sync_security_hardening_phase_1",
       "label": "\ud83d\udee1\ufe0f Data Integrity, SQLite Sync & Security Hardening (Phase 1)",
       "_origin": "ast",
@@ -11034,6 +11223,54 @@
       "norm_label": "\ud83d\udee1\ufe0f data integrity, sqlite sync & security hardening (phase 1)",
       "source_file": "CHANGELOG.md",
       "source_location": "L33"
+    },
+    {
+      "id": "changelog_dual_tier_a4_pdf_generation_print_perfection",
+      "label": "\ud83d\udda8\ufe0f Dual-Tier A4 PDF Generation & Print Perfection",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\udda8\ufe0f dual-tier a4 pdf generation & print perfection",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "changelog_initial_release",
+      "label": "Initial Release",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "initial release",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L169"
+    },
+    {
+      "id": "changelog_multi_biller_profiles_dynamic_branding",
+      "label": "\ud83c\udfe2 Multi-Biller Profiles & Dynamic Branding",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83c\udfe2 multi-biller profiles & dynamic branding",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L63"
+    },
+    {
+      "id": "changelog_print_fidelity_ui_ux_polish_phase_3",
+      "label": "\ud83d\udda8\ufe0f Print Fidelity & UI/UX Polish (Phase 3)",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "db.js",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\udda8\ufe0f print fidelity & ui/ux polish (phase 3)",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L46"
     },
     {
       "id": "changelog_security_persistence_test_isolation",
@@ -11048,90 +11285,6 @@
       "source_location": "L12"
     },
     {
-      "id": "planning_phases_04_continuous_qc_planning_automation_plan",
-      "label": "PLAN.md",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "db.js",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "plan.md",
-      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "planning_phases_04_continuous_qc_planning_automation_plan_autoinvoice_v2_5_phased_implementation_plan_qa_qc_fixes_ui_ux_polish_commercial_features",
-      "label": "AutoInvoice v2.5 \u2014 Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "db.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "autoinvoice v2.5 \u2014 phased implementation plan (qa/qc fixes, ui/ux polish & commercial features)",
-      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "planning_phases_04_continuous_qc_planning_automation_plan_phase_1_critical_sqlite_sync_backup_data_loss_immunity",
-      "label": "\ud83d\udce6 Phase 1: Critical SQLite Sync, Backup & Data-Loss Immunity",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "db.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83d\udce6 phase 1: critical sqlite sync, backup & data-loss immunity",
-      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
-      "source_location": "L15"
-    },
-    {
-      "id": "planning_phases_04_continuous_qc_planning_automation_plan_phase_2_financial_math_multi_biller_isolation_accounting_ponytail_deduplication",
-      "label": "\ud83e\uddee Phase 2: Financial Math, Multi-Biller Isolation, Accounting & Ponytail Deduplication",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "db.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83e\uddee phase 2: financial math, multi-biller isolation, accounting & ponytail deduplication",
-      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
-      "source_location": "L35"
-    },
-    {
-      "id": "planning_phases_04_continuous_qc_planning_automation_plan_phase_3_ui_ux_polish_print_css_media_print_hardening",
-      "label": "\ud83c\udfa8 Phase 3: UI/UX Polish & Print CSS (`@media print`) Hardening",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "db.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83c\udfa8 phase 3: ui/ux polish & print css (`@media print`) hardening",
-      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
-      "source_location": "L58"
-    },
-    {
-      "id": "planning_phases_04_continuous_qc_planning_automation_plan_phase_4_bangladeshi_commercial_features_5_gate_qc_verification",
-      "label": "\ud83d\ude80 Phase 4: Bangladeshi Commercial Features & 5-Gate QC Verification",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "db.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83d\ude80 phase 4: bangladeshi commercial features & 5-gate qc verification",
-      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
-      "source_location": "L76"
-    },
-    {
-      "id": "planning_phases_04_continuous_qc_planning_automation_plan_scope_objectives",
-      "label": "\ud83c\udfaf Scope & Objectives",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "db.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83c\udfaf scope & objectives",
-      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
-      "source_location": "L9"
-    },
-    {
       "id": "planning_phases_04_continuous_qc_planning_automation_plan_tasks",
       "label": "Tasks",
       "_origin": "ast",
@@ -11142,30 +11295,6 @@
       "norm_label": "tasks",
       "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
       "source_location": "L18"
-    },
-    {
-      "id": "planning_phases_04_continuous_qc_planning_automation_plan_tasks_61",
-      "label": "Tasks",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "db.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "tasks",
-      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
-      "source_location": "L61"
-    },
-    {
-      "id": "planning_phases_04_continuous_qc_planning_automation_plan_tasks_79",
-      "label": "Tasks",
-      "_origin": "ast",
-      "community": 16,
-      "community_name": "db.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "tasks",
-      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
-      "source_location": "L79"
     },
     {
       "id": "tests_cli_test_runner",
@@ -18145,185 +18274,6 @@
       "source_location": "L1"
     },
     {
-      "id": "js_search",
-      "label": "search.js",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "code",
-      "norm_label": "search.js",
-      "source_file": "js/search.js",
-      "source_location": "L1"
-    },
-    {
-      "id": "changelog",
-      "label": "CHANGELOG.md",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "changelog.md",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "changelog_1_0_0_2025_06_25",
-      "label": "[1.0.0] - 2025-06-25",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "[1.0.0] - 2025-06-25",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L167"
-    },
-    {
-      "id": "changelog_2_1_0_2026_10_08",
-      "label": "[2.1.0] - 2026-10-08",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "[2.1.0] - 2026-10-08",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L101"
-    },
-    {
-      "id": "changelog_2_2_0_2026_10_23",
-      "label": "[2.2.0] - 2026-10-23",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "[2.2.0] - 2026-10-23",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L79"
-    },
-    {
-      "id": "changelog_2_3_0_2026_10_23",
-      "label": "[2.3.0] - 2026-10-23",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "[2.3.0] - 2026-10-23",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L61"
-    },
-    {
-      "id": "changelog_2_5_0_2026_11_17",
-      "label": "[2.5.0] - 2026-11-17",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "[2.5.0] - 2026-11-17",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L31"
-    },
-    {
-      "id": "changelog_2_6_0_2026_11_17",
-      "label": "[2.6.0] - 2026-11-17",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "[2.6.0] - 2026-11-17",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L10"
-    },
-    {
-      "id": "changelog_accessibility_ui_consistency",
-      "label": "\u267f Accessibility & UI Consistency",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\u267f accessibility & ui consistency",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L88"
-    },
-    {
-      "id": "changelog_added",
-      "label": "\ud83d\ude80 Added",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83d\ude80 added",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L103"
-    },
-    {
-      "id": "changelog_advanced_reports_enhanced_downloads",
-      "label": "\ud83d\udcca Advanced Reports & Enhanced Downloads",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83d\udcca advanced reports & enhanced downloads",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L70"
-    },
-    {
-      "id": "changelog_bangladeshi_commercial_features_workflows",
-      "label": "\ud83d\ude80 Bangladeshi Commercial Features & Workflows",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83d\ude80 bangladeshi commercial features & workflows",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L24"
-    },
-    {
-      "id": "changelog_changed",
-      "label": "\ud83d\udd04 Changed",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83d\udd04 changed",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L122"
-    },
-    {
-      "id": "changelog_changelog",
-      "label": "Changelog",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "changelog",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "changelog_dual_tier_a4_pdf_generation_print_perfection",
-      "label": "\ud83d\udda8\ufe0f Dual-Tier A4 PDF Generation & Print Perfection",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83d\udda8\ufe0f dual-tier a4 pdf generation & print perfection",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L16"
-    },
-    {
       "id": "changelog_financial_accuracy_multi_biller_accounting_phase_2",
       "label": "\ud83d\udcb0 Financial Accuracy & Multi-Biller Accounting (Phase 2)",
       "_origin": "ast",
@@ -18334,54 +18284,6 @@
       "norm_label": "\ud83d\udcb0 financial accuracy & multi-biller accounting (phase 2)",
       "source_file": "CHANGELOG.md",
       "source_location": "L39"
-    },
-    {
-      "id": "changelog_initial_release",
-      "label": "Initial Release",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "initial release",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L169"
-    },
-    {
-      "id": "changelog_multi_biller_profiles_dynamic_branding",
-      "label": "\ud83c\udfe2 Multi-Biller Profiles & Dynamic Branding",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83c\udfe2 multi-biller profiles & dynamic branding",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L63"
-    },
-    {
-      "id": "changelog_ponytail_minimalism_codebase_pruning",
-      "label": "\ud83e\ude9a Ponytail Minimalism & Codebase Pruning",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83e\ude9a ponytail minimalism & codebase pruning",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L93"
-    },
-    {
-      "id": "changelog_print_fidelity_ui_ux_polish_phase_3",
-      "label": "\ud83d\udda8\ufe0f Print Fidelity & UI/UX Polish (Phase 3)",
-      "_origin": "ast",
-      "community": 53,
-      "community_name": "expenses.js",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83d\udda8\ufe0f print fidelity & ui/ux polish (phase 3)",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L46"
     },
     {
       "id": "js_biller",
@@ -19411,6 +19313,32 @@
       "source_location": "L1"
     },
     {
+      "id": "agents_agents_autoinvoice_implementer",
+      "label": "autoinvoice-implementer.md",
+      "_origin": "ast",
+      "community": 64,
+      "community_name": "roundBDT",
+      "file_type": "document",
+      "frontmatter": {
+        "name": "autoinvoice-implementer",
+        "description": "AutoInvoice implementation specialist: writes minimal-diff vanilla JS/HTML/CSS and Node/SQLite code.",
+        "subagent": true,
+        "mainAgent": false,
+        "tools": [
+          "read_file",
+          "edit_file",
+          "write_file",
+          "run_command",
+          "manage_task",
+          "search_web"
+        ]
+      },
+      "node_kind": "page",
+      "norm_label": "autoinvoice-implementer.md",
+      "source_file": ".agents/agents/autoinvoice-implementer.md",
+      "source_location": "L1"
+    },
+    {
       "id": "agents_agents_autoinvoice_doc_finance_autoinvoice_commercial_documents_financial_specialist",
       "label": "AutoInvoice Commercial Documents & Financial Specialist",
       "_origin": "ast",
@@ -19433,6 +19361,42 @@
       "norm_label": "domain standards",
       "source_file": ".agents/agents/autoinvoice-doc-finance.md",
       "source_location": "L19"
+    },
+    {
+      "id": "agents_agents_autoinvoice_implementer_autoinvoice_surgical_implementation_specialist",
+      "label": "AutoInvoice Surgical Implementation Specialist",
+      "_origin": "ast",
+      "community": 64,
+      "community_name": "roundBDT",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "autoinvoice surgical implementation specialist",
+      "source_file": ".agents/agents/autoinvoice-implementer.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "agents_agents_autoinvoice_implementer_implementation_rules",
+      "label": "Implementation Rules",
+      "_origin": "ast",
+      "community": 64,
+      "community_name": "roundBDT",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "implementation rules",
+      "source_file": ".agents/agents/autoinvoice-implementer.md",
+      "source_location": "L19"
+    },
+    {
+      "id": "agents_workflows_plan_2_ponytail_minimalism_gate",
+      "label": "2. Ponytail Minimalism Gate",
+      "_origin": "ast",
+      "community": 64,
+      "community_name": "roundBDT",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "2. ponytail minimalism gate",
+      "source_file": ".agents/workflows/plan.md",
+      "source_location": "L17"
     },
     {
       "id": "changelog_architecture_code_quality_phase_3",
@@ -19577,18 +19541,6 @@
       "norm_label": "\ud83e\uddea automated testing guide",
       "source_file": "README.md",
       "source_location": "L140"
-    },
-    {
-      "id": "tests_readme_test_architecture_isolation",
-      "label": "\ud83e\uddea Test Architecture & Isolation",
-      "_origin": "ast",
-      "community": 64,
-      "community_name": "roundBDT",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83e\uddea test architecture & isolation",
-      "source_file": "tests/README.md",
-      "source_location": "L20"
     },
     {
       "id": "js_tests_expense_test",
@@ -20579,6 +20531,114 @@
       "source_location": "L153"
     },
     {
+      "id": "planning_phases_04_continuous_qc_planning_automation_plan",
+      "label": "PLAN.md",
+      "_origin": "ast",
+      "community": 88,
+      "community_name": "AutoInvoice v2.5 \u2014 Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "plan.md",
+      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "planning_phases_04_continuous_qc_planning_automation_plan_autoinvoice_v2_5_phased_implementation_plan_qa_qc_fixes_ui_ux_polish_commercial_features",
+      "label": "AutoInvoice v2.5 \u2014 Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)",
+      "_origin": "ast",
+      "community": 88,
+      "community_name": "AutoInvoice v2.5 \u2014 Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "autoinvoice v2.5 \u2014 phased implementation plan (qa/qc fixes, ui/ux polish & commercial features)",
+      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "planning_phases_04_continuous_qc_planning_automation_plan_phase_1_critical_sqlite_sync_backup_data_loss_immunity",
+      "label": "\ud83d\udce6 Phase 1: Critical SQLite Sync, Backup & Data-Loss Immunity",
+      "_origin": "ast",
+      "community": 88,
+      "community_name": "AutoInvoice v2.5 \u2014 Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\udce6 phase 1: critical sqlite sync, backup & data-loss immunity",
+      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "planning_phases_04_continuous_qc_planning_automation_plan_phase_2_financial_math_multi_biller_isolation_accounting_ponytail_deduplication",
+      "label": "\ud83e\uddee Phase 2: Financial Math, Multi-Biller Isolation, Accounting & Ponytail Deduplication",
+      "_origin": "ast",
+      "community": 88,
+      "community_name": "AutoInvoice v2.5 \u2014 Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83e\uddee phase 2: financial math, multi-biller isolation, accounting & ponytail deduplication",
+      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
+      "source_location": "L35"
+    },
+    {
+      "id": "planning_phases_04_continuous_qc_planning_automation_plan_phase_3_ui_ux_polish_print_css_media_print_hardening",
+      "label": "\ud83c\udfa8 Phase 3: UI/UX Polish & Print CSS (`@media print`) Hardening",
+      "_origin": "ast",
+      "community": 88,
+      "community_name": "AutoInvoice v2.5 \u2014 Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83c\udfa8 phase 3: ui/ux polish & print css (`@media print`) hardening",
+      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
+      "source_location": "L58"
+    },
+    {
+      "id": "planning_phases_04_continuous_qc_planning_automation_plan_phase_4_bangladeshi_commercial_features_5_gate_qc_verification",
+      "label": "\ud83d\ude80 Phase 4: Bangladeshi Commercial Features & 5-Gate QC Verification",
+      "_origin": "ast",
+      "community": 88,
+      "community_name": "AutoInvoice v2.5 \u2014 Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83d\ude80 phase 4: bangladeshi commercial features & 5-gate qc verification",
+      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
+      "source_location": "L76"
+    },
+    {
+      "id": "planning_phases_04_continuous_qc_planning_automation_plan_scope_objectives",
+      "label": "\ud83c\udfaf Scope & Objectives",
+      "_origin": "ast",
+      "community": 88,
+      "community_name": "AutoInvoice v2.5 \u2014 Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "\ud83c\udfaf scope & objectives",
+      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "planning_phases_04_continuous_qc_planning_automation_plan_tasks_61",
+      "label": "Tasks",
+      "_origin": "ast",
+      "community": 88,
+      "community_name": "AutoInvoice v2.5 \u2014 Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "tasks",
+      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
+      "source_location": "L61"
+    },
+    {
+      "id": "planning_phases_04_continuous_qc_planning_automation_plan_tasks_79",
+      "label": "Tasks",
+      "_origin": "ast",
+      "community": 88,
+      "community_name": "AutoInvoice v2.5 \u2014 Phased Implementation Plan (QA/QC Fixes, UI/UX Polish & Commercial Features)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "tasks",
+      "source_file": ".planning/phases/04-continuous-qc-planning-automation/PLAN.md",
+      "source_location": "L79"
+    },
+    {
       "id": "tests_sqlite_db_test",
       "label": "sqlite_db.test.js",
       "_origin": "ast",
@@ -20907,54 +20967,6 @@
       "norm_label": "tmpdbpath",
       "source_file": "tests/sqlite_db.test.js",
       "source_location": "L8"
-    },
-    {
-      "id": "audit_report_2_pdf_generation_options_generated_pdf_visual_inspection",
-      "label": "\ud83d\udcc4 2. PDF Generation Options & Generated PDF Visual Inspection",
-      "_origin": "ast",
-      "community": 90,
-      "community_name": "\ud83d\udcc4 2. PDF Generation Options & Generated PDF Visual Inspection",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "\ud83d\udcc4 2. pdf generation options & generated pdf visual inspection",
-      "source_file": "AUDIT_REPORT.md",
-      "source_location": "L23"
-    },
-    {
-      "id": "audit_report_empirical_defects_verified_in_generated_a4_pdfs_chrome_page_printtopdf",
-      "label": "Empirical Defects Verified in Generated A4 PDFs (Chrome `Page.printToPDF`)",
-      "_origin": "ast",
-      "community": 90,
-      "community_name": "\ud83d\udcc4 2. PDF Generation Options & Generated PDF Visual Inspection",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "empirical defects verified in generated a4 pdfs (chrome `page.printtopdf`)",
-      "source_file": "AUDIT_REPORT.md",
-      "source_location": "L29"
-    },
-    {
-      "id": "audit_report_print_pdf_trigger_audit",
-      "label": "Print & PDF Trigger Audit",
-      "_origin": "ast",
-      "community": 90,
-      "community_name": "\ud83d\udcc4 2. PDF Generation Options & Generated PDF Visual Inspection",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "print & pdf trigger audit",
-      "source_file": "AUDIT_REPORT.md",
-      "source_location": "L25"
-    },
-    {
-      "id": "audit_report_recommended_pdf_architecture",
-      "label": "Recommended PDF Architecture",
-      "_origin": "ast",
-      "community": 90,
-      "community_name": "\ud83d\udcc4 2. PDF Generation Options & Generated PDF Visual Inspection",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "recommended pdf architecture",
-      "source_file": "AUDIT_REPORT.md",
-      "source_location": "L36"
     },
     {
       "id": "agents_skills_agency_technical_writer_skill",
@@ -28888,7 +28900,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L836",
+      "source_location": "L857",
       "weight": 1.0
     },
     {
@@ -28900,7 +28912,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L831",
+      "source_location": "L852",
       "weight": 1.0
     },
     {
@@ -28912,7 +28924,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L833",
+      "source_location": "L854",
       "weight": 1.0
     },
     {
@@ -29008,7 +29020,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L862",
+      "source_location": "L883",
       "weight": 1.0
     },
     {
@@ -29020,7 +29032,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L876",
+      "source_location": "L897",
       "weight": 1.0
     },
     {
@@ -29032,7 +29044,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L886",
+      "source_location": "L907",
       "weight": 1.0
     },
     {
@@ -29044,7 +29056,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L942",
+      "source_location": "L963",
       "weight": 1.0
     },
     {
@@ -29056,7 +29068,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L962",
+      "source_location": "L983",
       "weight": 1.0
     },
     {
@@ -29068,7 +29080,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L919",
+      "source_location": "L940",
       "weight": 1.0
     },
     {
@@ -29092,7 +29104,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L748",
+      "source_location": "L769",
       "weight": 1.0
     },
     {
@@ -29109,6 +29121,30 @@
     },
     {
       "source": "js_challan_handlelinkedinvoicechange",
+      "target": "js_challan_syncprintdisplayvalues",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "js/challan.js",
+      "source_location": "L555",
+      "weight": 1.0
+    },
+    {
+      "source": "js_challan_handlelinkedinvoicechange",
+      "target": "js_challan_buildqrtext",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "js/challan.js",
+      "source_location": "L556",
+      "weight": 1.0
+    },
+    {
+      "source": "js_challan_handlelinkedinvoicechange",
       "target": "js_challan_fetchinvoicebynumber",
       "relation": "calls",
       "_origin": "ast",
@@ -29116,7 +29152,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L554",
+      "source_location": "L560",
       "weight": 1.0
     },
     {
@@ -29128,7 +29164,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L562",
+      "source_location": "L568",
       "weight": 1.0
     },
     {
@@ -29236,7 +29272,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L1009",
+      "source_location": "L1030",
       "weight": 1.0
     },
     {
@@ -29248,7 +29284,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L1010",
+      "source_location": "L1031",
       "weight": 1.0
     },
     {
@@ -29260,7 +29296,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L1018",
+      "source_location": "L1039",
       "weight": 1.0
     },
     {
@@ -29380,7 +29416,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L242",
+      "source_location": "L256",
+      "weight": 1.0
+    },
+    {
+      "source": "js_doc_list_buildcontext",
+      "target": "js_doc_list_parsechallanlist",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "js/doc-list.js",
+      "source_location": "L261",
       "weight": 1.0
     },
     {
@@ -29392,7 +29440,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1053",
+      "source_location": "L1076",
       "weight": 1.0
     },
     {
@@ -29404,7 +29452,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1068",
+      "source_location": "L1091",
       "weight": 1.0
     },
     {
@@ -29416,7 +29464,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1087",
+      "source_location": "L1110",
       "weight": 1.0
     },
     {
@@ -29428,7 +29476,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1034",
+      "source_location": "L1057",
       "weight": 1.0
     },
     {
@@ -29440,7 +29488,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1042",
+      "source_location": "L1065",
       "weight": 1.0
     },
     {
@@ -29452,7 +29500,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1046",
+      "source_location": "L1069",
       "weight": 1.0
     },
     {
@@ -29464,7 +29512,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1009",
+      "source_location": "L1032",
       "weight": 1.0
     },
     {
@@ -29476,7 +29524,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1016",
+      "source_location": "L1039",
       "weight": 1.0
     },
     {
@@ -29488,7 +29536,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1021",
+      "source_location": "L1044",
+      "weight": 1.0
+    },
+    {
+      "source": "js_doc_list_enrichrecord",
+      "target": "js_doc_list_parsechallanlist",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "js/doc-list.js",
+      "source_location": "L135",
       "weight": 1.0
     },
     {
@@ -29500,7 +29560,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L201",
+      "source_location": "L204",
       "weight": 1.0
     },
     {
@@ -29512,7 +29572,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L68",
+      "source_location": "L70",
       "weight": 1.0
     },
     {
@@ -29524,7 +29584,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L75",
+      "source_location": "L80",
       "weight": 1.0
     },
     {
@@ -29536,7 +29596,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L94",
+      "source_location": "L99",
       "weight": 1.0
     },
     {
@@ -29548,7 +29608,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L273",
+      "source_location": "L283",
       "weight": 1.0
     },
     {
@@ -29560,7 +29620,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L275",
+      "source_location": "L285",
       "weight": 1.0
     },
     {
@@ -29572,7 +29632,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L25",
+      "source_location": "L27",
       "weight": 1.0
     },
     {
@@ -29584,7 +29644,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L599",
+      "source_location": "L621",
       "weight": 1.0
     },
     {
@@ -29596,7 +29656,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L612",
+      "source_location": "L634",
       "weight": 1.0
     },
     {
@@ -29608,7 +29668,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L701",
+      "source_location": "L723",
       "weight": 1.0
     },
     {
@@ -29620,7 +29680,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L695",
+      "source_location": "L717",
       "weight": 1.0
     },
     {
@@ -29632,7 +29692,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L695",
+      "source_location": "L717",
       "weight": 1.0
     },
     {
@@ -29644,7 +29704,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L793",
+      "source_location": "L815",
       "weight": 1.0
     },
     {
@@ -29656,7 +29716,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L794",
+      "source_location": "L816",
       "weight": 1.0
     },
     {
@@ -29668,7 +29728,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L795",
+      "source_location": "L817",
       "weight": 1.0
     },
     {
@@ -29680,7 +29740,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L796",
+      "source_location": "L818",
       "weight": 1.0
     },
     {
@@ -29692,7 +29752,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L797",
+      "source_location": "L819",
       "weight": 1.0
     },
     {
@@ -29704,7 +29764,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L821",
+      "source_location": "L843",
       "weight": 1.0
     },
     {
@@ -29716,7 +29776,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L832",
+      "source_location": "L854",
       "weight": 1.0
     },
     {
@@ -29728,7 +29788,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L847",
+      "source_location": "L869",
       "weight": 1.0
     },
     {
@@ -29740,7 +29800,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L861",
+      "source_location": "L881",
       "weight": 1.0
     },
     {
@@ -29752,7 +29812,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L873",
+      "source_location": "L896",
       "weight": 1.0
     },
     {
@@ -29764,7 +29824,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L771",
+      "source_location": "L793",
       "weight": 1.0
     },
     {
@@ -29776,7 +29836,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L727",
+      "source_location": "L749",
       "weight": 1.0
     },
     {
@@ -29788,7 +29848,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L732",
+      "source_location": "L754",
       "weight": 1.0
     },
     {
@@ -29800,7 +29860,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L762",
+      "source_location": "L784",
       "weight": 1.0
     },
     {
@@ -29812,7 +29872,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L763",
+      "source_location": "L785",
       "weight": 1.0
     },
     {
@@ -29824,7 +29884,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L427",
+      "source_location": "L437",
       "weight": 1.0
     },
     {
@@ -29836,7 +29896,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L447",
+      "source_location": "L457",
       "weight": 1.0
     },
     {
@@ -29848,7 +29908,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L447",
+      "source_location": "L457",
       "weight": 1.0
     },
     {
@@ -29860,7 +29920,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L453",
+      "source_location": "L463",
       "weight": 1.0
     },
     {
@@ -29872,7 +29932,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L474",
+      "source_location": "L487",
       "weight": 1.0
     },
     {
@@ -29884,7 +29944,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L492",
+      "source_location": "L505",
       "weight": 1.0
     },
     {
@@ -29896,7 +29956,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L505",
+      "source_location": "L518",
       "weight": 1.0
     },
     {
@@ -29908,7 +29968,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L511",
+      "source_location": "L524",
       "weight": 1.0
     },
     {
@@ -29920,7 +29980,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L520",
+      "source_location": "L534",
       "weight": 1.0
     },
     {
@@ -29932,7 +29992,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L529",
+      "source_location": "L545",
       "weight": 1.0
     },
     {
@@ -30076,7 +30136,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L975",
+      "source_location": "L976",
       "weight": 1.0
     },
     {
@@ -30088,7 +30148,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L976",
+      "source_location": "L977",
       "weight": 1.0
     },
     {
@@ -30100,7 +30160,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L969",
+      "source_location": "L970",
       "weight": 1.0
     },
     {
@@ -30112,7 +30172,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L971",
+      "source_location": "L972",
       "weight": 1.0
     },
     {
@@ -30124,7 +30184,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1006",
+      "source_location": "L1007",
       "weight": 1.0
     },
     {
@@ -30136,7 +30196,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1051",
+      "source_location": "L1052",
       "weight": 1.0
     },
     {
@@ -30148,7 +30208,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L997",
+      "source_location": "L998",
       "weight": 1.0
     },
     {
@@ -30160,7 +30220,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L998",
+      "source_location": "L999",
       "weight": 1.0
     },
     {
@@ -30172,7 +30232,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1140",
+      "source_location": "L1141",
       "weight": 1.0
     },
     {
@@ -30184,7 +30244,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1142",
+      "source_location": "L1143",
       "weight": 1.0
     },
     {
@@ -30196,7 +30256,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1168",
+      "source_location": "L1169",
       "weight": 1.0
     },
     {
@@ -30208,7 +30268,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1114",
+      "source_location": "L1115",
       "weight": 1.0
     },
     {
@@ -30220,7 +30280,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1116",
+      "source_location": "L1117",
       "weight": 1.0
     },
     {
@@ -30244,7 +30304,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1182",
+      "source_location": "L1183",
       "weight": 1.0
     },
     {
@@ -30256,7 +30316,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L853",
+      "source_location": "L854",
       "weight": 1.0
     },
     {
@@ -30412,7 +30472,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1228",
+      "source_location": "L1229",
       "weight": 1.0
     },
     {
@@ -30424,7 +30484,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1229",
+      "source_location": "L1230",
       "weight": 1.0
     },
     {
@@ -30436,7 +30496,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1230",
+      "source_location": "L1231",
       "weight": 1.0
     },
     {
@@ -30448,7 +30508,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1238",
+      "source_location": "L1239",
       "weight": 1.0
     },
     {
@@ -30508,7 +30568,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1094",
+      "source_location": "L1095",
       "weight": 1.0
     },
     {
@@ -30520,7 +30580,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1100",
+      "source_location": "L1101",
       "weight": 1.0
     },
     {
@@ -30532,7 +30592,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L401",
+      "source_location": "L398",
       "weight": 1.0
     },
     {
@@ -30544,7 +30604,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L402",
+      "source_location": "L399",
       "weight": 1.0
     },
     {
@@ -30556,7 +30616,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L395",
+      "source_location": "L392",
       "weight": 1.0
     },
     {
@@ -30568,7 +30628,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L418",
+      "source_location": "L415",
       "weight": 1.0
     },
     {
@@ -30580,7 +30640,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L419",
+      "source_location": "L416",
       "weight": 1.0
     },
     {
@@ -30592,7 +30652,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L461",
+      "source_location": "L458",
       "weight": 1.0
     },
     {
@@ -30604,7 +30664,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L549",
+      "source_location": "L546",
       "weight": 1.0
     },
     {
@@ -30616,7 +30676,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L497",
+      "source_location": "L494",
       "weight": 1.0
     },
     {
@@ -30628,7 +30688,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L529",
+      "source_location": "L526",
       "weight": 1.0
     },
     {
@@ -30688,7 +30748,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L685",
+      "source_location": "L683",
       "weight": 1.0
     },
     {
@@ -30700,7 +30760,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L276",
+      "source_location": "L273",
       "weight": 1.0
     },
     {
@@ -30712,7 +30772,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L292",
+      "source_location": "L289",
       "weight": 1.0
     },
     {
@@ -30724,7 +30784,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L293",
+      "source_location": "L290",
       "weight": 1.0
     },
     {
@@ -30736,7 +30796,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L294",
+      "source_location": "L291",
       "weight": 1.0
     },
     {
@@ -30748,7 +30808,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L295",
+      "source_location": "L292",
       "weight": 1.0
     },
     {
@@ -30760,7 +30820,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L296",
+      "source_location": "L293",
       "weight": 1.0
     },
     {
@@ -30772,7 +30832,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L297",
+      "source_location": "L294",
       "weight": 1.0
     },
     {
@@ -30784,7 +30844,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L303",
+      "source_location": "L300",
       "weight": 1.0
     },
     {
@@ -30796,7 +30856,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L312",
+      "source_location": "L309",
       "weight": 1.0
     },
     {
@@ -30808,7 +30868,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L313",
+      "source_location": "L310",
       "weight": 1.0
     },
     {
@@ -30820,7 +30880,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L729",
+      "source_location": "L727",
       "weight": 1.0
     },
     {
@@ -30832,7 +30892,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L730",
+      "source_location": "L728",
       "weight": 1.0
     },
     {
@@ -30844,7 +30904,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L752",
+      "source_location": "L750",
       "weight": 1.0
     },
     {
@@ -30856,7 +30916,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L623",
+      "source_location": "L621",
       "weight": 1.0
     },
     {
@@ -30868,7 +30928,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L624",
+      "source_location": "L622",
       "weight": 1.0
     },
     {
@@ -30880,7 +30940,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L642",
+      "source_location": "L640",
       "weight": 1.0
     },
     {
@@ -30964,7 +31024,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L481",
+      "source_location": "L478",
       "weight": 1.0
     },
     {
@@ -30988,24 +31048,12 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L366",
+      "source_location": "L367",
       "weight": 1.0
     },
     {
       "source": "js_receipt_applyinvoicedata",
       "target": "js_receipt_updatedue",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "js/receipt.js",
-      "source_location": "L368",
-      "weight": 1.0
-    },
-    {
-      "source": "js_receipt_applyinvoicedata",
-      "target": "js_receipt_syncreceiptprintvalues",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -31017,6 +31065,18 @@
     },
     {
       "source": "js_receipt_applyinvoicedata",
+      "target": "js_receipt_syncreceiptprintvalues",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "js/receipt.js",
+      "source_location": "L370",
+      "weight": 1.0
+    },
+    {
+      "source": "js_receipt_applyinvoicedata",
       "target": "js_receipt_resolveeffectiveinvoicestate",
       "relation": "calls",
       "_origin": "ast",
@@ -31024,7 +31084,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L380",
+      "source_location": "L381",
+      "weight": 1.0
+    },
+    {
+      "source": "js_receipt_applyinvoicedata",
+      "target": "js_receipt_setselectreasonsafe",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "js/receipt.js",
+      "source_location": "L387",
       "weight": 1.0
     },
     {
@@ -31036,7 +31108,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L387",
+      "source_location": "L393",
       "weight": 1.0
     },
     {
@@ -31048,7 +31120,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L710",
+      "source_location": "L721",
       "weight": 1.0
     },
     {
@@ -31060,7 +31132,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L712",
+      "source_location": "L723",
       "weight": 1.0
     },
     {
@@ -31072,7 +31144,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L1040",
+      "source_location": "L1053",
       "weight": 1.0
     },
     {
@@ -31084,7 +31156,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L646",
+      "source_location": "L652",
       "weight": 1.0
     },
     {
@@ -31096,7 +31168,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L647",
+      "source_location": "L653",
       "weight": 1.0
     },
     {
@@ -31108,7 +31180,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L650",
+      "source_location": "L660",
       "weight": 1.0
     },
     {
@@ -31120,31 +31192,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L651",
-      "weight": 1.0
-    },
-    {
-      "source": "js_receipt_handlelinkedinvoicechange",
-      "target": "js_receipt_fetchinvoicebynumber",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "js/receipt.js",
-      "source_location": "L654",
-      "weight": 1.0
-    },
-    {
-      "source": "js_receipt_handlelinkedinvoicechange",
-      "target": "js_receipt_applyinvoicedata",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "js/receipt.js",
-      "source_location": "L656",
+      "source_location": "L661",
       "weight": 1.0
     },
     {
@@ -31156,7 +31204,31 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L657",
+      "source_location": "L662",
+      "weight": 1.0
+    },
+    {
+      "source": "js_receipt_handlelinkedinvoicechange",
+      "target": "js_receipt_fetchinvoicebynumber",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "js/receipt.js",
+      "source_location": "L665",
+      "weight": 1.0
+    },
+    {
+      "source": "js_receipt_handlelinkedinvoicechange",
+      "target": "js_receipt_applyinvoicedata",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "js/receipt.js",
+      "source_location": "L667",
       "weight": 1.0
     },
     {
@@ -31168,7 +31240,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L470",
+      "source_location": "L476",
       "weight": 1.0
     },
     {
@@ -31180,7 +31252,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L480",
+      "source_location": "L486",
       "weight": 1.0
     },
     {
@@ -31192,7 +31264,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L483",
+      "source_location": "L489",
       "weight": 1.0
     },
     {
@@ -31204,7 +31276,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L486",
+      "source_location": "L492",
       "weight": 1.0
     },
     {
@@ -31216,7 +31288,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L497",
+      "source_location": "L503",
       "weight": 1.0
     },
     {
@@ -31228,7 +31300,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L514",
+      "source_location": "L520",
       "weight": 1.0
     },
     {
@@ -31240,7 +31312,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L515",
+      "source_location": "L521",
       "weight": 1.0
     },
     {
@@ -31252,7 +31324,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L516",
+      "source_location": "L522",
       "weight": 1.0
     },
     {
@@ -31264,7 +31336,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L518",
+      "source_location": "L524",
       "weight": 1.0
     },
     {
@@ -31276,7 +31348,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L525",
+      "source_location": "L531",
       "weight": 1.0
     },
     {
@@ -31288,7 +31360,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L918",
+      "source_location": "L929",
       "weight": 1.0
     },
     {
@@ -31300,7 +31372,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L919",
+      "source_location": "L930",
       "weight": 1.0
     },
     {
@@ -31312,7 +31384,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L936",
+      "source_location": "L947",
       "weight": 1.0
     },
     {
@@ -31324,7 +31396,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L428",
+      "source_location": "L434",
       "weight": 1.0
     },
     {
@@ -31336,7 +31408,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L442",
+      "source_location": "L448",
       "weight": 1.0
     },
     {
@@ -31348,7 +31420,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L443",
+      "source_location": "L449",
       "weight": 1.0
     },
     {
@@ -31360,7 +31432,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L444",
+      "source_location": "L450",
       "weight": 1.0
     },
     {
@@ -31372,7 +31444,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L445",
+      "source_location": "L451",
       "weight": 1.0
     },
     {
@@ -31384,7 +31456,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L340",
+      "source_location": "L341",
       "weight": 1.0
     },
     {
@@ -31420,7 +31492,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L736",
+      "source_location": "L747",
       "weight": 1.0
     },
     {
@@ -31432,7 +31504,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L764",
+      "source_location": "L775",
       "weight": 1.0
     },
     {
@@ -31444,7 +31516,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L770",
+      "source_location": "L781",
       "weight": 1.0
     },
     {
@@ -31456,7 +31528,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L724",
+      "source_location": "L735",
       "weight": 1.0
     },
     {
@@ -35620,7 +35692,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L1022",
+      "source_location": "L1043",
       "weight": 1.0
     },
     {
@@ -35716,7 +35788,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L747",
+      "source_location": "L768",
       "weight": 1.0
     },
     {
@@ -35728,7 +35800,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L807",
+      "source_location": "L828",
       "weight": 1.0
     },
     {
@@ -35740,7 +35812,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L836",
+      "source_location": "L857",
       "weight": 1.0
     },
     {
@@ -35764,7 +35836,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L915",
+      "source_location": "L936",
       "weight": 1.0
     },
     {
@@ -35776,7 +35848,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L931",
+      "source_location": "L952",
       "weight": 1.0
     },
     {
@@ -35788,7 +35860,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/challan.js",
-      "source_location": "L968",
+      "source_location": "L989",
       "weight": 1.0
     },
     {
@@ -35853,6 +35925,18 @@
     },
     {
       "source": "js_doc_list_connectworkspace",
+      "target": "js_doc_list_connectworkspace_showeditor",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "js/doc-list.js",
+      "source_location": "L1021",
+      "weight": 1.0
+    },
+    {
+      "source": "js_doc_list_connectworkspace",
       "target": "js_doc_list_connectworkspace_openeditor",
       "relation": "contains",
       "_origin": "ast",
@@ -35860,7 +35944,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1007",
+      "source_location": "L1030",
       "weight": 1.0
     },
     {
@@ -35872,19 +35956,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1032",
-      "weight": 1.0
-    },
-    {
-      "source": "js_doc_list_connectworkspace",
-      "target": "js_doc_list_connectworkspace_showeditor",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "js/doc-list.js",
-      "source_location": "L998",
+      "source_location": "L1055",
       "weight": 1.0
     },
     {
@@ -35992,7 +36064,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1093",
+      "source_location": "L1094",
       "weight": 1.0
     },
     {
@@ -36004,7 +36076,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1112",
+      "source_location": "L1113",
       "weight": 1.0
     },
     {
@@ -36016,7 +36088,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1129",
+      "source_location": "L1130",
       "weight": 1.0
     },
     {
@@ -36028,7 +36100,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1173",
+      "source_location": "L1174",
       "weight": 1.0
     },
     {
@@ -36040,7 +36112,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1186",
+      "source_location": "L1187",
       "weight": 1.0
     },
     {
@@ -36052,7 +36124,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1243",
+      "source_location": "L1244",
       "weight": 1.0
     },
     {
@@ -36064,7 +36136,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1244",
+      "source_location": "L1245",
       "weight": 1.0
     },
     {
@@ -36076,7 +36148,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L1245",
+      "source_location": "L1246",
       "weight": 1.0
     },
     {
@@ -36208,7 +36280,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L852",
+      "source_location": "L853",
       "weight": 1.0
     },
     {
@@ -36220,7 +36292,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L939",
+      "source_location": "L940",
       "weight": 1.0
     },
     {
@@ -36232,7 +36304,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/invoice.js",
-      "source_location": "L974",
+      "source_location": "L975",
       "weight": 1.0
     },
     {
@@ -36304,7 +36376,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L369",
+      "source_location": "L366",
       "weight": 1.0
     },
     {
@@ -36316,7 +36388,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L400",
+      "source_location": "L397",
       "weight": 1.0
     },
     {
@@ -36340,7 +36412,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L480",
+      "source_location": "L477",
       "weight": 1.0
     },
     {
@@ -36352,7 +36424,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L488",
+      "source_location": "L485",
       "weight": 1.0
     },
     {
@@ -36364,7 +36436,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L538",
+      "source_location": "L535",
       "weight": 1.0
     },
     {
@@ -36376,7 +36448,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L547",
+      "source_location": "L544",
       "weight": 1.0
     },
     {
@@ -36388,7 +36460,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L684",
+      "source_location": "L682",
       "weight": 1.0
     },
     {
@@ -36400,7 +36472,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L728",
+      "source_location": "L726",
       "weight": 1.0
     },
     {
@@ -36436,7 +36508,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L1039",
+      "source_location": "L1052",
       "weight": 1.0
     },
     {
@@ -36448,7 +36520,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L251",
+      "source_location": "L252",
       "weight": 1.0
     },
     {
@@ -36460,7 +36532,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L327",
+      "source_location": "L328",
       "weight": 1.0
     },
     {
@@ -36472,7 +36544,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L348",
+      "source_location": "L349",
       "weight": 1.0
     },
     {
@@ -36484,19 +36556,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L398",
-      "weight": 1.0
-    },
-    {
-      "source": "js_receipt",
-      "target": "js_receipt_resetreceiptfieldstonew",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "js/receipt.js",
-      "source_location": "L408",
+      "source_location": "L404",
       "weight": 1.0
     },
     {
@@ -36513,6 +36573,18 @@
     },
     {
       "source": "js_receipt",
+      "target": "js_receipt_resetreceiptfieldstonew",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "js/receipt.js",
+      "source_location": "L414",
+      "weight": 1.0
+    },
+    {
+      "source": "js_receipt",
       "target": "js_receipt_loadeditorfromparams",
       "relation": "contains",
       "_origin": "ast",
@@ -36520,7 +36592,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L448",
+      "source_location": "L454",
       "weight": 1.0
     },
     {
@@ -36544,7 +36616,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L697",
+      "source_location": "L708",
       "weight": 1.0
     },
     {
@@ -36556,7 +36628,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L708",
+      "source_location": "L719",
       "weight": 1.0
     },
     {
@@ -36568,7 +36640,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L722",
+      "source_location": "L733",
       "weight": 1.0
     },
     {
@@ -36580,7 +36652,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L734",
+      "source_location": "L745",
       "weight": 1.0
     },
     {
@@ -36592,7 +36664,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/receipt.js",
-      "source_location": "L916",
+      "source_location": "L927",
       "weight": 1.0
     },
     {
@@ -48884,7 +48956,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/challan.js",
-      "source_location": "L791",
+      "source_location": "L812",
       "weight": 1.0
     },
     {
@@ -48895,7 +48967,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/challan.js",
-      "source_location": "L838",
+      "source_location": "L859",
       "weight": 1.0
     },
     {
@@ -48906,7 +48978,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/challan.js",
-      "source_location": "L902",
+      "source_location": "L923",
       "weight": 1.0
     },
     {
@@ -48983,7 +49055,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -48994,18 +49066,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L18",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
       "source": "js_doc_list",
-      "target": "js_doc_list_fmtbdt",
+      "target": "js_doc_list_parsechallanlist",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L24",
+      "source_location": "L244",
       "weight": 1.0
     },
     {
@@ -49016,7 +49088,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L241",
+      "source_location": "L255",
+      "weight": 1.0
+    },
+    {
+      "source": "js_doc_list",
+      "target": "js_doc_list_fmtbdt",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "js/doc-list.js",
+      "source_location": "L26",
       "weight": 1.0
     },
     {
@@ -49027,7 +49110,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L28",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -49038,7 +49121,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L356",
+      "source_location": "L366",
       "weight": 1.0
     },
     {
@@ -49049,7 +49132,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L46",
+      "source_location": "L48",
       "weight": 1.0
     },
     {
@@ -49060,7 +49143,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L53",
+      "source_location": "L55",
       "weight": 1.0
     },
     {
@@ -49071,7 +49154,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L964",
+      "source_location": "L987",
       "weight": 1.0
     },
     {
@@ -49082,7 +49165,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L691",
+      "source_location": "L713",
       "weight": 1.0
     },
     {
@@ -49093,7 +49176,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L699",
+      "source_location": "L721",
       "weight": 1.0
     },
     {
@@ -49104,7 +49187,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L713",
+      "source_location": "L735",
       "weight": 1.0
     },
     {
@@ -49115,7 +49198,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L770",
+      "source_location": "L792",
       "weight": 1.0
     },
     {
@@ -49137,7 +49220,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/invoice.js",
-      "source_location": "L1060",
+      "source_location": "L1061",
       "weight": 1.0
     },
     {
@@ -49148,7 +49231,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/invoice.js",
-      "source_location": "L1103",
+      "source_location": "L1104",
       "weight": 1.0
     },
     {
@@ -49159,7 +49242,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/invoice.js",
-      "source_location": "L1181",
+      "source_location": "L1182",
       "weight": 1.0
     },
     {
@@ -49170,7 +49253,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/invoice.js",
-      "source_location": "L920",
+      "source_location": "L921",
       "weight": 1.0
     },
     {
@@ -49181,7 +49264,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/invoice.js",
-      "source_location": "L980",
+      "source_location": "L981",
       "weight": 1.0
     },
     {
@@ -49192,7 +49275,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/quotation.js",
-      "source_location": "L349",
+      "source_location": "L346",
       "weight": 1.0
     },
     {
@@ -49203,7 +49286,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/quotation.js",
-      "source_location": "L365",
+      "source_location": "L362",
       "weight": 1.0
     },
     {
@@ -49214,7 +49297,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/quotation.js",
-      "source_location": "L407",
+      "source_location": "L404",
       "weight": 1.0
     },
     {
@@ -49225,7 +49308,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/quotation.js",
-      "source_location": "L468",
+      "source_location": "L465",
       "weight": 1.0
     },
     {
@@ -49236,7 +49319,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/receipt.js",
-      "source_location": "L284",
+      "source_location": "L285",
       "weight": 1.0
     },
     {
@@ -49247,7 +49330,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/receipt.js",
-      "source_location": "L296",
+      "source_location": "L297",
       "weight": 1.0
     },
     {
@@ -55148,7 +55231,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/challan.js",
-      "source_location": "L567",
+      "source_location": "L574",
       "weight": 1.0
     },
     {
@@ -55160,7 +55243,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/challan.js",
-      "source_location": "L693",
+      "source_location": "L714",
       "weight": 1.0
     },
     {
@@ -55184,7 +55267,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/challan.js",
-      "source_location": "L1008",
+      "source_location": "L1029",
       "weight": 1.0
     },
     {
@@ -55232,7 +55315,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/doc-list.js",
-      "source_location": "L882",
+      "source_location": "L905",
       "weight": 1.0
     },
     {
@@ -55244,7 +55327,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/doc-list.js",
-      "source_location": "L543",
+      "source_location": "L559",
       "weight": 1.0
     },
     {
@@ -55304,7 +55387,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/invoice.js",
-      "source_location": "L841",
+      "source_location": "L842",
       "weight": 1.0
     },
     {
@@ -55328,7 +55411,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/invoice.js",
-      "source_location": "L1227",
+      "source_location": "L1228",
       "weight": 1.0
     },
     {
@@ -55340,7 +55423,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/quotation.js",
-      "source_location": "L639",
+      "source_location": "L637",
       "weight": 1.0
     },
     {
@@ -55352,7 +55435,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/quotation.js",
-      "source_location": "L658",
+      "source_location": "L656",
       "weight": 1.0
     },
     {
@@ -55364,7 +55447,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/quotation.js",
-      "source_location": "L622",
+      "source_location": "L620",
       "weight": 1.0
     },
     {
@@ -55376,7 +55459,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/receipt.js",
-      "source_location": "L670",
+      "source_location": "L681",
       "weight": 1.0
     },
     {
@@ -55388,7 +55471,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/receipt.js",
-      "source_location": "L950",
+      "source_location": "L961",
       "weight": 1.0
     },
     {
@@ -55400,7 +55483,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/search.js",
-      "source_location": "L1065",
+      "source_location": "L1072",
       "weight": 1.0
     },
     {
@@ -55808,7 +55891,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1111",
+      "source_location": "L1134",
       "weight": 1.0
     },
     {
@@ -55820,7 +55903,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1112",
+      "source_location": "L1135",
       "weight": 1.0
     },
     {
@@ -55832,7 +55915,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1113",
+      "source_location": "L1136",
       "weight": 1.0
     },
     {
@@ -55844,7 +55927,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1114",
+      "source_location": "L1137",
       "weight": 1.0
     },
     {
@@ -55856,7 +55939,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1115",
+      "source_location": "L1138",
       "weight": 1.0
     },
     {
@@ -55868,7 +55951,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1116",
+      "source_location": "L1139",
       "weight": 1.0
     },
     {
@@ -55880,7 +55963,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1071",
+      "source_location": "L1094",
       "weight": 1.0
     },
     {
@@ -57517,5 +57600,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "f3eccdc0fb92131854c0621a4c7407436c023b63"
+  "built_at_commit": "67901c8618be278f1326ce5956ee755c9e8c068d"
 }

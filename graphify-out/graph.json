@@ -2636,7 +2636,7 @@
       "file_type": "code",
       "norm_label": "addrow()",
       "source_file": "js/quotation.js",
-      "source_location": "L400"
+      "source_location": "L397"
     },
     {
       "id": "js_quotation_addrowfromdata",
@@ -2648,7 +2648,7 @@
       "file_type": "code",
       "norm_label": "addrowfromdata()",
       "source_file": "js/quotation.js",
-      "source_location": "L369"
+      "source_location": "L366"
     },
     {
       "id": "js_quotation_attachrowevents",
@@ -2660,7 +2660,7 @@
       "file_type": "code",
       "norm_label": "attachrowevents()",
       "source_file": "js/quotation.js",
-      "source_location": "L407"
+      "source_location": "L404"
     },
     {
       "id": "js_quotation_buildqrtext",
@@ -2672,7 +2672,7 @@
       "file_type": "code",
       "norm_label": "buildqrtext()",
       "source_file": "js/quotation.js",
-      "source_location": "L547"
+      "source_location": "L544"
     },
     {
       "id": "js_quotation_buildrecord",
@@ -2684,7 +2684,7 @@
       "file_type": "code",
       "norm_label": "buildrecord()",
       "source_file": "js/quotation.js",
-      "source_location": "L488"
+      "source_location": "L485"
     },
     {
       "id": "js_quotation_computedaysfromvaliduntil",
@@ -2720,7 +2720,7 @@
       "file_type": "code",
       "norm_label": "getgrandtotalnumber()",
       "source_file": "js/quotation.js",
-      "source_location": "L468"
+      "source_location": "L465"
     },
     {
       "id": "js_quotation_getrowindex",
@@ -2732,7 +2732,7 @@
       "file_type": "code",
       "norm_label": "getrowindex()",
       "source_file": "js/quotation.js",
-      "source_location": "L365"
+      "source_location": "L362"
     },
     {
       "id": "js_quotation_getsharedata",
@@ -2744,7 +2744,7 @@
       "file_type": "code",
       "norm_label": "getsharedata()",
       "source_file": "js/quotation.js",
-      "source_location": "L685"
+      "source_location": "L682"
     },
     {
       "id": "js_quotation_loadeditorfromparams",
@@ -2768,7 +2768,7 @@
       "file_type": "code",
       "norm_label": "openwithqtn()",
       "source_file": "js/quotation.js",
-      "source_location": "L729"
+      "source_location": "L726"
     },
     {
       "id": "js_quotation_prepareforprint",
@@ -2780,7 +2780,7 @@
       "file_type": "code",
       "norm_label": "prepareforprint()",
       "source_file": "js/quotation.js",
-      "source_location": "L622"
+      "source_location": "L619"
     },
     {
       "id": "js_quotation_printwithguard",
@@ -2792,7 +2792,7 @@
       "file_type": "code",
       "norm_label": "printwithguard()",
       "source_file": "js/quotation.js",
-      "source_location": "L642"
+      "source_location": "L639"
     },
     {
       "id": "js_quotation_resetquotationfieldstonew",
@@ -2828,7 +2828,7 @@
       "file_type": "code",
       "norm_label": "syncquotationrowmirrors()",
       "source_file": "js/quotation.js",
-      "source_location": "L349"
+      "source_location": "L346"
     },
     {
       "id": "js_quotation_updateconversionbadge",
@@ -2852,7 +2852,7 @@
       "file_type": "code",
       "norm_label": "updategrandtotal()",
       "source_file": "js/quotation.js",
-      "source_location": "L480"
+      "source_location": "L477"
     },
     {
       "id": "js_quotation_updatemodebadge",
@@ -2888,7 +2888,7 @@
       "file_type": "code",
       "norm_label": "validaterecord()",
       "source_file": "js/quotation.js",
-      "source_location": "L538"
+      "source_location": "L535"
     },
     {
       "id": "js_challan_addrow",
@@ -7124,7 +7124,7 @@
       "file_type": "code",
       "norm_label": "connectworkspace()",
       "source_file": "js/doc-list.js",
-      "source_location": "L994"
+      "source_location": "L1009"
     },
     {
       "id": "js_doc_list_connectworkspace_enterlist",
@@ -7136,7 +7136,7 @@
       "file_type": "code",
       "norm_label": "enterlist()",
       "source_file": "js/doc-list.js",
-      "source_location": "L1045"
+      "source_location": "L1060"
     },
     {
       "id": "js_doc_list_connectworkspace_iseditorvisible",
@@ -7148,7 +7148,7 @@
       "file_type": "code",
       "norm_label": "iseditorvisible()",
       "source_file": "js/doc-list.js",
-      "source_location": "L1007"
+      "source_location": "L1022"
     },
     {
       "id": "js_doc_list_connectworkspace_openeditor",
@@ -7160,7 +7160,7 @@
       "file_type": "code",
       "norm_label": "openeditor()",
       "source_file": "js/doc-list.js",
-      "source_location": "L1020"
+      "source_location": "L1035"
     },
     {
       "id": "js_doc_list_connectworkspace_showeditor",
@@ -7172,7 +7172,7 @@
       "file_type": "code",
       "norm_label": "showeditor()",
       "source_file": "js/doc-list.js",
-      "source_location": "L1011"
+      "source_location": "L1026"
     },
     {
       "id": "js_doc_list_enrichrecord",
@@ -7292,7 +7292,7 @@
       "file_type": "code",
       "norm_label": "init()",
       "source_file": "js/doc-list.js",
-      "source_location": "L593"
+      "source_location": "L602"
     },
     {
       "id": "js_doc_list_init_getallrawrecords",
@@ -7304,7 +7304,7 @@
       "file_type": "code",
       "norm_label": "getallrawrecords()",
       "source_file": "js/doc-list.js",
-      "source_location": "L712"
+      "source_location": "L721"
     },
     {
       "id": "js_doc_list_init_populatebillers",
@@ -7316,7 +7316,7 @@
       "file_type": "code",
       "norm_label": "populatebillers()",
       "source_file": "js/doc-list.js",
-      "source_location": "L704"
+      "source_location": "L713"
     },
     {
       "id": "js_doc_list_init_refresh",
@@ -7328,7 +7328,7 @@
       "file_type": "code",
       "norm_label": "refresh()",
       "source_file": "js/doc-list.js",
-      "source_location": "L805"
+      "source_location": "L814"
     },
     {
       "id": "js_doc_list_init_renderactionbuttons",
@@ -7340,7 +7340,7 @@
       "file_type": "code",
       "norm_label": "renderactionbuttons()",
       "source_file": "js/doc-list.js",
-      "source_location": "L783"
+      "source_location": "L792"
     },
     {
       "id": "js_doc_list_init_renderkpis",
@@ -7352,7 +7352,7 @@
       "file_type": "code",
       "norm_label": "renderkpis()",
       "source_file": "js/doc-list.js",
-      "source_location": "L726"
+      "source_location": "L735"
     },
     {
       "id": "js_doc_list_openinvoicepicker",
@@ -7388,7 +7388,7 @@
       "file_type": "code",
       "norm_label": "_paramstosearch()",
       "source_file": "js/doc-list.js",
-      "source_location": "L977"
+      "source_location": "L992"
     },
     {
       "id": "js_doc_list_parsechallanlist",
@@ -29440,7 +29440,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1066",
+      "source_location": "L1081",
       "weight": 1.0
     },
     {
@@ -29452,7 +29452,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1081",
+      "source_location": "L1096",
       "weight": 1.0
     },
     {
@@ -29464,7 +29464,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1100",
+      "source_location": "L1115",
       "weight": 1.0
     },
     {
@@ -29476,7 +29476,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1047",
+      "source_location": "L1062",
       "weight": 1.0
     },
     {
@@ -29488,7 +29488,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1055",
+      "source_location": "L1070",
       "weight": 1.0
     },
     {
@@ -29500,7 +29500,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1059",
+      "source_location": "L1074",
       "weight": 1.0
     },
     {
@@ -29512,7 +29512,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1022",
+      "source_location": "L1037",
       "weight": 1.0
     },
     {
@@ -29524,7 +29524,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1029",
+      "source_location": "L1044",
       "weight": 1.0
     },
     {
@@ -29536,7 +29536,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1034",
+      "source_location": "L1049",
       "weight": 1.0
     },
     {
@@ -29644,7 +29644,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L612",
+      "source_location": "L621",
       "weight": 1.0
     },
     {
@@ -29656,7 +29656,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L625",
+      "source_location": "L634",
       "weight": 1.0
     },
     {
@@ -29668,7 +29668,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L714",
+      "source_location": "L723",
       "weight": 1.0
     },
     {
@@ -29680,7 +29680,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L708",
+      "source_location": "L717",
       "weight": 1.0
     },
     {
@@ -29692,7 +29692,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L708",
+      "source_location": "L717",
       "weight": 1.0
     },
     {
@@ -29704,7 +29704,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L806",
+      "source_location": "L815",
       "weight": 1.0
     },
     {
@@ -29716,7 +29716,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L807",
+      "source_location": "L816",
       "weight": 1.0
     },
     {
@@ -29728,7 +29728,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L808",
+      "source_location": "L817",
       "weight": 1.0
     },
     {
@@ -29740,7 +29740,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L809",
+      "source_location": "L818",
       "weight": 1.0
     },
     {
@@ -29752,7 +29752,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L810",
+      "source_location": "L819",
       "weight": 1.0
     },
     {
@@ -29764,7 +29764,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L834",
+      "source_location": "L843",
       "weight": 1.0
     },
     {
@@ -29776,7 +29776,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L845",
+      "source_location": "L854",
       "weight": 1.0
     },
     {
@@ -29788,7 +29788,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L860",
+      "source_location": "L869",
       "weight": 1.0
     },
     {
@@ -29800,7 +29800,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L874",
+      "source_location": "L885",
       "weight": 1.0
     },
     {
@@ -29812,7 +29812,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L886",
+      "source_location": "L901",
       "weight": 1.0
     },
     {
@@ -29824,7 +29824,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L784",
+      "source_location": "L793",
       "weight": 1.0
     },
     {
@@ -29836,7 +29836,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L740",
+      "source_location": "L749",
       "weight": 1.0
     },
     {
@@ -29848,7 +29848,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L745",
+      "source_location": "L754",
       "weight": 1.0
     },
     {
@@ -29860,7 +29860,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L775",
+      "source_location": "L784",
       "weight": 1.0
     },
     {
@@ -29872,7 +29872,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L776",
+      "source_location": "L785",
       "weight": 1.0
     },
     {
@@ -29980,7 +29980,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L533",
+      "source_location": "L534",
       "weight": 1.0
     },
     {
@@ -29992,7 +29992,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L542",
+      "source_location": "L545",
       "weight": 1.0
     },
     {
@@ -30592,7 +30592,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L401",
+      "source_location": "L398",
       "weight": 1.0
     },
     {
@@ -30604,7 +30604,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L402",
+      "source_location": "L399",
       "weight": 1.0
     },
     {
@@ -30616,7 +30616,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L395",
+      "source_location": "L392",
       "weight": 1.0
     },
     {
@@ -30628,7 +30628,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L418",
+      "source_location": "L415",
       "weight": 1.0
     },
     {
@@ -30640,7 +30640,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L419",
+      "source_location": "L416",
       "weight": 1.0
     },
     {
@@ -30652,7 +30652,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L461",
+      "source_location": "L458",
       "weight": 1.0
     },
     {
@@ -30664,7 +30664,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L549",
+      "source_location": "L546",
       "weight": 1.0
     },
     {
@@ -30676,7 +30676,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L497",
+      "source_location": "L494",
       "weight": 1.0
     },
     {
@@ -30688,7 +30688,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L529",
+      "source_location": "L526",
       "weight": 1.0
     },
     {
@@ -30748,7 +30748,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L686",
+      "source_location": "L683",
       "weight": 1.0
     },
     {
@@ -30760,7 +30760,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L276",
+      "source_location": "L273",
       "weight": 1.0
     },
     {
@@ -30772,7 +30772,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L292",
+      "source_location": "L289",
       "weight": 1.0
     },
     {
@@ -30784,7 +30784,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L293",
+      "source_location": "L290",
       "weight": 1.0
     },
     {
@@ -30796,7 +30796,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L294",
+      "source_location": "L291",
       "weight": 1.0
     },
     {
@@ -30808,7 +30808,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L295",
+      "source_location": "L292",
       "weight": 1.0
     },
     {
@@ -30820,7 +30820,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L296",
+      "source_location": "L293",
       "weight": 1.0
     },
     {
@@ -30832,7 +30832,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L297",
+      "source_location": "L294",
       "weight": 1.0
     },
     {
@@ -30844,7 +30844,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L303",
+      "source_location": "L300",
       "weight": 1.0
     },
     {
@@ -30856,7 +30856,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L312",
+      "source_location": "L309",
       "weight": 1.0
     },
     {
@@ -30868,7 +30868,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L313",
+      "source_location": "L310",
       "weight": 1.0
     },
     {
@@ -30880,7 +30880,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L730",
+      "source_location": "L727",
       "weight": 1.0
     },
     {
@@ -30892,7 +30892,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L731",
+      "source_location": "L728",
       "weight": 1.0
     },
     {
@@ -30904,7 +30904,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L753",
+      "source_location": "L750",
       "weight": 1.0
     },
     {
@@ -30916,7 +30916,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L624",
+      "source_location": "L621",
       "weight": 1.0
     },
     {
@@ -30928,7 +30928,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L625",
+      "source_location": "L622",
       "weight": 1.0
     },
     {
@@ -30940,7 +30940,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L643",
+      "source_location": "L640",
       "weight": 1.0
     },
     {
@@ -31024,7 +31024,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L481",
+      "source_location": "L478",
       "weight": 1.0
     },
     {
@@ -35932,7 +35932,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1011",
+      "source_location": "L1026",
       "weight": 1.0
     },
     {
@@ -35944,7 +35944,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1020",
+      "source_location": "L1035",
       "weight": 1.0
     },
     {
@@ -35956,7 +35956,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/doc-list.js",
-      "source_location": "L1045",
+      "source_location": "L1060",
       "weight": 1.0
     },
     {
@@ -36376,7 +36376,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L369",
+      "source_location": "L366",
       "weight": 1.0
     },
     {
@@ -36388,7 +36388,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L400",
+      "source_location": "L397",
       "weight": 1.0
     },
     {
@@ -36412,7 +36412,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L480",
+      "source_location": "L477",
       "weight": 1.0
     },
     {
@@ -36424,7 +36424,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L488",
+      "source_location": "L485",
       "weight": 1.0
     },
     {
@@ -36436,7 +36436,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L538",
+      "source_location": "L535",
       "weight": 1.0
     },
     {
@@ -36448,7 +36448,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L547",
+      "source_location": "L544",
       "weight": 1.0
     },
     {
@@ -36460,7 +36460,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L685",
+      "source_location": "L682",
       "weight": 1.0
     },
     {
@@ -36472,7 +36472,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "js/quotation.js",
-      "source_location": "L729",
+      "source_location": "L726",
       "weight": 1.0
     },
     {
@@ -49154,7 +49154,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L977",
+      "source_location": "L992",
       "weight": 1.0
     },
     {
@@ -49165,7 +49165,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L704",
+      "source_location": "L713",
       "weight": 1.0
     },
     {
@@ -49176,7 +49176,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L712",
+      "source_location": "L721",
       "weight": 1.0
     },
     {
@@ -49187,7 +49187,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L726",
+      "source_location": "L735",
       "weight": 1.0
     },
     {
@@ -49198,7 +49198,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/doc-list.js",
-      "source_location": "L783",
+      "source_location": "L792",
       "weight": 1.0
     },
     {
@@ -49275,7 +49275,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/quotation.js",
-      "source_location": "L349",
+      "source_location": "L346",
       "weight": 1.0
     },
     {
@@ -49286,7 +49286,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/quotation.js",
-      "source_location": "L365",
+      "source_location": "L362",
       "weight": 1.0
     },
     {
@@ -49297,7 +49297,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/quotation.js",
-      "source_location": "L407",
+      "source_location": "L404",
       "weight": 1.0
     },
     {
@@ -49308,7 +49308,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "js/quotation.js",
-      "source_location": "L468",
+      "source_location": "L465",
       "weight": 1.0
     },
     {
@@ -55315,7 +55315,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/doc-list.js",
-      "source_location": "L895",
+      "source_location": "L910",
       "weight": 1.0
     },
     {
@@ -55327,7 +55327,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/doc-list.js",
-      "source_location": "L556",
+      "source_location": "L559",
       "weight": 1.0
     },
     {
@@ -55423,7 +55423,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/quotation.js",
-      "source_location": "L640",
+      "source_location": "L637",
       "weight": 1.0
     },
     {
@@ -55435,7 +55435,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/quotation.js",
-      "source_location": "L659",
+      "source_location": "L656",
       "weight": 1.0
     },
     {
@@ -55447,7 +55447,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "js/quotation.js",
-      "source_location": "L623",
+      "source_location": "L620",
       "weight": 1.0
     },
     {
@@ -55891,7 +55891,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1124",
+      "source_location": "L1139",
       "weight": 1.0
     },
     {
@@ -55903,7 +55903,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1125",
+      "source_location": "L1140",
       "weight": 1.0
     },
     {
@@ -55915,7 +55915,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1126",
+      "source_location": "L1141",
       "weight": 1.0
     },
     {
@@ -55927,7 +55927,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1127",
+      "source_location": "L1142",
       "weight": 1.0
     },
     {
@@ -55939,7 +55939,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1128",
+      "source_location": "L1143",
       "weight": 1.0
     },
     {
@@ -55951,7 +55951,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1129",
+      "source_location": "L1144",
       "weight": 1.0
     },
     {
@@ -55963,7 +55963,7 @@
       "confidence_score": 0.85,
       "context": "collection",
       "source_file": "js/doc-list.js",
-      "source_location": "L1084",
+      "source_location": "L1099",
       "weight": 1.0
     },
     {
@@ -57600,5 +57600,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "f3eccdc0fb92131854c0621a4c7407436c023b63"
+  "built_at_commit": "67901c8618be278f1326ce5956ee755c9e8c068d"
 }
