@@ -173,5 +173,10 @@ test('computeClientStatementData excludes Void docs and prevents double-counting
   const t1 = ok(data.allInvoices.length === 1 && data.periodInvoices[0]._effectiveTotal === 1000, 'Void invoice excluded from statement ledger');
   const totalCredit = data.periodReceipts.reduce((s, r) => roundBDT(s + r._effectiveCredit), 0);
   const t2 = ok(totalCredit === 900, `Only latest adjustment (50) credited once alongside cash (400+450=850+50=900, got ${totalCredit})`);
-  return [t1, t2];
+
+  // Future-dated adjusted receipt (after toDate) must NOT steal credit from in-period adjusted receipt
+  const bounded = computeClientStatementData({ clientName: 'Ledger Co', toDate: '2026-09-05' });
+  const bCredit = bounded.periodReceipts.reduce((s, r) => roundBDT(s + r._effectiveCredit), 0);
+  const t3 = ok(bCredit === 500, `toDate cutoff keeps Sep-05 adjustment (400+100=500, got ${bCredit})`);
+  return [t1, t2, t3];
 });

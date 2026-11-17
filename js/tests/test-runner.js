@@ -48,7 +48,7 @@ async function runTests() {
   const memStorage = createMemoryStorage();
   let mocked = false;
   const frame = document.getElementById('receiptFrame');
-  const frameWin = frame?.contentWindow;
+  let frameWin = frame?.contentWindow;
   let frameMocked = false;
 
   try {
@@ -59,6 +59,13 @@ async function runTests() {
   }
 
   window.__IS_AUTOINVOICE_TESTING__ = true;
+  if (frame && !frame.getAttribute('src') && frame.dataset?.src) {
+    await new Promise(resolve => {
+      frame.addEventListener('load', resolve, { once: true });
+      frame.src = frame.dataset.src;
+    });
+    frameWin = frame.contentWindow;
+  }
   if (frameWin) {
     try {
       frameWin.__IS_AUTOINVOICE_TESTING__ = true;

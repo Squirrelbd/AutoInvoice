@@ -113,6 +113,15 @@ htmlFiles.forEach(file => {
   } else {
     console.log(`  [PASS] All interactive form inputs have labels or aria descriptors`);
   }
+
+  // 5. Check <h1> landmark heading presence
+  const h1Count = (content.match(/<h1\b/gi) || []).length;
+  if (h1Count !== 1) {
+    console.log(`  [FAIL] Expected exactly 1 <h1> landmark heading (found ${h1Count})`);
+    totalFailures++;
+  } else {
+    console.log(`  [PASS] Exactly 1 <h1> landmark heading present`);
+  }
   console.log('');
 });
 

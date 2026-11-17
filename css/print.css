@@ -30,7 +30,6 @@
     --text-subtle: #64748b !important;
     --text-primary: #0b3969 !important;
     --text-secondary: #165e75 !important;
-    --brand-color: #1e3a8a !important;
     --brand-ink: #0f172a !important;
     --bs-body-bg: #ffffff !important;
     --bs-body-bg-rgb: 255, 255, 255 !important;
@@ -96,6 +95,22 @@
   a:visited {
     color: #0f172a !important;
     text-decoration: none !important;
+  }
+
+  html[data-bs-theme="dark"] .text-primary {
+    color: var(--brand-color, #1e3a8a) !important;
+  }
+
+  html[data-bs-theme="dark"] .text-success {
+    color: #14532d !important;
+  }
+
+  html[data-bs-theme="dark"] .text-danger {
+    color: #991b1b !important;
+  }
+
+  html[data-bs-theme="dark"] .text-warning {
+    color: #78350f !important;
   }
 
   html[data-bs-theme="dark"] .table-light,
@@ -238,7 +253,7 @@
     font-size: 17pt !important;
     font-weight: 900 !important;
     letter-spacing: 0.04em !important;
-    color: #1e3a8a !important;
+    color: var(--brand-color, #1e3a8a) !important;
     line-height: 1.05 !important;
     white-space: nowrap !important;
   }
@@ -256,11 +271,11 @@
     align-items: flex-end !important;
   }
 
-  /* Verification QR Code: 20mm x 20mm with quiet zone */
+  /* Verification QR Code: 20mm x 20mm with >= 2mm quiet zone */
   #qrContainer {
-    width: 23mm !important;
-    height: 23mm !important;
-    padding: 1.5mm !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 2mm !important;
     background: #ffffff !important;
     border: 0.8px solid #cbd5e1 !important;
     border-radius: 2px !important;
@@ -405,7 +420,7 @@
   }
 
   .card-section-label {
-    color: #1e3a8a !important;
+    color: var(--brand-color, #1e3a8a) !important;
     font-weight: 700 !important;
     font-size: 7.5pt !important;
     letter-spacing: 0.05em !important;
@@ -656,7 +671,7 @@
   .words-box {
     background-color: #f8fafc !important;
     border: 1px solid #cbd5e1 !important;
-    border-left: 3px solid #1e3a8a !important;
+    border-left: 3px solid var(--brand-color, #1e3a8a) !important;
     border-radius: 3px !important;
     padding: 2.2mm 2.8mm !important;
     page-break-inside: avoid !important;

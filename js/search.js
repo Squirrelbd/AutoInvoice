@@ -971,7 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const qrVerifyInput = document.getElementById('qrVerifyInput');
   const qrVerifyResult = document.getElementById('qrVerifyResult');
 
-  function verifyQrString() {
+  async function verifyQrString() {
     if (!qrVerifyInput || !qrVerifyResult) return;
     const raw = qrVerifyInput.value.trim();
     qrVerifyResult.classList.remove('d-none');
@@ -986,29 +986,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const { docType, fields } = parsed;
     const txid = fields.TXID || '';
-    const inv = typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(txid) : null;
-    const ch = typeof getChallanByNumber === 'function' ? getChallanByNumber(txid) : null;
+    let inv = typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(txid) : null;
+    let ch = typeof getChallanByNumber === 'function' ? getChallanByNumber(txid) : null;
     const rc = typeof getReceiptByNumber === 'function' ? getReceiptByNumber(txid) : null;
     const qtn = typeof getQuotationByNumber === 'function' ? getQuotationByNumber(txid) : null;
-    const matched = inv || ch || rc || qtn;
+    if (!inv && docType === 'INV' && typeof getDiskInvoiceByNumber === 'function') {
+      try { inv = await getDiskInvoiceByNumber(txid); } catch (_) { }
+    }
+    if (!ch && docType === 'CHAL' && typeof getDiskChallanByNumber === 'function') {
+      try { ch = await getDiskChallanByNumber(txid); } catch (_) { }
+    }
+    const byDoc = { INV: inv, CHAL: ch, RCPT: rc, QTN: qtn };
+    const matched = byDoc[docType] || inv || ch || rc || qtn;
 
     let matchBanner = `<div class="badge bg-info text-dark mb-2">ℹ️ Valid V=1 Syntax — No local record matching ${escapeHTML(txid)}</div>`;
     let openLink = '';
+    const hasAmt = fields.AMT != null && String(fields.AMT).trim() !== '';
+    const rawAmtNum = hasAmt ? Number(fields.AMT) : null;
+    const qrAmtValid = !hasAmt || Number.isFinite(rawAmtNum);
+    const qrAmt = (hasAmt && qrAmtValid) ? roundBDT(rawAmtNum) : null;
+
     if (matched) {
+      const matchedDocType = matched === inv ? 'INV' : matched === ch ? 'CHAL' : matched === rc ? 'RCPT' : 'QTN';
       const localAmt = matched.grandTotal != null ? roundBDT(matched.grandTotal) : (matched.amount != null ? roundBDT(matched.amount) : null);
-      const qrAmt = fields.AMT != null ? roundBDT(fields.AMT) : null;
-      const openPage = inv ? `invoice.html?no=${encodeURIComponent(txid)}`
-        : ch ? `challan.html?no=${encodeURIComponent(txid)}`
-          : rc ? `receipt.html?rcpt=${encodeURIComponent(txid)}`
+      const openPage = matched === inv ? `invoice.html?no=${encodeURIComponent(txid)}`
+        : matched === ch ? `challan.html?no=${encodeURIComponent(txid)}`
+          : matched === rc ? `receipt.html?rcpt=${encodeURIComponent(txid)}`
             : `quotation.html?no=${encodeURIComponent(txid)}`;
       openLink = `<div class="mt-2"><a href="${openPage}" class="btn btn-sm btn-outline-primary">Open Record ↗</a></div>`;
       if (matched.status === 'Void') {
         matchBanner = `<div class="badge bg-dark mb-2">⚠️ Matched Local Record — MARKED VOID</div>`;
+      } else if (docType !== matchedDocType) {
+        matchBanner = `<div class="badge bg-danger mb-2">❌ Document Type Mismatch! Local: ${escapeHTML(matchedDocType)} vs QR: ${escapeHTML(docType)}</div>`;
+      } else if (!qrAmtValid) {
+        matchBanner = `<div class="badge bg-danger mb-2">❌ Invalid / Tampered Amount in QR Payload</div>`;
       } else if (localAmt != null && qrAmt != null && localAmt !== qrAmt) {
         matchBanner = `<div class="badge bg-danger mb-2">❌ Amount Mismatch! Local: ${formatBDT(localAmt)} vs QR: ${formatBDT(qrAmt)}</div>`;
+      } else if (fields.DT && matched.date && fields.DT !== matched.date) {
+        matchBanner = `<div class="badge bg-warning text-dark mb-2">⚠️ Date Mismatch! Local: ${escapeHTML(matched.date)} vs QR: ${escapeHTML(fields.DT)}</div>`;
       } else {
         matchBanner = `<div class="badge bg-success mb-2">✅ Verified Authentic Match in Local Ledger</div>`;
       }
+    } else if (!qrAmtValid) {
+      matchBanner = `<div class="badge bg-danger mb-2">❌ Invalid / Non-Numeric Amount in QR Payload</div>`;
     }
 
     qrVerifyResult.innerHTML = `
@@ -1018,7 +1038,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <tr><th class="text-muted" style="width:32%;">Doc Type:</th><td class="fw-bold">${escapeHTML(docType)}</td></tr>
           <tr><th class="text-muted">Document #:</th><td class="font-monospace fw-semibold">${escapeHTML(txid)}</td></tr>
           ${fields.DT ? `<tr><th class="text-muted">Date:</th><td>${escapeHTML(fields.DT)}</td></tr>` : ''}
-          ${fields.AMT != null ? `<tr><th class="text-muted">Amount:</th><td class="fw-bold text-primary">${formatBDT(fields.AMT)}</td></tr>` : ''}
+          ${hasAmt ? `<tr><th class="text-muted">Amount:</th><td class="fw-bold text-primary">${qrAmtValid ? formatBDT(qrAmt) : escapeHTML(fields.AMT)}</td></tr>` : ''}
           ${fields.BEN ? `<tr><th class="text-muted">Issuer:</th><td>${escapeHTML(fields.BEN)}</td></tr>` : ''}
           ${fields.REC ? `<tr><th class="text-muted">Recipient:</th><td>${escapeHTML(fields.REC)}</td></tr>` : ''}
         </tbody>

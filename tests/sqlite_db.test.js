@@ -175,7 +175,23 @@ db.upsertItem({ name: 'পণ্য', unitPrice: 200 });
 const allItems = db.getAll('catalog_items');
 assert.ok(allItems.some(i => i.name === 'সেবা'), 'Bangla item 1 preserved');
 assert.ok(allItems.some(i => i.name === 'পণ্য'), 'Bangla item 2 preserved without PK collision');
-console.log("  ✓ Unicode / Bangla PK collision prevention verified");
+
+// ASCII punctuation PK collision prevention ("A & B" vs "A - B")
+assert.notStrictEqual(db._slugKey('c', 'Alpha & Co.'), db._slugKey('c', 'Alpha - Co.'), 'ASCII punctuation keys must not collide');
+db.upsertClient({ name: 'Alpha & Co.', phone: '01700000001' });
+db.upsertClient({ name: 'Alpha - Co.', phone: '01700000002' });
+const punctClients = db.getAll('clients');
+assert.ok(punctClients.some(c => c.name === 'Alpha & Co.'), 'Alpha & Co. preserved');
+assert.ok(punctClients.some(c => c.name === 'Alpha - Co.'), 'Alpha - Co. preserved without PK collision');
+
+// Boot-race biller prune guard: incoming [biller_default] with 0 docs must NOT wipe secondary billers
+db.replaceBillers([
+  { id: 'biller_default', name: 'Default Biller', isDefault: true },
+  { id: 'biller_sec', name: 'Secondary Biller', isDefault: false }
+]);
+db.syncClientSnapshot({ billers: [{ id: 'biller_default', name: 'Default Biller', isDefault: true }] });
+assert.strictEqual(db.getAll('billers').length, 2, 'Empty-doc sync with only biller_default must preserve secondary billers');
+console.log("  ✓ Unicode / ASCII punctuation PK collision & boot biller prune guards verified");
 
 // 8b. Biller Digital Signature Persistence
 db.upsertBiller({
@@ -304,7 +320,7 @@ console.log("  ✓ Final DB Status:", finalStatus.counts);
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           filename: 'Smoke_Test_Inv',
-          html: '<!doctype html><html><body onload="window.__xss=1"><script>window.__xss2=1</script><h1>AutoInvoice PDF Test ৳1,000.00</h1></body></html>'
+          html: '<!doctype html><!-- <head> --><html><head></head><body onload="window.__xss=1"><img src=x/onerror=window.__xss3=1><script>window.__xss2=1</script><h1>AutoInvoice PDF Test ৳1,000.00</h1></body></html>'
         })
       });
       assert.strictEqual(pdfRes.status, 200, 'POST /api/pdf succeeds when headless browser available');
@@ -314,6 +330,14 @@ console.log("  ✓ Final DB Status:", finalStatus.counts);
       console.log(`  ✓ Headless Tier-2 PDF endpoint verified (${pdfStatus.browser}, ${buf.length} bytes)`);
     } else {
       console.log("  ℹ Headless browser not installed; /api/pdf/status returned available: false");
+    }
+
+    // Verify GET endpoints return 200 JSON cleanly
+    for (const ep of ['/api/invoices', '/api/expenses', '/api/billers']) {
+      const r = await fetch(`${base}${ep}`);
+      assert.strictEqual(r.status, 200, `GET ${ep} returns 200`);
+      const parsed = await r.json();
+      assert.ok(Array.isArray(parsed), `GET ${ep} returns JSON array`);
     }
 
     console.log("  ✓ HTTP API security, UTF-8 sync, & PDF checks verified");

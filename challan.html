@@ -1,391 +1,434 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Create Challan / Delivery Note — AutoInvoice</title>
-    <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
-    <link rel="stylesheet" href="assets/vendor/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/styles.css" />
-    <link rel="stylesheet" href="css/print.css" />
-  </head>
-  <body>
-    <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#printArea">Skip to content</a>
-    <nav class="navbar navbar-expand-lg app-navbar no-print">
-      <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="index.html">
-          <img src="assets/logo.svg" alt="AutoInvoice Logo" width="28" height="28" class="me-2" />
-          <span>AutoInvoice</span>
-        </a>
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="mainNavbar">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
-            <li class="nav-item"><a class="nav-link" href="quotation.html">Quotation</a></li>
-            <li class="nav-item"><a class="nav-link" href="invoice.html">Invoice</a></li>
-            <li class="nav-item"><a class="nav-link active fw-bold" aria-current="page" href="challan.html">Challan</a></li>
-            <li class="nav-item"><a class="nav-link" href="receipt.html">Receipt</a></li>
-            <li class="nav-item"><a class="nav-link" href="statement.html">Statement</a></li>
-            <li class="nav-item"><a class="nav-link" href="expenses.html">Expenses</a></li>
-            <li class="nav-item"><a class="nav-link" href="search.html">Search & Reports</a></li>
-          </ul>
-          <div class="d-flex align-items-center gap-2">
-            <button id="themeToggle" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">🌙</button>
-          </div>
-        </div>
-      </div>
-    </nav>
 
-    <main class="container pb-5">
-      <div id="modeBadge" class="mb-2 no-print"></div>
-      <!-- Company Header -->
-      <section class="border rounded p-3 mb-3 print-area" id="printArea">
-        <div class="d-flex justify-content-between align-items-start mb-3" id="headerTop">
-          <div class="d-flex align-items-center">
-            <img id="companyLogo" src="assets/logo.svg" alt="Logo" width="60" height="60" class="me-3" />
-            <div class="company-text">
-              <span class="company-title" id="companyName"></span>
-              <div class="company-slogan text-muted" id="companySlogan"></div>
-              <div class="small text-muted" id="companyAddress"></div>
-              <div class="small text-muted" id="companyContacts"></div>
-            </div>
-          </div>
-          <div class="text-end">
-            <div class="doc-badge-title">DELIVERY CHALLAN</div>
-            <div class="doc-subtitle mt-1" id="docTitleHeader">Delivery Note</div>
-            <div class="qr-block-wrap mt-2">
-              <div id="qrContainer"></div>
-              <div class="qr-verify-text">Scan to Verify</div>
-            </div>
-          </div>
-        </div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create Challan / Delivery Note — AutoInvoice</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="stylesheet" href="assets/vendor/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/print.css" />
+</head>
 
-        <!-- 2. Meta & Client Information Section (Two Balanced Corporate Panels) -->
-        <div class="row g-3 mb-3 invoice-meta-row">
-          <!-- Left Panel: Deliver To / Client Details -->
-          <div class="col-md-6 col-12">
-            <div class="invoice-card h-100 p-3">
-              <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
-                <span class="card-section-label">Deliver To / Consignee</span>
-                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none no-print fw-semibold" id="onboardClientBtn" data-bs-toggle="modal" data-bs-target="#clientOnboardModal">+ Onboard Client</button>
-              </div>
-              <div class="no-print">
-                <select id="clientSelect" class="form-select form-select-sm mb-2" aria-label="Select Registered Client">
-                  <option value="">-- Choose Existing Client --</option>
-                </select>
-                <input id="clientName" class="form-control form-control-sm mb-2" list="clientList" autocomplete="off" placeholder="Client / Company Name *" aria-label="Client Name" />
-                <datalist id="clientList"></datalist>
-                <textarea id="deliveryAddress" class="form-control form-control-sm auto-grow" rows="2" placeholder="Delivery Site & Recipient Address" aria-label="Delivery address"></textarea>
-              </div>
-              <div class="client-details-block" id="clientDisplayBlock">
-                <div class="client-name-text" id="clientNameDisplay">—</div>
-                <div class="client-contact-text mt-1" id="clientContactDisplay"></div>
-                <div class="client-address-text mt-1" id="clientAddressDisplay" style="white-space: pre-line;"></div>
-                <div class="client-comms-text mt-1" id="clientCommsDisplay"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Panel: Challan & Dispatch Logistics -->
-          <div class="col-md-6 col-12">
-            <div class="invoice-card h-100 p-3">
-              <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
-                <span class="card-section-label">Challan &amp; Logistics Details</span>
-              </div>
-              <table class="table table-sm meta-table mb-0">
-                <tbody>
-                  <tr>
-                    <td class="text-muted fw-semibold" style="width: 40%;"><label for="challanNumber">Challan Number:</label></td>
-                    <td>
-                      <div class="input-group input-group-sm no-print">
-                        <select id="numberMode" class="form-select" style="max-width: 90px" aria-label="Numbering Mode">
-                          <option value="auto" selected>Auto</option>
-                          <option value="manual">Manual</option>
-                        </select>
-                        <input id="challanNumber" class="form-control fw-bold" readonly aria-label="Challan Number" />
-                      </div>
-                      <span class="print-only fw-bold font-monospace" id="challanNumberPrint"></span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="text-muted fw-semibold"><label for="challanDate">Challan Date:</label></td>
-                    <td>
-                      <input id="challanDate" type="date" class="form-control form-control-sm no-print" />
-                      <span class="print-only" id="challanDatePrint"></span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="text-muted fw-semibold"><label for="linkedInvoice">Linked Invoice #:</label></td>
-                    <td>
-                      <input id="linkedInvoice" class="form-control form-control-sm no-print" placeholder="Optional (e.g. INV-2026-0001)" aria-label="Linked Invoice Number" />
-                      <span class="print-only font-monospace" id="linkedInvoicePrint">—</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="text-muted fw-semibold"><label for="docTitle">Project / Subject:</label></td>
-                    <td>
-                      <input id="docTitle" class="form-control form-control-sm no-print" placeholder="Enter title" aria-label="Project or Service Name" />
-                      <span class="print-only" id="docTitlePrint">—</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="text-muted fw-semibold"><label for="vehicleNo">Vehicle / Courier:</label></td>
-                    <td>
-                      <input id="vehicleNo" class="form-control form-control-sm no-print" placeholder="e.g. Covered Van / Sundarban Courier" aria-label="Vehicle or Courier Reference" />
-                      <span class="print-only" id="vehicleNoPrint">—</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="text-muted fw-semibold"><label for="driverInfo">Driver / Carrier Info:</label></td>
-                    <td>
-                      <input id="driverInfo" class="form-control form-control-sm no-print" placeholder="e.g. Driver Name & Mobile" aria-label="Driver or Carrier Contact" />
-                      <span class="print-only" id="driverInfoPrint">—</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="text-muted fw-semibold"><label for="packageCount">Packages / Boxes:</label></td>
-                    <td>
-                      <input id="packageCount" class="form-control form-control-sm no-print" placeholder="e.g. 3 Cartons (Total 18 kg)" aria-label="Package or Box Count" />
-                      <span class="print-only" id="packageCountPrint">—</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Items Table (no pricing) -->
-        <div class="table-responsive">
-          <table class="table table-bordered align-middle challan-table" id="itemsTable">
-            <thead class="table-light">
-              <tr>
-                <th>Item Name</th>
-                <th>Description</th>
-                <th style="width: 12%; text-align: center;">Qty</th>
-                <th style="width: 12%; text-align: center;">Unit</th>
-                <th class="action-col no-print">Action</th>
-              </tr>
-            </thead>
-            <tbody id="itemRows"></tbody>
-          </table>
-          <datalist id="unitSuggestions">
-            <option value="Pcs">
-            <option value="Sets">
-            <option value="Kg">
-            <option value="Boxes">
-            <option value="Meters">
-            <option value="Lots">
-            <option value="Rolls">
-          </datalist>
-        </div>
-        <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2 no-print">
-          <div class="d-flex gap-2">
-            <button id="addRowBtn" class="btn btn-outline-primary btn-sm" type="button">+ Add Row</button>
-            <button id="pickCatalogBtn" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#catalogPickerModal">📦 Choose from Catalog</button>
-            <button id="addCatalogItemBtn" class="btn btn-outline-success btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#itemOnboardModal">+ New Catalog Item</button>
-          </div>
-        </div>
-        <datalist id="itemList"></datalist>
-
-        <!-- Signature Block -->
-        <div class="row mt-4 pt-2 sign-row">
-          <div class="col-6">
-            <div class="signature-line-wrap">
-              <div id="billerSignatureWrap" class="biller-signature-wrap mb-1">
-                <img id="billerSignatureImg" src="" alt="Authorized Signature" class="biller-signature-img d-none" />
-              </div>
-              <div class="signature-line"></div>
-              <div class="fw-semibold small" id="deliveredLabel">Delivered by</div>
-              <div class="text-muted smaller d-none" id="signatoryTitleLabel"></div>
-              <div class="text-muted smaller">Authorized Carrier / Signature</div>
-            </div>
-          </div>
-          <div class="col-6 text-end">
-            <div class="signature-line-wrap text-end ms-auto">
-              <div class="signature-line"></div>
-              <div class="fw-semibold small" id="receivedLabel">Received by</div>
-              <div class="text-muted smaller">Customer Acceptance &amp; Seal</div>
-            </div>
-          </div>
-        </div>
-        <div class="print-doc-footer print-only text-center mt-3">
-          Goods received in good order &amp; condition. This is a computer-generated delivery challan.
-        </div>
-      </section>
-
-      <!-- Actions -->
-      <div class="d-flex flex-wrap gap-2 align-items-center mb-3 no-print">
-        <button id="saveChallanBtn" class="btn btn-success">💾 Save Challan</button>
-        <button id="createInvoiceBtn" class="btn btn-primary">📄 Create Invoice</button>
-        <button id="downloadPdfBtn" class="btn btn-outline-primary d-none">⬇️ Save A4 PDF</button>
-        <button id="printBtn" class="btn btn-secondary">🖨️ Print / PDF</button>
-        <div class="dropdown d-inline-block">
-          <button class="btn btn-outline-success dropdown-toggle" type="button" id="shareDocDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            📤 Share
-          </button>
-          <ul class="dropdown-menu shadow-sm" aria-labelledby="shareDocDropdown">
-            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" id="shareWhatsAppBtn"><span>💬</span> Send via WhatsApp</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" id="shareEmailBtn"><span>✉️</span> Send via Email</a></li>
-          </ul>
-        </div>
-        <button id="duplicateChallanBtn" class="btn btn-outline-secondary">✨ Duplicate as New</button>
-        <button id="exportChallanBtn" class="btn btn-outline-secondary">📥 Download JSON</button>
-        <button id="resetBtn" class="btn btn-outline-danger ms-auto">Reset</button>
-      </div>
-    </main>
-
-    <!-- Client Onboarding Modal -->
-    <div class="modal fade no-print" id="clientOnboardModal" tabindex="-1" aria-labelledby="clientOnboardModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fw-bold" id="clientOnboardModalLabel">👥 Onboard New Client</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <form id="quickClientForm">
-            <div class="modal-body">
-              <div class="mb-2">
-                <label for="quickClientName" class="form-label small fw-semibold">Client / Company Name *</label>
-                <input type="text" class="form-control" id="quickClientName" required placeholder="e.g. Beximco Pharmaceuticals Ltd" />
-              </div>
-              <div class="row g-2 mb-2">
-                <div class="col-md-6">
-                  <label for="quickClientCompany" class="form-label small fw-semibold">Contact / Attention</label>
-                  <input type="text" class="form-control form-control-sm" id="quickClientCompany" placeholder="e.g. Mr. Rafiqul Islam" />
-                </div>
-                <div class="col-md-6">
-                  <label for="quickClientTitle" class="form-label small fw-semibold">Designation</label>
-                  <input type="text" class="form-control form-control-sm" id="quickClientTitle" placeholder="e.g. Head of Procurement" />
-                </div>
-              </div>
-              <div class="mb-2">
-                <label for="quickClientAddress" class="form-label small fw-semibold">Full Address</label>
-                <textarea class="form-control form-control-sm" id="quickClientAddress" rows="2" placeholder="e.g. 19 Dhanmondi R/A, Dhaka-1205"></textarea>
-              </div>
-              <div class="row g-2">
-                <div class="col-md-6">
-                  <label for="quickClientPhone" class="form-label small fw-semibold">Phone</label>
-                  <input type="text" class="form-control form-control-sm" id="quickClientPhone" placeholder="e.g. +880 1711-000000" />
-                </div>
-                <div class="col-md-6">
-                  <label for="quickClientEmail" class="form-label small fw-semibold">Email</label>
-                  <input type="email" class="form-control form-control-sm" id="quickClientEmail" placeholder="e.g. accounts@client.com" />
-                </div>
-                <div class="col-12 mt-2">
-                  <label for="quickClientBin" class="form-label small fw-semibold">Client BIN / TIN (Optional)</label>
-                  <input type="text" class="form-control form-control-sm" id="quickClientBin" placeholder="e.g. 001234567-0102" />
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-sm btn-success">Save & Select Client</button>
-            </div>
-          </form>
+<body>
+  <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#printArea">Skip to
+    content</a>
+  <nav class="navbar navbar-expand-lg app-navbar no-print">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="index.html">
+        <img src="assets/logo.svg" alt="AutoInvoice Logo" width="28" height="28" class="me-2" />
+        <span>AutoInvoice</span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+          <li class="nav-item"><a class="nav-link" href="quotation.html">Quotation</a></li>
+          <li class="nav-item"><a class="nav-link" href="invoice.html">Invoice</a></li>
+          <li class="nav-item"><a class="nav-link active fw-bold" aria-current="page" href="challan.html">Challan</a>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="receipt.html">Receipt</a></li>
+          <li class="nav-item"><a class="nav-link" href="statement.html">Statement</a></li>
+          <li class="nav-item"><a class="nav-link" href="expenses.html">Expenses</a></li>
+          <li class="nav-item"><a class="nav-link" href="search.html">Search & Reports</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+          <button id="themeToggle" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">🌙</button>
         </div>
       </div>
     </div>
+  </nav>
 
-    <!-- Catalog Item Picker Modal -->
-    <div class="modal fade no-print" id="catalogPickerModal" tabindex="-1" aria-labelledby="catalogPickerModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fw-bold" id="catalogPickerModalLabel">📦 Products & Services Catalog</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <main class="container pb-5">
+    <div id="modeBadge" class="mb-2 no-print"></div>
+    <!-- Company Header -->
+    <section class="border rounded p-3 mb-3 print-area" id="printArea">
+      <div class="d-flex justify-content-between align-items-start mb-3" id="headerTop">
+        <div class="d-flex align-items-center">
+          <img id="companyLogo" src="assets/logo.svg" alt="Logo" width="60" height="60" class="me-3" />
+          <div class="company-text">
+            <span class="company-title" id="companyName"></span>
+            <div class="company-slogan text-muted" id="companySlogan"></div>
+            <div class="small text-muted" id="companyAddress"></div>
+            <div class="small text-muted" id="companyContacts"></div>
           </div>
-          <div class="modal-body">
-            <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
-              <div class="input-group" style="max-width: 380px;">
-                <span class="input-group-text">🔍</span>
-                <input type="text" id="catalogSearchInput" class="form-control form-control-sm" placeholder="Search catalog items..." aria-label="Search catalog items" />
-              </div>
-              <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#itemOnboardModal">
-                + New Item to Catalog
-              </button>
+        </div>
+        <div class="text-end">
+          <h1 class="doc-badge-title mb-0">DELIVERY CHALLAN</h1>
+          <div class="doc-subtitle mt-1" id="docTitleHeader">Delivery Note</div>
+          <div class="qr-block-wrap mt-2">
+            <div id="qrContainer"></div>
+            <div class="qr-verify-text">Scan to Verify</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Meta & Client Information Section (Two Balanced Corporate Panels) -->
+      <div class="row g-3 mb-3 invoice-meta-row">
+        <!-- Left Panel: Deliver To / Client Details -->
+        <div class="col-md-6 col-12">
+          <div class="invoice-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+              <span class="card-section-label">Deliver To / Consignee</span>
+              <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none no-print fw-semibold"
+                id="onboardClientBtn" data-bs-toggle="modal" data-bs-target="#clientOnboardModal">+ Onboard
+                Client</button>
             </div>
-            <div class="table-responsive border rounded">
-              <table class="table table-hover table-striped align-middle mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>Item Name</th>
-                    <th>Description</th>
-                    <th>Unit</th>
-                    <th class="text-end">Rate (৳)</th>
-                    <th class="text-end" style="width: 100px;">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="catalogPickerBody">
-                  <tr><td colspan="5" class="text-center text-muted py-3">Loading catalog...</td></tr>
-                </tbody>
-              </table>
+            <div class="no-print">
+              <select id="clientSelect" class="form-select form-select-sm mb-2" aria-label="Select Registered Client">
+                <option value="">-- Choose Existing Client --</option>
+              </select>
+              <input id="clientName" class="form-control form-control-sm mb-2" list="clientList" autocomplete="off"
+                placeholder="Client / Company Name *" aria-label="Client Name" />
+              <datalist id="clientList"></datalist>
+              <textarea id="deliveryAddress" class="form-control form-control-sm auto-grow" rows="2"
+                placeholder="Delivery Site & Recipient Address" aria-label="Delivery address"></textarea>
+            </div>
+            <div class="client-details-block" id="clientDisplayBlock">
+              <div class="client-name-text" id="clientNameDisplay">—</div>
+              <div class="client-contact-text mt-1" id="clientContactDisplay"></div>
+              <div class="client-address-text mt-1" id="clientAddressDisplay" style="white-space: pre-line;"></div>
+              <div class="client-comms-text mt-1" id="clientCommsDisplay"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Challan & Dispatch Logistics -->
+        <div class="col-md-6 col-12">
+          <div class="invoice-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+              <span class="card-section-label">Challan &amp; Logistics Details</span>
+            </div>
+            <table class="table table-sm meta-table mb-0">
+              <tbody>
+                <tr>
+                  <td class="text-muted fw-semibold" style="width: 40%;"><label for="challanNumber">Challan
+                      Number:</label></td>
+                  <td>
+                    <div class="input-group input-group-sm no-print">
+                      <select id="numberMode" class="form-select" style="max-width: 90px" aria-label="Numbering Mode">
+                        <option value="auto" selected>Auto</option>
+                        <option value="manual">Manual</option>
+                      </select>
+                      <input id="challanNumber" class="form-control fw-bold" readonly aria-label="Challan Number" />
+                    </div>
+                    <span class="print-only fw-bold font-monospace" id="challanNumberPrint"></span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-semibold"><label for="challanDate">Challan Date:</label></td>
+                  <td>
+                    <input id="challanDate" type="date" class="form-control form-control-sm no-print" />
+                    <span class="print-only" id="challanDatePrint"></span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-semibold"><label for="linkedInvoice">Linked Invoice #:</label></td>
+                  <td>
+                    <input id="linkedInvoice" class="form-control form-control-sm no-print"
+                      placeholder="Optional (e.g. INV-2026-0001)" aria-label="Linked Invoice Number" />
+                    <span class="print-only font-monospace" id="linkedInvoicePrint">—</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-semibold"><label for="docTitle">Project / Subject:</label></td>
+                  <td>
+                    <input id="docTitle" class="form-control form-control-sm no-print" placeholder="Enter title"
+                      aria-label="Project or Service Name" />
+                    <span class="print-only" id="docTitlePrint">—</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-semibold"><label for="vehicleNo">Vehicle / Courier:</label></td>
+                  <td>
+                    <input id="vehicleNo" class="form-control form-control-sm no-print"
+                      placeholder="e.g. Covered Van / Sundarban Courier" aria-label="Vehicle or Courier Reference" />
+                    <span class="print-only" id="vehicleNoPrint">—</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-semibold"><label for="driverInfo">Driver / Carrier Info:</label></td>
+                  <td>
+                    <input id="driverInfo" class="form-control form-control-sm no-print"
+                      placeholder="e.g. Driver Name & Mobile" aria-label="Driver or Carrier Contact" />
+                    <span class="print-only" id="driverInfoPrint">—</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-muted fw-semibold"><label for="packageCount">Packages / Boxes:</label></td>
+                  <td>
+                    <input id="packageCount" class="form-control form-control-sm no-print"
+                      placeholder="e.g. 3 Cartons (Total 18 kg)" aria-label="Package or Box Count" />
+                    <span class="print-only" id="packageCountPrint">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Partial Delivery / Dispatch Progress Banner (no-print) -->
+      <div id="partialDispatchBanner" class="alert alert-info d-none mb-3 no-print py-2 px-3 small" role="status"
+        aria-live="polite"></div>
+
+      <!-- Items Table (no pricing) -->
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle challan-table" id="itemsTable">
+          <thead class="table-light">
+            <tr>
+              <th>Item Name</th>
+              <th>Description</th>
+              <th style="width: 12%; text-align: center;">Qty</th>
+              <th style="width: 12%; text-align: center;">Unit</th>
+              <th class="action-col no-print">Action</th>
+            </tr>
+          </thead>
+          <tbody id="itemRows"></tbody>
+        </table>
+        <datalist id="unitSuggestions">
+          <option value="Pcs">
+          <option value="Sets">
+          <option value="Kg">
+          <option value="Boxes">
+          <option value="Meters">
+          <option value="Lots">
+          <option value="Rolls">
+        </datalist>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-2 no-print">
+        <div class="d-flex gap-2">
+          <button id="addRowBtn" class="btn btn-outline-primary btn-sm" type="button">+ Add Row</button>
+          <button id="pickCatalogBtn" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="modal"
+            data-bs-target="#catalogPickerModal">📦 Choose from Catalog</button>
+          <button id="addCatalogItemBtn" class="btn btn-outline-success btn-sm" type="button" data-bs-toggle="modal"
+            data-bs-target="#itemOnboardModal">+ New Catalog Item</button>
+        </div>
+      </div>
+      <datalist id="itemList"></datalist>
+
+      <!-- Signature Block -->
+      <div class="row mt-4 pt-2 sign-row">
+        <div class="col-6">
+          <div class="signature-line-wrap">
+            <div id="billerSignatureWrap" class="biller-signature-wrap mb-1">
+              <img id="billerSignatureImg" src="" alt="Authorized Signature" class="biller-signature-img d-none" />
+            </div>
+            <div class="signature-line"></div>
+            <div class="fw-semibold small" id="deliveredLabel">Delivered by</div>
+            <div class="text-muted smaller d-none" id="signatoryTitleLabel"></div>
+            <div class="text-muted smaller">Authorized Carrier / Signature</div>
+          </div>
+        </div>
+        <div class="col-6 text-end">
+          <div class="signature-line-wrap text-end ms-auto">
+            <div class="signature-line"></div>
+            <div class="fw-semibold small" id="receivedLabel">Received by</div>
+            <div class="text-muted smaller">Customer Acceptance &amp; Seal</div>
+          </div>
+        </div>
+      </div>
+      <div class="print-doc-footer print-only text-center mt-3">
+        Goods received in good order &amp; condition. This is a computer-generated delivery challan.
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <div class="d-flex flex-wrap gap-2 align-items-center mb-3 no-print">
+      <button id="saveChallanBtn" class="btn btn-success">💾 Save Challan</button>
+      <button id="createInvoiceBtn" class="btn btn-primary">📄 Create Invoice</button>
+      <button id="downloadPdfBtn" class="btn btn-outline-primary d-none">⬇️ Save A4 PDF</button>
+      <button id="printBtn" class="btn btn-secondary">🖨️ Print / PDF</button>
+      <div class="dropdown d-inline-block">
+        <button class="btn btn-outline-success dropdown-toggle" type="button" id="shareDocDropdown"
+          data-bs-toggle="dropdown" aria-expanded="false">
+          📤 Share
+        </button>
+        <ul class="dropdown-menu shadow-sm" aria-labelledby="shareDocDropdown">
+          <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" id="shareWhatsAppBtn"><span>💬</span>
+              Send via WhatsApp</a></li>
+          <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" id="shareEmailBtn"><span>✉️</span> Send
+              via Email</a></li>
+        </ul>
+      </div>
+      <button id="duplicateChallanBtn" class="btn btn-outline-secondary">✨ Duplicate as New</button>
+      <button id="exportChallanBtn" class="btn btn-outline-secondary">📥 Download JSON</button>
+      <button id="resetBtn" class="btn btn-outline-danger ms-auto">Reset</button>
+    </div>
+  </main>
+
+  <!-- Client Onboarding Modal -->
+  <div class="modal fade no-print" id="clientOnboardModal" tabindex="-1" aria-labelledby="clientOnboardModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="clientOnboardModalLabel">👥 Onboard New Client</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="quickClientForm">
+          <div class="modal-body">
+            <div class="mb-2">
+              <label for="quickClientName" class="form-label small fw-semibold">Client / Company Name *</label>
+              <input type="text" class="form-control" id="quickClientName" required
+                placeholder="e.g. Beximco Pharmaceuticals Ltd" />
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-md-6">
+                <label for="quickClientCompany" class="form-label small fw-semibold">Contact / Attention</label>
+                <input type="text" class="form-control form-control-sm" id="quickClientCompany"
+                  placeholder="e.g. Mr. Rafiqul Islam" />
+              </div>
+              <div class="col-md-6">
+                <label for="quickClientTitle" class="form-label small fw-semibold">Designation</label>
+                <input type="text" class="form-control form-control-sm" id="quickClientTitle"
+                  placeholder="e.g. Head of Procurement" />
+              </div>
+            </div>
+            <div class="mb-2">
+              <label for="quickClientAddress" class="form-label small fw-semibold">Full Address</label>
+              <textarea class="form-control form-control-sm" id="quickClientAddress" rows="2"
+                placeholder="e.g. 19 Dhanmondi R/A, Dhaka-1205"></textarea>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label for="quickClientPhone" class="form-label small fw-semibold">Phone</label>
+                <input type="text" class="form-control form-control-sm" id="quickClientPhone"
+                  placeholder="e.g. +880 1711-000000" />
+              </div>
+              <div class="col-md-6">
+                <label for="quickClientEmail" class="form-label small fw-semibold">Email</label>
+                <input type="email" class="form-control form-control-sm" id="quickClientEmail"
+                  placeholder="e.g. accounts@client.com" />
+              </div>
+              <div class="col-12 mt-2">
+                <label for="quickClientBin" class="form-label small fw-semibold">Client BIN / TIN (Optional)</label>
+                <input type="text" class="form-control form-control-sm" id="quickClientBin"
+                  placeholder="e.g. 001234567-0102" />
+              </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-success">Save & Select Client</button>
           </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Catalog Item Picker Modal -->
+  <div class="modal fade no-print" id="catalogPickerModal" tabindex="-1" aria-labelledby="catalogPickerModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="catalogPickerModalLabel">📦 Products & Services Catalog</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+            <div class="input-group" style="max-width: 380px;">
+              <span class="input-group-text">🔍</span>
+              <input type="text" id="catalogSearchInput" class="form-control form-control-sm"
+                placeholder="Search catalog items..." aria-label="Search catalog items" />
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal"
+              data-bs-target="#itemOnboardModal">
+              + New Item to Catalog
+            </button>
+          </div>
+          <div class="table-responsive border rounded">
+            <table class="table table-hover table-striped align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Item Name</th>
+                  <th>Description</th>
+                  <th>Unit</th>
+                  <th class="text-end">Rate (৳)</th>
+                  <th class="text-end" style="width: 100px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="catalogPickerBody">
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-3">Loading catalog...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Quick Item Onboard Modal -->
-    <div class="modal fade no-print" id="itemOnboardModal" tabindex="-1" aria-labelledby="itemOnboardModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fw-bold" id="itemOnboardModalLabel">➕ Add Item to Catalog</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <form id="quickItemForm">
-            <div class="modal-body">
-              <div class="mb-2">
-                <label for="quickItemName" class="form-label small fw-semibold">Item / Service Name *</label>
-                <input type="text" class="form-control" id="quickItemName" required placeholder="e.g. Website Maintenance" />
-              </div>
-              <div class="mb-2">
-                <label for="quickItemDesc" class="form-label small fw-semibold">Description</label>
-                <textarea class="form-control form-control-sm" id="quickItemDesc" rows="2" placeholder="e.g. Monthly security updates and backups"></textarea>
-              </div>
-              <div class="row g-2">
-                <div class="col-md-6">
-                  <label for="quickItemUnit" class="form-label small fw-semibold">Default Unit</label>
-                  <input type="text" class="form-control form-control-sm" id="quickItemUnit" list="quickUnitOptions" placeholder="Pcs" />
-                  <datalist id="quickUnitOptions">
-                    <option value="Pcs"></option>
-                    <option value="Sets"></option>
-                    <option value="Hours"></option>
-                    <option value="Days"></option>
-                    <option value="Month"></option>
-                    <option value="Lot"></option>
-                    <option value="Box"></option>
-                  </datalist>
-                </div>
-                <div class="col-md-6">
-                  <label for="quickItemPrice" class="form-label small fw-semibold">Default Unit Price (৳)</label>
-                  <input type="text" inputmode="decimal" class="form-control form-control-sm" id="quickItemPrice" placeholder="0.00" />
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-sm btn-success">Save & Insert Item</button>
-            </div>
-          </form>
+  <!-- Quick Item Onboard Modal -->
+  <div class="modal fade no-print" id="itemOnboardModal" tabindex="-1" aria-labelledby="itemOnboardModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="itemOnboardModalLabel">➕ Add Item to Catalog</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+        <form id="quickItemForm">
+          <div class="modal-body">
+            <div class="mb-2">
+              <label for="quickItemName" class="form-label small fw-semibold">Item / Service Name *</label>
+              <input type="text" class="form-control" id="quickItemName" required
+                placeholder="e.g. Website Maintenance" />
+            </div>
+            <div class="mb-2">
+              <label for="quickItemDesc" class="form-label small fw-semibold">Description</label>
+              <textarea class="form-control form-control-sm" id="quickItemDesc" rows="2"
+                placeholder="e.g. Monthly security updates and backups"></textarea>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label for="quickItemUnit" class="form-label small fw-semibold">Default Unit</label>
+                <input type="text" class="form-control form-control-sm" id="quickItemUnit" list="quickUnitOptions"
+                  placeholder="Pcs" />
+                <datalist id="quickUnitOptions">
+                  <option value="Pcs"></option>
+                  <option value="Sets"></option>
+                  <option value="Hours"></option>
+                  <option value="Days"></option>
+                  <option value="Month"></option>
+                  <option value="Lot"></option>
+                  <option value="Box"></option>
+                </datalist>
+              </div>
+              <div class="col-md-6">
+                <label for="quickItemPrice" class="form-label small fw-semibold">Default Unit Price (৳)</label>
+                <input type="text" inputmode="decimal" class="form-control form-control-sm" id="quickItemPrice"
+                  placeholder="0.00" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-success">Save & Insert Item</button>
+          </div>
+        </form>
       </div>
     </div>
+  </div>
 
-    <script src="assets/vendor/bootstrap.bundle.min.js"></script>
-    <script src="js/vendor/qrcode.min.js"></script>
-    <script src="js/constants.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/records.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/catalog.js"></script>
-    <script src="js/theme.js"></script>
-    <script src="js/biller.js"></script>
-    <script src="js/challan.js"></script>
-  </body>
+  <script src="assets/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/vendor/qrcode.min.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/records.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/catalog.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/biller.js"></script>
+  <script src="js/challan.js"></script>
+</body>
+
 </html>

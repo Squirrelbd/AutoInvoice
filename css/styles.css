@@ -17,8 +17,8 @@
   --border-subtle: #e2e8f0;
   --border-hover: #cbd5e1;
   --text-main: #0f172a;
-  --text-muted: #64748b;
-  --text-subtle: #94a3b8;
+  --text-muted: #475569;
+  --text-subtle: #64748b;
   --nav-bg: rgba(255, 255, 255, 0.9);
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
@@ -103,7 +103,7 @@ body {
 }
 
 .app-navbar .nav-link.active {
-  color: var(--brand-color);
+  color: var(--brand-ink);
   background-color: var(--surface-subtle);
   font-weight: 600;
 }
@@ -390,13 +390,13 @@ html[data-bs-theme="dark"] .metric-loss .metric-icon-badge {
 }
 
 .theme-quotation .btn-action {
-  background: #f59e0b;
+  background: #b45309;
   color: #ffffff;
   border: none;
 }
 
 .theme-quotation .btn-action:hover {
-  background: #d97706;
+  background: #92400e;
   color: #ffffff;
 }
 
@@ -432,13 +432,13 @@ html[data-bs-theme="dark"] .metric-loss .metric-icon-badge {
 }
 
 .theme-challan .btn-action {
-  background: #10b981;
+  background: #047857;
   color: #ffffff;
   border: none;
 }
 
 .theme-challan .btn-action:hover {
-  background: #059669;
+  background: #065f46;
   color: #ffffff;
 }
 
@@ -453,13 +453,13 @@ html[data-bs-theme="dark"] .metric-loss .metric-icon-badge {
 }
 
 .theme-receipt .btn-action {
-  background: #06b6d4;
+  background: #0e7490;
   color: #ffffff;
   border: none;
 }
 
 .theme-receipt .btn-action:hover {
-  background: #0891b2;
+  background: #155e75;
   color: #ffffff;
 }
 
@@ -522,13 +522,13 @@ html[data-bs-theme="dark"] .metric-loss .metric-icon-badge {
 }
 
 .theme-expenses .btn-action {
-  background: #ea580c;
+  background: #c2410c;
   color: #ffffff;
   border: none;
 }
 
 .theme-expenses .btn-action:hover {
-  background: #c2410c;
+  background: #9a3412;
   color: #ffffff;
 }
 

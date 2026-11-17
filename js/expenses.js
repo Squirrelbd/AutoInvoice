@@ -327,7 +327,9 @@ document.addEventListener('DOMContentLoaded', () => {
     invs.forEach(inv => {
       if (inv.status === 'Void') return;
       if (typeof getInvoicePaymentStats === 'function') {
-        totalInvoiced = roundBDT(totalInvoiced + getInvoicePaymentStats(inv).total);
+        const st = getInvoicePaymentStats(inv);
+        const isTaxWithholding = /\b(AIT|VDS)\b/i.test(st.adjustmentReason || '');
+        totalInvoiced = roundBDT(totalInvoiced + (isTaxWithholding ? st.originalTotal : st.total));
       } else {
         totalInvoiced = roundBDT(totalInvoiced + (Number(inv.grandTotal) || 0));
       }
@@ -511,28 +513,31 @@ document.addEventListener('DOMContentLoaded', () => {
       const m = getMonthKey(inv.date || inv.invoiceDate);
       if (m) {
         const item = ensureMonth(m);
-        const gross = typeof getInvoicePaymentStats === 'function'
-          ? getInvoicePaymentStats(inv).total
-          : Number(inv.grandTotal || 0);
+        const st = typeof getInvoicePaymentStats === 'function' ? getInvoicePaymentStats(inv) : null;
+        const baseGross = roundBDT(Number(inv.grandTotal || 0) || 0);
+        const isTaxWithholding = st && /\b(AIT|VDS)\b/i.test(st.adjustmentReason || '');
+        const gross = isTaxWithholding ? baseGross : (st ? st.total : baseGross);
         const vat = roundBDT(Number(inv.vatAmount || 0) || 0);
-        const amt = exclVat ? roundBDT(Math.max(0, gross - vat)) : gross;
+        const effectiveVat = baseGross > 0 ? roundBDT(vat * (gross / baseGross)) : 0;
+        const amt = exclVat ? roundBDT(Math.max(0, gross - effectiveVat)) : gross;
         item.invoiced = roundBDT(item.invoiced + (isFinite(amt) ? amt : 0));
       }
     });
 
-    // Receipts (Actual cash collected, scaled net-of-VAT if toggle active)
+    // Receipts (Actual cash collected, scaled net-of-VAT if toggle active and VDS wasn't already withheld)
     rcpts.forEach(rc => {
       if (rc.status === 'Void') return;
       const m = getMonthKey(rc.date);
       if (m) {
         const item = ensureMonth(m);
         let amt = Number(rc.amount || 0);
-        if (exclVat && rc.invoiceNumber && invByNo.has(rc.invoiceNumber)) {
+        const vdsWithheld = !!(rc.adjustment && rc.adjustment.applied && /\bVDS\b/i.test(rc.adjustment.reason || ''));
+        if (exclVat && !vdsWithheld && rc.invoiceNumber && invByNo.has(rc.invoiceNumber)) {
           const linkedInv = invByNo.get(rc.invoiceNumber);
           const g = Number(linkedInv.grandTotal || 0);
           const v = Number(linkedInv.vatAmount || 0);
           if (g > 0 && v > 0) {
-            amt = roundBDT(amt * ((g - v) / g));
+            amt = roundBDT(amt * (Math.max(0, g - v) / g));
           }
         }
         item.collected = roundBDT(item.collected + (isFinite(amt) ? amt : 0));

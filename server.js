@@ -66,12 +66,18 @@ function getCorsHeaders(req) {
     const parsed = new URL(origin);
     const hostname = parsed.hostname.toLowerCase();
     const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
-    const hostHdr = String(req.headers.host || '');
+    const hostHdr = String(req.headers.host || '').trim();
     const serverAddr = typeof server !== 'undefined' && server && server.address ? server.address() : null;
-    const reqPort = (hostHdr.includes(':') ? hostHdr.split(':').pop() : '') || String((serverAddr && serverAddr.port) || PORT);
+    let reqPort = '';
+    if (hostHdr) {
+      const m = hostHdr.match(/^\[[^\]]+\](?::(\d+))?$/) || hostHdr.match(/^[^:]+(?::(\d+))?$/);
+      reqPort = (m && m[1]) || '';
+    }
+    if (!reqPort) reqPort = String((serverAddr && serverAddr.port) || PORT);
     const originPort = parsed.port || (parsed.protocol === 'https:' ? '443' : '80');
     const samePort = !reqPort || originPort === String(reqPort);
-    const matchesServerHost = hostHdr && parsed.host.toLowerCase() === hostHdr.toLowerCase();
+    const allowRemote = process.env.AUTOINVOICE_ALLOW_REMOTE === '1';
+    const matchesServerHost = allowRemote && hostHdr && parsed.host.toLowerCase() === hostHdr.toLowerCase();
     if ((parsed.protocol === 'http:' || parsed.protocol === 'https:') && ((isLocalHost && samePort) || matchesServerHost)) {
       return {
         ok: true,
@@ -218,20 +224,26 @@ const server = http.createServer((req, res) => {
 
       const serverAddr = server.address();
       const activePort = (serverAddr && typeof serverAddr === 'object' && serverAddr.port) ? serverAddr.port : PORT;
-      const serverOrigin = `http://127.0.0.1:${activePort}`;
+      const rawHost = (serverAddr && typeof serverAddr === 'object' && serverAddr.address) ? serverAddr.address : '';
+      const connectHost = (!rawHost || rawHost === '0.0.0.0' || rawHost === '::')
+        ? '127.0.0.1'
+        : (rawHost.includes(':') ? `[${rawHost}]` : rawHost);
+      const serverOrigin = `http://${connectHost}:${activePort}`;
       const baseTag = `<base href="${serverOrigin}/">`;
       const cspTag = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${serverOrigin} 'unsafe-inline'; img-src ${serverOrigin} data:; font-src ${serverOrigin} data:; script-src 'none'; object-src 'none'; frame-src 'none'; connect-src 'none';">`;
       let sanitizedHtml = rawHtml.replace(/<base\b[^>]*>/gi, '');
-      // Strip scripts/frames/meta-refresh iteratively to prevent nested-tag bypass
+      // Strip HTML comments, scripts/frames/meta-refresh, slash/space event handlers & script URIs iteratively
       let prevHtml;
       do {
         prevHtml = sanitizedHtml;
         sanitizedHtml = sanitizedHtml
+          .replace(/<!--[\s\S]*?-->/g, '')
           .replace(/<script\b[\s\S]*?<\/script>/gi, '')
           .replace(/<(iframe|object|embed|applet)\b[\s\S]*?<\/\1>/gi, '')
           .replace(/<(iframe|object|embed|applet)\b[^>]*>/gi, '')
           .replace(/<meta\b[^>]*http-equiv\s*=\s*["']?\s*refresh\b[^>]*>/gi, '')
-          .replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+          .replace(/(?:[\s/])on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+          .replace(/\b(href|src|action|formaction|xlink:href)\s*=\s*(["']?)\s*(?:javascript|vbscript):/gi, '$1=$2#');
       } while (sanitizedHtml !== prevHtml);
       if (/<head\b[^>]*>/i.test(sanitizedHtml)) {
         sanitizedHtml = sanitizedHtml.replace(/<head\b([^>]*)>/i, `<head$1>${baseTag}${cspTag}`);
@@ -353,7 +365,9 @@ const server = http.createServer((req, res) => {
         // Also ensure records/billers.json is synced if billers were sent
         if (Array.isArray(payload.billers) && payload.billers.length > 0) {
           const billersFile = path.join(__dirname, 'records', 'billers.json');
-          fs.writeFile(billersFile, JSON.stringify(payload.billers, null, 2), 'utf8', () => { });
+          fs.mkdir(path.dirname(billersFile), { recursive: true }, (mkErr) => {
+            if (!mkErr) fs.writeFile(billersFile, JSON.stringify(payload.billers, null, 2), 'utf8', () => { });
+          });
         }
 
         res.writeHead(200, jsonHeaders(req));
@@ -374,8 +388,14 @@ const server = http.createServer((req, res) => {
       return;
     }
     if (req.method === 'GET') {
-      res.writeHead(200, jsonHeaders(req, { 'Cache-Control': 'no-cache' }));
-      res.end(JSON.stringify(db.getAll('invoices')));
+      try {
+        const list = db.getAll('invoices');
+        res.writeHead(200, jsonHeaders(req, { 'Cache-Control': 'no-cache' }));
+        res.end(JSON.stringify(list));
+      } catch (e) {
+        res.writeHead(500, jsonHeaders(req));
+        res.end(JSON.stringify({ error: e.message }));
+      }
       return;
     }
     if (req.method === 'POST') {
@@ -411,8 +431,14 @@ const server = http.createServer((req, res) => {
       return;
     }
     if (req.method === 'GET') {
-      res.writeHead(200, jsonHeaders(req, { 'Cache-Control': 'no-cache' }));
-      res.end(JSON.stringify(db.getAll('expenses')));
+      try {
+        const list = db.getAll('expenses');
+        res.writeHead(200, jsonHeaders(req, { 'Cache-Control': 'no-cache' }));
+        res.end(JSON.stringify(list));
+      } catch (e) {
+        res.writeHead(500, jsonHeaders(req));
+        res.end(JSON.stringify({ error: e.message }));
+      }
       return;
     }
     if (req.method === 'POST') {
@@ -445,10 +471,16 @@ const server = http.createServer((req, res) => {
     const billersFile = path.join(__dirname, 'records', 'billers.json');
     if (req.method === 'GET') {
       if (db && db.isAvailable()) {
-        const billersList = db.getAll('billers');
-        if (billersList.length > 0) {
-          res.writeHead(200, jsonHeaders(req, { 'Cache-Control': 'no-cache' }));
-          res.end(JSON.stringify(billersList));
+        try {
+          const billersList = db.getAll('billers');
+          if (billersList.length > 0) {
+            res.writeHead(200, jsonHeaders(req, { 'Cache-Control': 'no-cache' }));
+            res.end(JSON.stringify(billersList));
+            return;
+          }
+        } catch (e) {
+          res.writeHead(500, jsonHeaders(req));
+          res.end(JSON.stringify({ error: e.message }));
           return;
         }
       }
@@ -624,7 +656,12 @@ const server = http.createServer((req, res) => {
           'Content-Type': 'text/html; charset=utf-8',
           'Cache-Control': 'no-cache'
         }, cors.headers));
-        fs.createReadStream(indexPath).pipe(res);
+        fs.createReadStream(indexPath).on('error', () => {
+          if (!res.headersSent) {
+            res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+            res.end('File read error');
+          } else { res.destroy(); }
+        }).pipe(res);
         return;
       }
 
@@ -661,7 +698,12 @@ const server = http.createServer((req, res) => {
       'Cache-Control': 'no-cache'
     }, cors.headers));
 
-    fs.createReadStream(filePath).pipe(res);
+    fs.createReadStream(filePath).on('error', () => {
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('File read error');
+      } else { res.destroy(); }
+    }).pipe(res);
   });
 });
 

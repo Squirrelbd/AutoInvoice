@@ -541,6 +541,8 @@
           const saved = saveBiller(billerData);
           if (billerData.isDefault || !id) {
             setActiveBillerId(saved.id);
+          } else if (typeof getActiveBillerId === 'function' && getActiveBillerId() === saved.id) {
+            window.dispatchEvent(new CustomEvent('billerchange', { detail: { billerId: saved.id } }));
           }
           if (typeof showToast === 'function') {
             showToast(`Biller "${saved.name}" saved successfully!`, 'success');
@@ -563,6 +565,8 @@
     if (listView) listView.style.display = 'block';
     if (editForm) editForm.style.display = 'none';
     renderBillerListItems();
+    const addBtn = document.getElementById('addNewBillerFormBtn');
+    if (addBtn && typeof addBtn.focus === 'function') addBtn.focus();
   }
 
   function showForm(biller) {
@@ -570,6 +574,8 @@
     const editForm = document.getElementById('billerEditForm');
     if (listView) listView.style.display = 'none';
     if (editForm) editForm.style.display = 'block';
+    const nameInput = document.getElementById('billerFormName');
+    if (nameInput && typeof nameInput.focus === 'function') setTimeout(() => nameInput.focus(), 0);
 
     const titleEl = document.getElementById('billerFormTitle');
     const idEl = document.getElementById('billerFormId');
@@ -799,7 +805,9 @@
         applyActiveTheme();
         updateNavbarBrand();
         updateDropdownMenu();
-        if (typeof setCompanyHeader === 'function') setCompanyHeader();
+        const q = typeof window !== 'undefined' && window.location ? new URLSearchParams(window.location.search) : null;
+        const isViewingSavedDoc = !!(q && (q.get('no') || q.get('rcpt') || q.get('id') || q.get('load') || q.get('inv') || q.get('qtn') || q.get('ch')));
+        if (!isViewingSavedDoc && typeof setCompanyHeader === 'function') setCompanyHeader();
       });
     }
     applyActiveTheme();

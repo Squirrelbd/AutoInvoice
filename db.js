@@ -21,9 +21,8 @@ const DB_PATH = process.env.AUTOINVOICE_DB_PATH
 function _slugKey(prefix, raw) {
   const s = String(raw || '').trim().normalize('NFC');
   if (!s) return '';
-  if (/^[\x20-\x7E]+$/.test(s)) {
-    const ascii = s.toLowerCase().replace(/[^a-z0-9]/g, '_');
-    if (/[a-z0-9]/.test(ascii)) return ascii;
+  if (/^[a-z0-9]+$/i.test(s)) {
+    return s.toLowerCase();
   }
   let hash = 2166136261;
   for (let i = 0; i < s.length; i++) {
@@ -51,6 +50,7 @@ function getDb() {
   // Optimize SQLite for high reliability & fast local reads
   dbInstance.exec("PRAGMA journal_mode = WAL;");
   dbInstance.exec("PRAGMA synchronous = NORMAL;");
+  dbInstance.exec("PRAGMA busy_timeout = 5000;");
 
   initSchema(dbInstance);
   seedFromExistingFiles(dbInstance);
@@ -184,7 +184,7 @@ function initSchema(db) {
   }
   try {
     db.exec("CREATE INDEX IF NOT EXISTS idx_quotations_valid_until ON quotations(valid_until);");
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function seedFromExistingFiles(db) {
@@ -486,7 +486,7 @@ function getAll(table) {
 function getAllData() {
   const db = getDb();
   const parseRows = (table) => {
-    return db.prepare(`SELECT data FROM ${table}`).all().map(r => {
+    return db.prepare(`SELECT data FROM ${table} ORDER BY created_at DESC`).all().map(r => {
       try { return JSON.parse(r.data); } catch (e) { return null; }
     }).filter(Boolean);
   };
@@ -613,8 +613,10 @@ function syncClientSnapshot(payload, options = {}) {
     if (Array.isArray(payload.billers)) {
       const ids = payload.billers.map(b => b && b.id).filter(Boolean).map(String);
       if (ids.length > 0) {
-        const placeholders = ids.map(() => '?').join(',');
-        db.prepare(`DELETE FROM billers WHERE id NOT IN (${placeholders})`).run(...ids);
+        if (canPruneEmpty || ids.length > 1) {
+          const placeholders = ids.map(() => '?').join(',');
+          db.prepare(`DELETE FROM billers WHERE id NOT IN (${placeholders})`).run(...ids);
+        }
       } else if (canPruneEmpty) {
         db.exec("DELETE FROM billers;");
       }
@@ -660,8 +662,10 @@ function syncClientSnapshot(payload, options = {}) {
         return name ? (isStr ? _slugKey('cat', name) : (cat.id || _slugKey('cat', name))) : '';
       }).filter(Boolean).map(String);
       if (ids.length > 0) {
-        const placeholders = ids.map(() => '?').join(',');
-        db.prepare(`DELETE FROM expense_categories WHERE id NOT IN (${placeholders})`).run(...ids);
+        if (canPruneEmpty) {
+          const placeholders = ids.map(() => '?').join(',');
+          db.prepare(`DELETE FROM expense_categories WHERE id NOT IN (${placeholders})`).run(...ids);
+        }
       } else if (canPruneEmpty) {
         db.exec("DELETE FROM expense_categories;");
       }

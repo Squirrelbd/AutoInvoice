@@ -18,6 +18,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const itemRowsEl = document.getElementById('itemRows');
   const qrContainer = document.getElementById('qrContainer');
   const addRowBtn = document.getElementById('addRowBtn');
+  const partialDispatchBannerEl = document.getElementById('partialDispatchBanner');
+
+  function renderPartialDispatchBanner(inv, excludeChNo) {
+    if (!partialDispatchBannerEl) return;
+    if (!inv || typeof getInvoiceDispatchStats !== 'function') {
+      partialDispatchBannerEl.classList.add('d-none');
+      partialDispatchBannerEl.innerHTML = '';
+      return;
+    }
+    const ds = getInvoiceDispatchStats(inv, excludeChNo);
+    const invNo = inv.invoiceNumber || inv.number || '';
+    const priorLinks = ds.challans.map(c =>
+      `<a href="challan.html?no=${encodeURIComponent(c.challanNumber)}" class="badge bg-light text-dark border text-decoration-none me-1">🚚 ${escapeHTML(c.challanNumber)}</a>`
+    ).join('');
+    const fullyDone = ds.challans.length > 0 && ds.totalRemainingQty <= 0;
+    partialDispatchBannerEl.className = `alert ${fullyDone ? 'alert-warning' : 'alert-info'} mb-3 no-print py-2 px-3 small`;
+    partialDispatchBannerEl.innerHTML = `
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+          <strong>Linked Invoice:</strong>
+          <a href="invoice.html?no=${encodeURIComponent(invNo)}" class="fw-bold text-decoration-none font-monospace">${escapeHTML(invNo)}</a>
+          <span class="ms-2">• Ordered: <strong>${ds.totalOrderedQty}</strong></span>
+          <span class="ms-2">• Previously Dispatched: <strong>${ds.totalDispatchedQty}</strong></span>
+          <span class="ms-2">• Remaining: <strong>${ds.totalRemainingQty}</strong></span>
+          ${fullyDone ? '<span class="badge bg-danger ms-2">Fully Dispatched</span>' : ''}
+        </div>
+        <div>${priorLinks ? `<span class="me-1">Prior Challans:</span>${priorLinks}` : '<span class="text-muted">First dispatch for this invoice</span>'}</div>
+      </div>
+    `;
+  }
 
   function syncClientDisplay() {
     const name = clientNameEl ? clientNameEl.value.trim() : '';
@@ -192,6 +222,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const chBiller = (typeof getBillerById === 'function' && ch.billerId ? getBillerById(ch.billerId) : null) || ch.company;
           if (chBiller) setCompanyHeader(chBiller);
         }
+        if (ch.linkedInvoice) {
+          const linkedInv = typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(ch.linkedInvoice) : null;
+          if (linkedInv) renderPartialDispatchBanner(linkedInv, ch.challanNumber);
+        }
         const existingDraft = localStorage.getItem(`ai_challan_draft_${ch.challanNumber}`);
         if (existingDraft) {
           try {
@@ -244,9 +278,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try { inv = await getDiskInvoiceByNumber(params.inv); } catch (e) { }
       }
       if (inv) {
-        if (inv.billerId && typeof setActiveBillerId === 'function' && getActiveBillerId() !== inv.billerId) {
-          setActiveBillerId(inv.billerId);
-        }
+        const invBiller = (typeof getBillerById === 'function' && inv.billerId ? getBillerById(inv.billerId) : null) || inv.company;
+        if (invBiller) setCompanyHeader(invBiller);
         challanNumberEl.value = peekNextChallanNumber(inv.billerId);
         challanDateEl.value = inv.date || (typeof toLocalISODate === 'function' ? toLocalISODate() : '');
         clientNameEl.value = inv.client?.name || '';
@@ -254,16 +287,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (docTitleInput) docTitleInput.value = inv.title || '';
         if (docTitleHeader) docTitleHeader.textContent = inv.title || '';
         if (linkedInvoiceEl) linkedInvoiceEl.value = inv.invoiceNumber || params.inv;
+        const ds = typeof getInvoiceDispatchStats === 'function' ? getInvoiceDispatchStats(inv) : null;
         itemRowsEl.innerHTML = '';
-        (inv.items || []).forEach(it => {
-          const catItem = (typeof getItemByName === 'function' && it.name) ? getItemByName(it.name) : null;
-          addRowFromData({
-            name: it.name || '',
-            desc: it.desc || '',
-            qty: it.qty || 1,
-            unit: it.unit || catItem?.unit || 'Pcs'
+        if (ds && ds.challans.length > 0) {
+          const remainingItems = ds.items.filter(it => it.remainingQty > 0);
+          if (remainingItems.length > 0) {
+            remainingItems.forEach(it => {
+              addRowFromData({
+                name: it.name || '',
+                desc: it.desc || '',
+                qty: it.remainingQty,
+                unit: it.unit || 'Pcs'
+              });
+            });
+          } else {
+            addRow();
+            if (typeof showToast === 'function') {
+              showToast(`Invoice ${inv.invoiceNumber || params.inv} is already fully dispatched across prior challan(s).`, 'warning');
+            }
+          }
+        } else {
+          (inv.items || []).forEach(it => {
+            const catItem = (typeof getItemByName === 'function' && it.name) ? getItemByName(it.name) : null;
+            addRowFromData({
+              name: it.name || '',
+              desc: it.desc || '',
+              qty: it.qty || 1,
+              unit: it.unit || catItem?.unit || 'Pcs'
+            });
           });
-        });
+        }
+        renderPartialDispatchBanner(inv, '');
         renderQR(qrContainer, buildQRText());
         updateModeBadge(false);
         syncPrintDisplayValues();
@@ -354,6 +408,13 @@ document.addEventListener('DOMContentLoaded', () => {
   [linkedInvoiceEl, vehicleNoEl, driverInfoEl, packageCountEl].forEach(el => {
     if (el) el.addEventListener('input', syncPrintDisplayValues);
   });
+  if (linkedInvoiceEl) {
+    linkedInvoiceEl.addEventListener('change', () => {
+      const no = linkedInvoiceEl.value.trim();
+      const inv = no && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(no) : null;
+      renderPartialDispatchBanner(inv, activeParams?.no || '');
+    });
+  }
 
   if (addRowBtn) {
     addRowBtn.addEventListener('click', () => addRow());
@@ -383,8 +444,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (validMsg) { showToast(validMsg, 'warning'); return; }
     saveChallan(record);
     localStorage.setItem(LAST_CLIENT_KEY, JSON.stringify(record.client));
-    finalizeChallanNumber(record.challanNumber);
-    activeParams = Object.assign({}, activeParams, { no: record.challanNumber });
+    finalizeChallanNumber(record.challanNumber, record.billerId);
+    activeParams = { no: record.challanNumber };
+    if (typeof history !== 'undefined' && history.replaceState) {
+      try { history.replaceState(null, '', `?no=${encodeURIComponent(record.challanNumber)}`); } catch (_) { }
+    }
     isDirty = false;
     clearDraft();
     updateModeBadge(true, record.challanNumber);
@@ -395,13 +459,21 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       if (itemCatalog) itemCatalog.refresh();
     }
-    const targetInvNo = (record.linkedInvoice || activeParams?.inv || '').trim();
+    const targetInvNo = (record.linkedInvoice || '').trim();
     if (targetInvNo && typeof getInvoiceByNumber === 'function' && typeof saveInvoice === 'function') {
       const linkedInv = getInvoiceByNumber(targetInvNo);
-      if (linkedInv && !linkedInv.linkedChallan) {
-        linkedInv.linkedChallan = record.challanNumber;
+      if (linkedInv) {
+        if (typeof getChallansByInvoiceNumber === 'function') {
+          const allCh = getChallansByInvoiceNumber(targetInvNo).map(c => c.challanNumber);
+          linkedInv.linkedChallan = allCh.join(', ') || record.challanNumber;
+        } else if (!linkedInv.linkedChallan) {
+          linkedInv.linkedChallan = record.challanNumber;
+        }
         saveInvoice(linkedInv);
+        renderPartialDispatchBanner(linkedInv, record.challanNumber);
       }
+    } else {
+      renderPartialDispatchBanner(null, '');
     }
     syncPrintDisplayValues();
     showToast('Challan saved successfully.', 'success');
@@ -413,7 +485,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const validMsg = validateRecord(record);
       if (validMsg) { showToast(`Cannot create invoice: ${validMsg}`, 'warning'); return; }
       saveChallan(record);
-      finalizeChallanNumber(record.challanNumber);
+      finalizeChallanNumber(record.challanNumber, record.billerId);
+      activeParams = { no: record.challanNumber };
+      if (typeof history !== 'undefined' && history.replaceState) {
+        try { history.replaceState(null, '', `?no=${encodeURIComponent(record.challanNumber)}`); } catch (_) { }
+      }
+      clearDraft();
+      isDirty = false;
+      updateModeBadge(true, record.challanNumber);
       const url = `invoice.html?ch=${encodeURIComponent(record.challanNumber)}`;
       window.open(url, '_blank');
     });
@@ -652,16 +731,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
   }
 
+  function _resolveChallanBiller() {
+    const existingCh = challanNumberEl.value ? getChallanByNumber(challanNumberEl.value) : null;
+    const linkedInvNo = linkedInvoiceEl ? linkedInvoiceEl.value.trim() : '';
+    const linkedInvObj = linkedInvNo && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(linkedInvNo) : null;
+    const bId = existingCh?.billerId || linkedInvObj?.billerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
+    const biller = (typeof getBillerById === 'function' && bId ? getBillerById(bId) : null)
+      || existingCh?.company
+      || (typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {}));
+    return { existingCh, linkedInvNo, bId, biller };
+  }
+
   function buildQRText() {
     const num = challanNumberEl.value;
     const date = challanDateEl.value;
     const client = clientNameEl.value || '';
-    const activeBiller = typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {});
+    const { biller } = _resolveChallanBiller();
     return buildQRPayload('CHAL', {
       number: num,
       date,
       client,
-      company: activeBiller.name || (typeof COMPANY !== 'undefined' ? COMPANY.name : '')
+      company: biller.name || (typeof COMPANY !== 'undefined' ? COMPANY.name : '')
     });
   }
 
@@ -679,19 +769,15 @@ document.addEventListener('DOMContentLoaded', () => {
         unit: (tr.querySelector('.unit')?.value || 'Pcs').trim() || 'Pcs',
       });
     });
-    const existingCh = challanNumberEl.value ? getChallanByNumber(challanNumberEl.value) : null;
-    const linkedInvNo = linkedInvoiceEl ? linkedInvoiceEl.value.trim() : '';
-    const linkedInvObj = linkedInvNo && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(linkedInvNo) : null;
-    const activeBillerId = existingCh?.billerId || linkedInvObj?.billerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
-    const targetBiller = (typeof getBillerById === 'function' && activeBillerId ? getBillerById(activeBillerId) : null)
-      || (typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {}));
+    const { existingCh, linkedInvNo, bId, biller } = _resolveChallanBiller();
+    const companySnap = typeof slimCompanySnapshot === 'function' ? slimCompanySnapshot(biller) : biller;
     return {
       id: existingCh?.id,
       createdAt: existingCh?.createdAt,
       status: existingCh?.status,
       _type: 'challan',
-      billerId: activeBillerId,
-      challanNumber: challanNumberEl.value,
+      billerId: bId,
+      challanNumber: challanNumberEl.value.trim(),
       date: challanDateEl.value,
       linkedInvoice: linkedInvNo,
       logistics: {
@@ -704,7 +790,7 @@ document.addEventListener('DOMContentLoaded', () => {
       title: docTitleInput ? docTitleInput.value.trim() : '',
       items,
       qrData: buildQRText(),
-      company: targetBiller
+      company: companySnap
     };
   }
 
@@ -764,6 +850,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('beforeprint', prepareForPrint);
 
   function validateRecord(rec) {
+    if (!rec.challanNumber) return 'Challan Number is required.';
     if (!rec.client?.name) return 'Bill To (client name) is required.';
     if (!rec.items?.length) return 'Add at least one item.';
     const hasQty = rec.items.some(it => Number(it.qty) > 0);

@@ -484,6 +484,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const existingQ = currentQuotationRecord || (quotationNumberEl.value.trim() ? getQuotationByNumber(quotationNumberEl.value.trim()) : null);
     const vDays = parseInt(validityDaysEl?.value, 10) || 30;
     const vUntil = validUntilEl?.value || '';
+    const bId = existingQ?.billerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
+    const targetBiller = (typeof getBillerById === 'function' && bId ? getBillerById(bId) : null)
+      || existingQ?.company
+      || (typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {}));
+    const companySnap = typeof slimCompanySnapshot === 'function' ? slimCompanySnapshot(targetBiller) : targetBiller;
     return {
       id: existingQ?.id,
       createdAt: existingQ?.createdAt,
@@ -508,8 +513,8 @@ document.addEventListener('DOMContentLoaded', () => {
       grandTotal: totalAmount,
       amountInWords: numberToWordsBDT(totalAmount),
       qrData: buildQRText(),
-      billerId: existingQ?.billerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default'),
-      company: (typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {})),
+      billerId: bId,
+      company: companySnap,
       converted: !!currentQuotationRecord?.converted,
       convertedToInvoice: currentQuotationRecord?.convertedToInvoice || '',
       convertedAt: currentQuotationRecord?.convertedAt || ''
@@ -529,13 +534,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const num = quotationNumberEl.value;
     const totalNum = getGrandTotalNumber();
     const toWho = toCompanyEl.value || toNameEl.value || '';
-    const activeBiller = typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {});
+    const existingQ = currentQuotationRecord || (quotationNumberEl.value ? getQuotationByNumber(quotationNumberEl.value) : null);
+    const bId = existingQ?.billerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
+    const biller = (typeof getBillerById === 'function' && bId ? getBillerById(bId) : null)
+      || existingQ?.company
+      || (typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {}));
     return buildQRPayload('QTN', {
       number: num,
       date: dateEl.value,
       amount: totalNum,
       client: toWho,
-      company: activeBiller.name || (typeof COMPANY !== 'undefined' ? COMPANY.name : '')
+      company: biller.name || (typeof COMPANY !== 'undefined' ? COMPANY.name : '')
     });
   }
 
@@ -545,8 +554,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const validMsg = validateRecord(record);
       if (validMsg) { showToast(validMsg, 'warning'); return; }
       saveQuotation(record);
-      finalizeQuotationNumber(record.quotationNumber);
+      finalizeQuotationNumber(record.quotationNumber, record.billerId);
       currentQuotationRecord = record;
+      if (typeof history !== 'undefined' && history.replaceState) {
+        try { history.replaceState(null, '', `?no=${encodeURIComponent(record.quotationNumber)}`); } catch (_) { }
+      }
       isDirty = false;
       updateModeBadge(true, record.quotationNumber);
       updateValidityBadge(record);
@@ -614,7 +626,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function printWithGuard() {
     prepareForPrint();
-    finalizeQuotationNumber(quotationNumberEl.value);
     let done = false;
     const onAfter = () => { done = true; window.removeEventListener('afterprint', onAfter); };
     window.addEventListener('afterprint', onAfter);
@@ -634,7 +645,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (typeof initPdfDownloadButton === 'function') {
     initPdfDownloadButton('downloadPdfBtn', () => {
-      finalizeQuotationNumber(quotationNumberEl.value);
       prepareForPrint();
     }, () => {
       if (typeof setPrintDocumentTitle === 'function') {
@@ -722,15 +732,13 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
       }
-      record.converted = true;
-      record.convertedAt = new Date().toISOString();
-      currentQuotationRecord = record;
-      updateConversionBadge(record);
-      updateValidityBadge(record);
     }
 
     saveQuotation(record);
-    finalizeQuotationNumber(record.quotationNumber);
+    finalizeQuotationNumber(record.quotationNumber, record.billerId);
+    currentQuotationRecord = record;
+    isDirty = false;
+    updateModeBadge(true, record.quotationNumber);
     const no = quotationNumberEl.value;
     const url = `${page}.html?qtn=${encodeURIComponent(no)}`;
     window.open(url, '_blank');
@@ -759,7 +767,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (pTotal) pTotal.textContent = formatBDT(rec.grandTotal);
       if (pWords) pWords.textContent = rec.amountInWords;
       document.body.classList.add('prf-mode');
-      finalizeQuotationNumber(rec.quotationNumber);
       const cleanupPrf = () => {
         document.body.classList.remove('prf-mode');
         window.removeEventListener('afterprint', cleanupPrf);

@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const paymentStatusBannerEl = document.getElementById('paymentStatusBanner');
   const LAST_CLIENT_KEY = 'ai_last_client_invoice';
   let activeParams = parseQuery();
+  let sourceBillerId = null;
 
   function getDraftKey() {
     const num = (invoiceNumberEl ? invoiceNumberEl.value.trim() : '');
@@ -94,6 +95,39 @@ document.addEventListener('DOMContentLoaded', () => {
       rcptLinks = '<span class="text-muted small">No receipts recorded</span>';
     }
 
+    let dispatchHtml = '';
+    if (typeof getInvoiceDispatchStats === 'function' && inv.invoiceNumber) {
+      const ds = getInvoiceDispatchStats(inv);
+      const dispBadge = ds.status === 'Fully Delivered'
+        ? '<span class="badge bg-success me-1">Fully Delivered</span>'
+        : ds.status === 'Partially Delivered'
+          ? '<span class="badge bg-warning text-dark me-1">Partially Delivered</span>'
+          : '<span class="badge bg-secondary me-1">Pending Dispatch</span>';
+      const chLinks = ds.challans.length
+        ? ds.challans.map(c => {
+            const cQty = (c.items || []).reduce((s, it) => s + (Number(it.qty || 0) || 0), 0);
+            return `<a href="challan.html?no=${encodeURIComponent(c.challanNumber)}" class="badge bg-info-subtle text-info-emphasis border text-decoration-none p-1 me-1">🚚 ${escapeHTML(c.challanNumber)} (${cQty})</a>`;
+          }).join('')
+        : '<span class="text-muted small">No challans dispatched</span>';
+      const dispatchBtn = (ds.totalRemainingQty > 0 || ds.challans.length === 0) && inv.status !== 'Void'
+        ? `<a href="challan.html?inv=${encodeURIComponent(inv.invoiceNumber)}" class="btn btn-sm btn-outline-primary ms-2 bg-body">${ds.challans.length ? 'Dispatch Remaining' : 'Create Challan'}</a>`
+        : '';
+      dispatchHtml = `
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2 pt-2 border-top border-secondary-subtle">
+          <div class="d-flex align-items-center flex-wrap gap-2 small">
+            ${dispBadge}
+            <span><strong>Dispatched:</strong> ${ds.totalDispatchedQty} / ${ds.totalOrderedQty} units</span>
+            ${ds.totalRemainingQty > 0 ? `<span class="text-muted">(${ds.totalRemainingQty} remaining)</span>` : ''}
+          </div>
+          <div class="d-flex align-items-center flex-wrap gap-1">
+            <span class="small me-1">Challans:</span>
+            ${chLinks}
+            ${dispatchBtn}
+          </div>
+        </div>
+      `;
+    }
+
     paymentStatusBannerEl.className = `alert ${alertClass} p-3 mb-3 no-print shadow-sm`;
     paymentStatusBannerEl.innerHTML = `
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
@@ -111,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <a href="receipt.html?inv=${encodeURIComponent(inv.invoiceNumber)}" class="btn btn-sm btn-outline-success ms-2 bg-body">Record Payment</a>
         </div>
       </div>
+      ${dispatchHtml}
     `;
     paymentStatusBannerEl.classList.remove('d-none');
     updateReceiptBreakdown(stats);
@@ -206,7 +241,12 @@ document.addEventListener('DOMContentLoaded', () => {
       payMethodPrint.textContent = paymentMethodEl.value || 'Cash';
     }
     if (linkChPrint) {
-      linkChPrint.textContent = (linkedChallanEl && linkedChallanEl.value.trim()) ? linkedChallanEl.value.trim() : '—';
+      let chVal = (linkedChallanEl && linkedChallanEl.value.trim()) ? linkedChallanEl.value.trim() : '';
+      if (!chVal && invoiceNumberEl?.value && typeof getChallansByInvoiceNumber === 'function') {
+        const linkedList = getChallansByInvoiceNumber(invoiceNumberEl.value);
+        if (linkedList.length) chVal = linkedList.map(c => c.challanNumber).join(', ');
+      }
+      linkChPrint.textContent = chVal || '—';
     }
     if (poRefPrint) {
       poRefPrint.textContent = (poRefEl && poRefEl.value.trim()) ? poRefEl.value.trim() : '—';
@@ -411,7 +451,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       if (ch) {
-        invoiceNumberEl.value = peekNextInvoiceNumber();
+        if (ch.billerId) {
+          sourceBillerId = ch.billerId;
+          const chBiller = typeof getBillerById === 'function' ? getBillerById(ch.billerId) : null;
+          if (chBiller) setCompanyHeader(chBiller);
+        }
+        invoiceNumberEl.value = peekNextInvoiceNumber(sourceBillerId);
         invoiceDateEl.value = ch.date || formatISO(new Date());
         if (dueDateEl) {
           const base = parseISO(invoiceDateEl.value);
@@ -443,6 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (params.qtn) {
       const q = getQuotationByNumber(params.qtn);
+      let loadQtn = !!q;
       if (q) {
         const qStats = typeof getQuotationStatus === 'function' ? getQuotationStatus(q) : null;
         if (qStats && qStats.isExpired) {
@@ -451,16 +497,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof history !== 'undefined' && window.location.search) {
               try { history.replaceState(null, '', window.location.pathname); } catch (_) { }
             }
-            return;
+            activeParams = {};
+            loadQtn = false;
           }
         }
-        invoiceNumberEl.value = peekNextInvoiceNumber();
+      }
+      if (q && loadQtn) {
+        const qBillerId = q.billerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
+        sourceBillerId = qBillerId;
+        const qBiller = (typeof getBillerById === 'function' ? getBillerById(qBillerId) : null);
+        if (qBiller) setCompanyHeader(qBiller);
+        invoiceNumberEl.value = peekNextInvoiceNumber(qBillerId);
         invoiceDateEl.value = q.date || formatISO(new Date());
         if (dueDateEl) {
           const base = parseISO(invoiceDateEl.value);
           dueDateEl.value = formatISO(addWorkingDays(base, 15));
         }
-        clientNameEl.value = q.to?.company || q.to?.name || '';
+        clientNameEl.value = q.to?.name || q.to?.company || '';
         clientAddressEl.value = q.to?.address || '';
         if (docTitleInput) docTitleInput.value = q.subject || '';
         if (docTitleHeader) docTitleHeader.textContent = q.subject || '';
@@ -472,7 +525,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (vatRateInputEl && q.vatRate != null) vatRateInputEl.value = String(q.vatRate);
         itemRowsEl.innerHTML = '';
         (q.items || []).forEach(it => {
-          addRowFromData({ name: it.name || it.desc || '', desc: it.name ? (it.desc || '') : '', qty: it.qty || 1, unit: it.unit || 'Pcs', unitPrice: it.unitPrice || 0 });
+          let iName = it.name || '';
+          let iDesc = it.desc || '';
+          if (!iName && iDesc) {
+            const idx = iDesc.indexOf(' - ');
+            if (idx > 0) {
+              iName = iDesc.slice(0, idx).trim();
+              iDesc = iDesc.slice(idx + 3).trim();
+            } else {
+              iName = iDesc;
+              iDesc = '';
+            }
+          }
+          addRowFromData({ name: iName, desc: iDesc, qty: it.qty || 1, unit: it.unit || 'Pcs', unitPrice: it.unitPrice || 0 });
         });
         updateGrandTotal();
         renderQR(qrContainer, buildQRText());
@@ -550,11 +615,13 @@ document.addEventListener('DOMContentLoaded', () => {
     syncPrintDisplayValues();
   })();
 
-  // Update due date when invoice date changes
+  // Update due date when invoice date changes on unsaved/new invoices
   invoiceDateEl.addEventListener('change', () => {
     if (invoiceDateEl.value) {
-      const base = parseISO(invoiceDateEl.value);
-      dueDateEl.value = formatISO(addWorkingDays(base, 15));
+      if (!activeParams?.no) {
+        const base = parseISO(invoiceDateEl.value);
+        dueDateEl.value = formatISO(addWorkingDays(base, 15));
+      }
       debouncedRenderQR();
     }
     syncPrintDisplayValues();
@@ -618,8 +685,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (validMsg) { showToast(validMsg, 'warning'); return; }
     saveInvoice(record);
     localStorage.setItem(LAST_CLIENT_KEY, JSON.stringify(record.client));
-    finalizeInvoiceNumber(record.invoiceNumber);
-    activeParams = Object.assign({}, activeParams, { no: record.invoiceNumber });
+    finalizeInvoiceNumber(record.invoiceNumber, record.billerId);
+    if (activeParams && activeParams.qtn && typeof getQuotationByNumber === 'function' && typeof saveQuotation === 'function') {
+      const qtn = getQuotationByNumber(activeParams.qtn);
+      if (qtn) {
+        qtn.converted = true;
+        qtn.convertedToInvoice = record.invoiceNumber;
+        qtn.convertedAt = new Date().toISOString();
+        saveQuotation(qtn);
+      }
+    }
+    activeParams = { no: record.invoiceNumber };
+    if (typeof history !== 'undefined' && history.replaceState) {
+      try { history.replaceState(null, '', `?no=${encodeURIComponent(record.invoiceNumber)}`); } catch (_) { }
+    }
     isDirty = false;
     clearDraft();
     updateModeBadge(true, record.invoiceNumber);
@@ -638,15 +717,6 @@ document.addEventListener('DOMContentLoaded', () => {
         saveChallan(ch);
       }
     }
-    if (activeParams && activeParams.qtn && typeof getQuotationByNumber === 'function' && typeof saveQuotation === 'function') {
-      const qtn = getQuotationByNumber(activeParams.qtn);
-      if (qtn) {
-        qtn.converted = true;
-        qtn.convertedToInvoice = record.invoiceNumber;
-        qtn.convertedAt = new Date().toISOString();
-        saveQuotation(qtn);
-      }
-    }
     showToast('Invoice saved successfully.', 'success');
   });
 
@@ -660,6 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dueDateEl.value = formatISO(addWorkingDays(today, 15));
       isDirty = true;
       activeParams = {}; // switch to fresh draft scope
+      sourceBillerId = null;
       clearDraft();
       updateModeBadge(false);
       if (paymentStatusBannerEl) paymentStatusBannerEl.classList.add('d-none');
@@ -698,8 +769,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const validMsg = validateRecord(record);
       if (validMsg) { showToast(`Cannot create challan: ${validMsg}`, 'warning'); return; }
       saveInvoice(record);
-      finalizeInvoiceNumber(record.invoiceNumber);
+      finalizeInvoiceNumber(record.invoiceNumber, record.billerId);
+      activeParams = { no: record.invoiceNumber };
+      clearDraft();
       isDirty = false;
+      updateModeBadge(true, record.invoiceNumber);
+      renderPaymentStatusBanner(record);
       window.open(`challan.html?inv=${encodeURIComponent(record.invoiceNumber)}`, '_blank');
     });
   }
@@ -948,6 +1023,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('Are you sure you want to remove this item row?')) return;
       }
       tr.remove();
+      isDirty = true;
       updateGrandTotal();
       debouncedRenderQR();
       adjustColumnWidths();
@@ -1011,17 +1087,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof syncPrintDisplayValues === 'function') syncPrintDisplayValues();
   }
 
+  function _resolveInvoiceBiller() {
+    const existingInv = invoiceNumberEl.value ? getInvoiceByNumber(invoiceNumberEl.value) : null;
+    const bId = existingInv?.billerId || sourceBillerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
+    const biller = (typeof getBillerById === 'function' && bId ? getBillerById(bId) : null)
+      || existingInv?.company
+      || (typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {}));
+    return { existingInv, bId, biller };
+  }
+
   function buildQRText() {
     const num = invoiceNumberEl.value;
     const totalNum = getGrandTotalNumber();
     const client = clientNameEl.value || '';
-    const activeBiller = typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {});
+    const { biller } = _resolveInvoiceBiller();
     return buildQRPayload('INV', {
       number: num,
       date: invoiceDateEl.value,
       amount: totalNum,
       client,
-      company: activeBiller.name || (typeof COMPANY !== 'undefined' ? COMPANY.name : '')
+      company: biller.name || (typeof COMPANY !== 'undefined' ? COMPANY.name : '')
     });
   }
 
@@ -1041,15 +1126,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const totals = getInvoiceTotalsBreakdown();
     const totalAmount = totals.grandTotal;
-    const existingInv = invoiceNumberEl.value ? getInvoiceByNumber(invoiceNumberEl.value) : null;
-    const activeBiller = typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {});
-    const activeBillerId = existingInv?.billerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
+    const { existingInv, bId, biller } = _resolveInvoiceBiller();
+    const companySnap = typeof slimCompanySnapshot === 'function' ? slimCompanySnapshot(biller) : biller;
     return {
       id: existingInv?.id,
       createdAt: existingInv?.createdAt,
       status: existingInv?.status,
       _type: 'invoice',
-      billerId: activeBillerId,
+      billerId: bId,
       invoiceNumber: invoiceNumberEl.value,
       date: invoiceDateEl.value,
       title: docTitleInput ? docTitleInput.value.trim() : '',
@@ -1069,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', () => {
       grandTotal: totalAmount,
       amountInWords: numberToWordsBDT(totalAmount),
       qrData: buildQRText(),
-      company: activeBiller
+      company: companySnap
     };
   }
 

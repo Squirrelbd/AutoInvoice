@@ -200,7 +200,16 @@ function renderRemittanceBlock(biller) {
 }
 
 function setCompanyHeader(overrideBiller) {
-  const c = overrideBiller || (typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {}));
+  let c = overrideBiller || (typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {}));
+  if (overrideBiller && overrideBiller.id && typeof getBillerById === 'function' && (!overrideBiller.logoDataUri || overrideBiller.signatureDataUri === undefined)) {
+    const liveBiller = getBillerById(overrideBiller.id);
+    if (liveBiller) {
+      c = Object.assign({}, liveBiller, overrideBiller, {
+        logoDataUri: overrideBiller.logoDataUri || liveBiller.logoDataUri,
+        signatureDataUri: overrideBiller.signatureDataUri !== undefined ? overrideBiller.signatureDataUri : liveBiller.signatureDataUri
+      });
+    }
+  }
   const nameEl = document.getElementById('companyName');
   const addrEl = document.getElementById('companyAddress');
   const contactsEl = document.getElementById('companyContacts');

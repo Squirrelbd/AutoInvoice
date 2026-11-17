@@ -375,11 +375,11 @@ function _readJSON(key, fallback) {
   }
 }
 
-function _writeJSON(key, obj) {
+function _writeJSON(key, obj, options) {
   try {
     localStorage.setItem(key, JSON.stringify(obj));
     checkStorageQuota();
-    if (typeof scheduleSQLiteSync === 'function') {
+    if ((!options || !options.skipSync) && typeof scheduleSQLiteSync === 'function') {
       scheduleSQLiteSync();
     }
   } catch (e) {
@@ -449,7 +449,7 @@ function loadBillers() {
   if (!Array.isArray(list) || list.length === 0) {
     const def = createDefaultBiller();
     list = [def];
-    _writeJSON(STORAGE_KEYS.billers, list);
+    _writeJSON(STORAGE_KEYS.billers, list, { skipSync: true });
     return list;
   }
   let hasDefault = false;
@@ -616,8 +616,10 @@ function saveBiller(biller) {
     list.push(entry);
   }
 
-  _writeJSON(STORAGE_KEYS.billers, list);
+  _forceNextSyncPrune = true;
+  _writeJSON(STORAGE_KEYS.billers, list, { skipSync: true });
   _persistBillersToDisk(list);
+  if (typeof _flushSQLiteSyncNow === 'function') _flushSQLiteSyncNow();
   return entry;
 }
 
@@ -635,6 +637,7 @@ function _persistBillersToDisk(list) {
 }
 
 async function syncBillersFromDisk() {
+  if (_isTestEnvironment()) return;
   if (typeof fetch !== 'function' || typeof window === 'undefined' || !window.location?.protocol?.startsWith('http')) {
     return;
   }
@@ -680,8 +683,10 @@ function deleteBiller(id) {
   if (wasDefault && list.length > 0) {
     list[0].isDefault = true;
   }
-  _writeJSON(STORAGE_KEYS.billers, list);
+  _forceNextSyncPrune = true;
+  _writeJSON(STORAGE_KEYS.billers, list, { skipSync: true });
   _persistBillersToDisk(list);
+  if (typeof _flushSQLiteSyncNow === 'function') _flushSQLiteSyncNow();
 
   if (getActiveBillerId() === id) {
     const nextActive = list.find(b => b.isDefault) || list[0];
@@ -1075,7 +1080,7 @@ function loadExpenseCategories() {
     "Meals & Refreshments",
     "Miscellaneous"
   ];
-  _writeJSON(STORAGE_KEYS.expenseCategories, defaults);
+  _writeJSON(STORAGE_KEYS.expenseCategories, defaults, { skipSync: true });
   return defaults;
 }
 
@@ -1150,7 +1155,8 @@ function deleteExpense(id) {
   const filtered = list.filter(e => e.id !== id);
   if (filtered.length === list.length) return false;
   _forceNextSyncPrune = true;
-  _writeJSON(STORAGE_KEYS.expenses, filtered);
+  _writeJSON(STORAGE_KEYS.expenses, filtered, { skipSync: true });
+  if (typeof _flushSQLiteSyncNow === 'function') _flushSQLiteSyncNow();
   if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
     window.dispatchEvent(new CustomEvent('storagesync', { detail: { action: 'deleteExpense', id } }));
   }
@@ -1358,7 +1364,7 @@ function getDashboardKPIs(billerId) {
   });
 
   // Include direct / unlinked receipts (and receipts on Void invoices) in collected cash flow
-  const invNumbers = new Set(invs.filter(i => i.status !== 'Void').map(i => i.invoiceNumber));
+  const invNumbers = new Set(invs.filter(i => i.status !== 'Void').map(i => i.invoiceNumber || i.number).filter(Boolean));
   rcpts.forEach(r => {
     if (r.status === 'Void') return;
     if (!r.invoiceNumber || !invNumbers.has(r.invoiceNumber)) {
@@ -1482,7 +1488,120 @@ function getInvoicePaymentStats(no, excludeReceiptNo) {
     status = 'Paid';
   }
 
-  return { total, paid, due, status, isOverdue, receipts };
+  return {
+    total,
+    originalTotal: baseTotal,
+    adjustmentAmount: latestAdj ? _safeRound(Number(latestAdj.amount || 0)) : 0,
+    adjustmentReason: latestAdj ? (latestAdj.reason || '') : '',
+    paid,
+    due,
+    status,
+    isOverdue,
+    receipts
+  };
+}
+
+function slimCompanySnapshot(biller) {
+  if (!biller || typeof biller !== 'object') return {};
+  return {
+    id: biller.id || 'biller_default',
+    name: biller.name || '',
+    slogan: biller.slogan || '',
+    address: biller.address || '',
+    phone: biller.phone || '',
+    email: biller.email || '',
+    website: biller.website || '',
+    taxId: biller.taxId || '',
+    themeColor: biller.themeColor || '#0b3969',
+    signatoryName: biller.signatoryName || '',
+    signatoryTitle: biller.signatoryTitle || '',
+    signatureLabels: biller.signatureLabels ? { ...biller.signatureLabels } : undefined,
+    remittance: biller.remittance ? { ...biller.remittance } : undefined
+  };
+}
+
+function getChallansByInvoiceNumber(invNo) {
+  const target = String(invNo || '').trim().toLowerCase();
+  if (!target) return [];
+  return loadChallans()
+    .filter(c => c && c.status !== 'Void' && String(c.linkedInvoice || '').trim().toLowerCase() === target)
+    .sort((a, b) => String(a.date || a.createdAt || a.challanNumber || '').localeCompare(String(b.date || b.createdAt || b.challanNumber || '')));
+}
+
+function getInvoiceDispatchStats(invOrNo, excludeChallanNo) {
+  const inv = (typeof invOrNo === 'object' && invOrNo !== null) ? invOrNo : getInvoiceByNumber(invOrNo);
+  if (!inv) {
+    return { challans: [], totalOrderedQty: 0, totalDispatchedQty: 0, totalRemainingQty: 0, status: 'Pending', items: [] };
+  }
+  const invNo = inv.invoiceNumber || inv.number || (typeof invOrNo === 'string' ? invOrNo : '');
+  const challans = getChallansByInvoiceNumber(invNo).filter(c => !excludeChallanNo || c.challanNumber !== excludeChallanNo);
+
+  const exactMap = new Map();
+  const nameMap = new Map();
+  const invItems = Array.isArray(inv.items) ? inv.items : [];
+  const nameCounts = new Map();
+  const exactCounts = new Map();
+  invItems.forEach(it => {
+    const n = String(it.name || '').trim().toLowerCase();
+    const d = String(it.desc || '').trim().toLowerCase();
+    const ek = `${n}||${d}`;
+    exactCounts.set(ek, (exactCounts.get(ek) || 0) + 1);
+    if (n) nameCounts.set(n, (nameCounts.get(n) || 0) + 1);
+  });
+
+  const parseNum = (v) => parseFloat(String(v ?? 0).replace(/,/g, '')) || 0;
+
+  challans.forEach(ch => {
+    (ch.items || []).forEach(ci => {
+      const q = _safeRound(parseNum(ci.qty));
+      if (q <= 0) return;
+      const n = String(ci.name || '').trim().toLowerCase();
+      const d = String(ci.desc || '').trim().toLowerCase();
+      const exactKey = `${n}||${d}`;
+      exactMap.set(exactKey, _safeRound((exactMap.get(exactKey) || 0) + q));
+      if (n) nameMap.set(n, _safeRound((nameMap.get(n) || 0) + q));
+    });
+  });
+
+  // Track exact vs unique-name consumption so duplicate rows share pool sequentially without double-counting
+  let totalOrderedQty = 0;
+  let totalDispatchedQty = 0;
+  let totalRemainingQty = 0;
+
+  const items = invItems.map(it => {
+    const orderedQty = _safeRound(parseNum(it.qty));
+    const n = String(it.name || '').trim().toLowerCase();
+    const d = String(it.desc || '').trim().toLowerCase();
+    const exactKey = `${n}||${d}`;
+    let dispatchedQty = 0;
+    const remRows = exactCounts.get(exactKey) || 0;
+    if (exactMap.has(exactKey) && remRows > 0) {
+      const pool = exactMap.get(exactKey);
+      dispatchedQty = remRows === 1 ? pool : Math.min(orderedQty, pool);
+      exactMap.set(exactKey, _safeRound(Math.max(0, pool - dispatchedQty)));
+      exactCounts.set(exactKey, remRows - 1);
+    } else if (n && nameCounts.get(n) === 1 && nameMap.has(n)) {
+      dispatchedQty = nameMap.get(n);
+    }
+    const remainingQty = _safeRound(Math.max(0, orderedQty - dispatchedQty));
+    totalOrderedQty = _safeRound(totalOrderedQty + orderedQty);
+    totalDispatchedQty = _safeRound(totalDispatchedQty + Math.min(orderedQty, dispatchedQty));
+    totalRemainingQty = _safeRound(totalRemainingQty + remainingQty);
+    return {
+      name: it.name || '',
+      desc: it.desc || '',
+      unit: it.unit || 'Pcs',
+      orderedQty,
+      dispatchedQty,
+      remainingQty
+    };
+  });
+
+  let status = 'Pending';
+  if (challans.length > 0) {
+    status = totalRemainingQty <= 0 ? 'Fully Delivered' : 'Partially Delivered';
+  }
+  return { challans, totalOrderedQty, totalDispatchedQty, totalRemainingQty, status, items };
 }
 
 function getQuotationStatus(quotation, asOfDate) {
@@ -1628,11 +1747,19 @@ function computeClientStatementData(options = {}) {
     return nameMatch && billerMatch;
   });
 
-  // Only the winning latest applied settlement adjustment per invoice counts as a settlement credit
+  // Only the winning latest applied settlement adjustment per invoice (within period cutoff) counts as a settlement credit
   const winningAdjByInv = new Map();
   allInvoices.forEach(inv => {
     const invNo = inv.invoiceNumber || inv.number || '';
-    const winRec = invNo ? _getLatestAdjustedReceiptForInvoice(invNo) : null;
+    if (!invNo) return;
+    const candidates = allReceipts.filter(r =>
+      (r.invoiceNumber || '') === invNo &&
+      r.adjustment && r.adjustment.applied &&
+      (!toDate || (r.date || '') <= toDate)
+    );
+    if (!candidates.length) return;
+    candidates.sort((a, b) => (a.adjustment.timestamp || a.savedAt || a.date || '').localeCompare(b.adjustment.timestamp || b.savedAt || b.date || ''));
+    const winRec = candidates[candidates.length - 1];
     if (winRec && winRec.receiptNumber) {
       winningAdjByInv.set(invNo, winRec.receiptNumber);
     }
@@ -1694,7 +1821,8 @@ function deleteRecordByType(type, number) {
   const filtered = list.filter(r => (r[cfg.field] || r.number) !== target);
   if (filtered.length === list.length) return false;
   _forceNextSyncPrune = true;
-  _writeJSON(cfg.key, filtered);
+  _writeJSON(cfg.key, filtered, { skipSync: true });
+  _flushSQLiteSyncNow();
   if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
     window.dispatchEvent(new CustomEvent('storagesync', { detail: { action: 'deleteRecord', type: t, number: target } }));
   }
@@ -1767,7 +1895,17 @@ function getFullDataSnapshot() {
   };
 }
 
-async function syncWithSQLite(silent = true) {
+function _flushSQLiteSyncNow() {
+  if (_sqliteSyncTimer) {
+    clearTimeout(_sqliteSyncTimer);
+    _sqliteSyncTimer = null;
+  }
+  if (typeof syncWithSQLite === 'function') {
+    syncWithSQLite(true, { keepalive: true });
+  }
+}
+
+async function syncWithSQLite(silent = true, fetchOpts = {}) {
   if (_isTestEnvironment()) return { success: false, testing: true };
   if (typeof window === 'undefined' || typeof fetch === 'undefined') return { success: false, offline: true };
   if (window.location && window.location.protocol === 'file:') return { success: false, offline: true };
@@ -1778,10 +1916,12 @@ async function syncWithSQLite(silent = true) {
   try {
     const payload = getFullDataSnapshot();
     if (forcePruneEmpty) payload.forcePruneEmpty = true;
+    const bodyStr = JSON.stringify(payload);
     const res = await fetch('/api/db/sync', {
       method: 'POST',
+      keepalive: !!fetchOpts.keepalive && bodyStr.length <= 60000,
       headers: { 'Content-Type': 'application/json', 'X-AutoInvoice-Action': 'sync' },
-      body: JSON.stringify(payload)
+      body: bodyStr
     });
     if (!res.ok) {
       if (forcePruneEmpty) _forceNextSyncPrune = true;
@@ -1831,10 +1971,10 @@ if (typeof window !== 'undefined' && typeof window.addEventListener === 'functio
         const localCount = loadInvoices().length + loadChallans().length + loadQuotations().length + loadReceipts().length + loadExpenses().length;
         if (localCount === 0 && typeof checkSQLiteStatus === 'function') {
           const st = await checkSQLiteStatus();
-          const dbDocs = st && st.counts
-            ? ((st.counts.invoices || 0) + (st.counts.challans || 0) + (st.counts.quotations || 0) + (st.counts.receipts || 0) + (st.counts.expenses || 0))
-            : 0;
-          if (dbDocs > 0) {
+          const c = (st && st.counts) || {};
+          const dbDocs = (c.invoices || 0) + (c.challans || 0) + (c.quotations || 0) + (c.receipts || 0) + (c.expenses || 0);
+          const hasDbExtras = (c.billers || 0) > 1 || (c.clients || 0) > 0 || (c.items || 0) > 0;
+          if (dbDocs > 0 || hasDbExtras) {
             await pullFromSQLite();
             window.dispatchEvent(new CustomEvent('storagesync', { detail: { action: 'pullFromSQLite' } }));
             window.dispatchEvent(new CustomEvent('billerchange', { detail: { billerId: getActiveBillerId() } }));

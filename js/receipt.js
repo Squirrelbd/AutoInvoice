@@ -255,10 +255,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyInvoiceData(inv) {
     if (!inv) return;
     currentInvoiceFull = inv;
-    if (!currentReceiptNumber && inv.billerId && typeof getBillerById === 'function' && getBillerById(inv.billerId)) {
-      if (typeof getActiveBillerId === 'function' && getActiveBillerId() !== inv.billerId && typeof setActiveBillerId === 'function') {
-        setActiveBillerId(inv.billerId);
-      }
+    if (!currentReceiptNumber && inv.billerId && typeof getBillerById === 'function') {
+      const invBiller = getBillerById(inv.billerId) || inv.company;
+      if (invBiller && typeof setCompanyHeader === 'function') setCompanyHeader(invBiller);
+      if (receiptNumberEl) receiptNumberEl.value = peekNextReceiptNumber(inv.billerId);
     }
     if (inv.status === 'Void') {
       const invNo = inv.invoiceNumber || inv.number || '';
@@ -385,7 +385,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDue();
     syncReceiptPrintValues();
   }
-  currentReceiptNumber = receiptNumberEl.value;
 
   let isDirty = false;
   const printAreaEl = document.getElementById('printArea');
@@ -436,8 +435,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  async function handleLinkedInvoiceChange() {
+  let _lastAppliedInvNo = (linkedInvoiceEl.value || '').trim();
+  async function handleLinkedInvoiceChange(e) {
     const no = (linkedInvoiceEl.value || '').trim();
+    if (e && e.type === 'blur' && no === _lastAppliedInvNo) return;
+    _lastAppliedInvNo = no;
     if (!no) {
       if (linkedInvoiceInfoEl) linkedInvoiceInfoEl.textContent = '';
       linkedInvoiceEl.classList.remove('is-invalid');
@@ -474,17 +476,28 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedUpdateReceiptSummaryAndQR();
   });
 
+  function _resolveReceiptBiller() {
+    const existingRc = currentReceiptNumber ? getReceiptByNumber(currentReceiptNumber) : null;
+    const invNo = (linkedInvoiceEl?.value || '').trim();
+    const linkedInvObj = currentInvoiceFull || (invNo && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(invNo) : null);
+    const bId = existingRc?.billerId || linkedInvObj?.billerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
+    const biller = (typeof getBillerById === 'function' && bId ? getBillerById(bId) : null)
+      || existingRc?.company
+      || (typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {}));
+    return { existingRc, bId, biller };
+  }
+
   function buildInvoiceStyleQRForReceipt() {
     const tx = (receiptNumberEl.value || '').trim();
     const amtNum = Math.max(0, parseAmt(amountReceivedEl.value));
     const client = (clientNameEl.value || '').trim();
-    const activeBiller = typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {});
+    const { biller } = _resolveReceiptBiller();
     return buildQRPayload('RCPT', {
       number: tx,
       date: receiptDateEl.value,
       amount: amtNum,
       client,
-      company: activeBiller.name || (typeof COMPANY !== 'undefined' ? COMPANY.name : '')
+      company: biller.name || (typeof COMPANY !== 'undefined' ? COMPANY.name : '')
     });
   }
 
@@ -600,11 +613,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!proceed) return;
       }
     }
-    const existingRc = currentReceiptNumber ? getReceiptByNumber(currentReceiptNumber) : null;
-    const linkedInvObj = inv || (invNo && typeof getInvoiceByNumber === 'function' ? getInvoiceByNumber(invNo) : null);
-    const activeBillerId = existingRc?.billerId || linkedInvObj?.billerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
-    const activeBiller = (typeof getBillerById === 'function' && activeBillerId ? getBillerById(activeBillerId) : null)
-      || (typeof getActiveBiller === 'function' ? getActiveBiller() : (typeof COMPANY !== 'undefined' ? COMPANY : {}));
+    const { existingRc, bId: activeBillerId, biller: activeBiller } = _resolveReceiptBiller();
+    const companySnap = typeof slimCompanySnapshot === 'function' ? slimCompanySnapshot(activeBiller) : activeBiller;
     const qrData = buildInvoiceStyleQRForReceipt();
     const rc = {
       id: existingRc?.id,
@@ -621,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
       amount: amt,
       amountInWords: numberToWordsBDT(amt),
       qrData,
-      company: activeBiller
+      company: companySnap
     };
     if (adjustOn && inv && remainingBefore != null) {
       const priorPaid = getTotalPaidForInvoice(invNo, currentReceiptNumber);
@@ -638,8 +648,11 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
     saveReceipt(rc);
-    finalizeReceiptNumber(rc.receiptNumber);
+    finalizeReceiptNumber(rc.receiptNumber, rc.billerId);
     currentReceiptNumber = rc.receiptNumber;
+    if (typeof history !== 'undefined' && history.replaceState) {
+      try { history.replaceState(null, '', `?rcpt=${encodeURIComponent(rc.receiptNumber)}`); } catch (_) { }
+    }
     isDirty = false;
     updateModeBadge(true, rc.receiptNumber);
     if (clientOnboarding) clientOnboarding.refresh(rc.client?.name);
@@ -669,7 +682,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function printWithGuard() {
-    finalizeReceiptNumber(receiptNumberEl.value);
     prepareForPrint();
     let done = false;
     const onAfter = () => { done = true; window.removeEventListener('afterprint', onAfter); };
@@ -688,7 +700,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (typeof initPdfDownloadButton === 'function') {
     initPdfDownloadButton('downloadPdfBtn', () => {
-      finalizeReceiptNumber(receiptNumberEl.value);
       prepareForPrint();
     }, () => {
       if (typeof setPrintDocumentTitle === 'function') {
