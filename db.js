@@ -185,6 +185,11 @@ function initSchema(db) {
   try {
     db.exec("CREATE INDEX IF NOT EXISTS idx_quotations_valid_until ON quotations(valid_until);");
   } catch (_) { }
+  try {
+    db.exec("ALTER TABLE receipts ADD COLUMN status TEXT;");
+  } catch (_) {
+    // Column already exists
+  }
 }
 
 function seedFromExistingFiles(db) {
@@ -333,8 +338,8 @@ function upsertReceipt(rcpt) {
   if (!rcpt || !num) return;
   const db = getDb();
   const stmt = db.prepare(`
-    INSERT OR REPLACE INTO receipts (number, date, client_name, amount, biller_id, data, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT OR REPLACE INTO receipts (number, date, client_name, amount, biller_id, status, data, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   stmt.run(
     String(num),
@@ -342,6 +347,7 @@ function upsertReceipt(rcpt) {
     rcpt.client?.name || rcpt.receivedFrom || rcpt.clientName || '',
     Number(rcpt.amount || 0),
     rcpt.billerId || '',
+    rcpt.status || 'saved',
     JSON.stringify(rcpt),
     rcpt.createdAt || new Date().toISOString(),
     new Date().toISOString()
@@ -688,11 +694,26 @@ function syncClientSnapshot(payload, options = {}) {
     throw err;
   }
 
+  checkpointWal('PASSIVE');
+
   return {
     success: true,
     syncedCounts: counts,
     dbStatus: getStatus()
   };
+}
+
+function checkpointWal(mode = 'PASSIVE') {
+  if (!dbInstance) return false;
+  const safeMode = ['PASSIVE', 'FULL', 'RESTART', 'TRUNCATE'].includes(String(mode).toUpperCase())
+    ? String(mode).toUpperCase()
+    : 'PASSIVE';
+  try {
+    dbInstance.exec(`PRAGMA wal_checkpoint(${safeMode});`);
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 // -------------------------------------------------------------
@@ -779,5 +800,6 @@ module.exports = {
   syncClientSnapshot,
   clearAllTables,
   deleteRecord,
+  checkpointWal,
   _slugKey
 };

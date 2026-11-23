@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalCollected = 0;
 
     invs.forEach(inv => {
-      if (inv.status === 'Void') return;
+      if (inv.status === 'Void' || inv.status === 'Pending' || inv.amountPending) return;
       if (typeof getInvoicePaymentStats === 'function') {
         const st = getInvoicePaymentStats(inv);
         const isTaxWithholding = /\b(AIT|VDS)\b/i.test(st.adjustmentReason || '');
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Cash Inflow strictly sums receipts dated in the selected period
     rcpts.forEach(r => {
-      if (r.status === 'Void') return;
+      if (r.status === 'Void' || r.status === 'Pending' || r.amountPending) return;
       totalCollected = roundBDT(totalCollected + (Number(r.amount) || 0));
     });
 
@@ -509,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Invoices
     invs.forEach(inv => {
-      if (inv.status === 'Void') return;
+      if (inv.status === 'Void' || inv.status === 'Pending' || inv.amountPending) return;
       const m = getMonthKey(inv.date || inv.invoiceDate);
       if (m) {
         const item = ensureMonth(m);
@@ -527,12 +527,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Receipts (Actual cash collected, scaled net-of-VAT if toggle active and VDS wasn't already withheld)
     rcpts.forEach(rc => {
-      if (rc.status === 'Void') return;
+      if (rc.status === 'Void' || rc.status === 'Pending' || rc.amountPending) return;
       const m = getMonthKey(rc.date);
       if (m) {
         const item = ensureMonth(m);
         let amt = Number(rc.amount || 0);
-        const vdsWithheld = !!(rc.adjustment && rc.adjustment.applied && /\bVDS\b/i.test(rc.adjustment.reason || ''));
+        const invStats = (rc.invoiceNumber && typeof getInvoicePaymentStats === 'function')
+          ? getInvoicePaymentStats(rc.invoiceNumber)
+          : null;
+        const vdsWithheld = !!(
+          (rc.adjustment && rc.adjustment.applied && /\bVDS\b/i.test(rc.adjustment.reason || '')) ||
+          (invStats && /\bVDS\b/i.test(invStats.adjustmentReason || ''))
+        );
         if (exclVat && !vdsWithheld && rc.invoiceNumber && invByNo.has(rc.invoiceNumber)) {
           const linkedInv = invByNo.get(rc.invoiceNumber);
           const g = Number(linkedInv.grandTotal || 0);

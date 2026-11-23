@@ -116,3 +116,42 @@ test('Quotation validity lifecycle via getQuotationStatus()', () => {
 
   return [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10];
 });
+
+test('Quotation Discount & VAT persistence and expiring status filter', () => {
+  const bd = computeTotalsBreakdown(20000, { discountMode: 'percent', discountValue: 5, vatRate: 15, vatInclusive: false });
+  const q = {
+    quotationNumber: 'QTN-VAT-9001',
+    date: '2026-10-01',
+    validityDays: 30,
+    validUntil: toLocalISODate(new Date(Date.now() + 2 * 86400000)),
+    subject: 'Turnkey PLC System',
+    to: { name: 'Nadia Islam' },
+    items: [{ desc: 'PLC Hardware', qty: 2, unit: 'Sets', unitPrice: 10000, total: 20000 }],
+    subtotal: bd.subtotal,
+    discountMode: bd.discountMode,
+    discountValue: bd.discountValue,
+    discount: bd.discount,
+    vatRate: bd.vatRate,
+    vatInclusive: bd.vatInclusive,
+    vatAmount: bd.vatAmount,
+    grandTotal: bd.grandTotal
+  };
+  saveQuotation(q);
+  const got = getQuotationByNumber('QTN-VAT-9001');
+  const t1 = ok(
+    got && got.subtotal === 20000 && got.discount === 1000 && got.vatAmount === 2850 && got.grandTotal === 21850,
+    `Persisted discount/VAT quotation totals (${got?.grandTotal})`
+  );
+
+  const farQ = {
+    quotationNumber: 'QTN-FAR-9002',
+    date: '2026-10-01',
+    validUntil: toLocalISODate(new Date(Date.now() + 20 * 86400000)),
+    to: { name: 'Nadia Islam' },
+    items: [{ desc: 'Other', qty: 1, unitPrice: 1000 }],
+    grandTotal: 1000
+  };
+  const expFiltered = AutoInvoiceDocList.filterAndSortRecords([got, farQ], { type: 'quotation', status: 'expiring' });
+  const t2 = ok(expFiltered.length === 1 && expFiltered[0].number === 'QTN-VAT-9001', `Expiring filter matched only ≤7d quotation (${expFiltered.length})`);
+  return [t1, t2];
+});

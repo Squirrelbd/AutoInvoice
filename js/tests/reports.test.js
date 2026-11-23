@@ -308,6 +308,11 @@ test('AutoInvoiceDocList.filterAndSortRecords filters & sorts across all 4 doc t
     const rcAmtDesc = AutoInvoiceDocList.filterAndSortRecords(testReceipts, { type: 'receipt', sortBy: 'amount_desc' });
     const rcSur = AutoInvoiceDocList.enrichRecord({ receiptNumber: 'RCPT-SUR-X', amount: 1200, invoiceNumber: 'INV-DL-01', adjustment: { applied: true, amount: -200 } }, 'receipt');
 
+    const pendingInv = { invoiceNumber: 'INV-PEND-1', date: '2026-11-23', status: 'Pending', amountPending: true, client: { name: 'Blank Inv Client' }, items: [{ name: 'Valve' }], grandTotal: 0 };
+    const pendingRc = { receiptNumber: 'RCPT-PEND-1', date: '2026-11-23', status: 'Pending', amountPending: true, client: { name: 'Blank Rc Client' }, items: [{ name: 'Sensor Module', desc: 'Unit 2' }], amount: 0 };
+    const invPendingList = AutoInvoiceDocList.filterAndSortRecords([...testInvoices, pendingInv], { type: 'invoice', status: 'pending' });
+    const rcPendingList = AutoInvoiceDocList.filterAndSortRecords([...testReceipts, pendingRc], { type: 'receipt', status: 'pending', query: 'Sensor Module' });
+
     return [
       ok(invAll.length === 3 && invAll[0].number === 'INV-DL-02', 'Invoices sorted date_desc newest first'),
       ok(invBetaAdjusted && invBetaAdjusted.amount === 1200 && invBetaAdjusted.isAdjusted === true && invBetaAdjusted.due === 0, 'Invoice reflects adjusted total and 0 due'),
@@ -326,7 +331,9 @@ test('AutoInvoiceDocList.filterAndSortRecords filters & sorts across all 4 doc t
       ok(rcAdj.length === 1 && rcAdj[0].number === 'RCPT-DL-01', 'Receipt adjusted filter isolates adjusted receipt'),
       ok(rcMethod.length === 1 && rcMethod[0].number === 'RCPT-DL-01', 'Receipt payment method filter isolates bKash'),
       ok(rcAmtDesc[0].number === 'RCPT-DL-02' && rcAmtDesc[0].amount === 1500, 'Receipt amount_desc sorts highest received first'),
-      ok(rcSur.metaNote.includes('+'), 'Surcharge adjustment metaNote renders + sign cleanly')
+      ok(rcSur.metaNote.includes('+'), 'Surcharge adjustment metaNote renders + sign cleanly'),
+      ok(invPendingList.length === 1 && invPendingList[0].number === 'INV-PEND-1' && invPendingList[0].isPending === true, 'Pending status filter isolates blank/pending invoice'),
+      ok(rcPendingList.length === 1 && rcPendingList[0].number === 'RCPT-PEND-1' && rcPendingList[0].isPending === true, 'Pending status filter & item search matches blank/pending receipt')
     ];
   } finally {
     if (backupInvoices === null) localStorage.removeItem(STORAGE_KEYS.invoices);

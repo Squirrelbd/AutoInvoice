@@ -209,11 +209,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // 6. Status
       let okStatus = true;
+      const isPendingRec = !!(rec.status === 'Pending' || rec.amountPending);
       if (statusQ !== 'any') {
         if (statusQ === 'void') {
           okStatus = rec.status === 'Void';
         } else if (rec.status === 'Void') {
           okStatus = false;
+        } else if (statusQ === 'pending') {
+          okStatus = isPendingRec;
         } else if (rec.__type === 'quotation') {
           const qStats = typeof getQuotationStatus === 'function' ? getQuotationStatus(rec) : null;
           if (statusQ === 'valid') okStatus = qStats ? (qStats.isValid && !qStats.isConverted) : false;
@@ -246,9 +249,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const titleText = (rec.title || '').toLowerCase();
           okText = `${num.toLowerCase()} ${clientText} ${titleText} ${itemsText}`.includes(textQ);
         } else if (rec.__type === 'receipt') {
+          const itemsText = (rec.items || []).map(i => `${i.name || ''} ${i.desc || ''}`).join(' ').toLowerCase();
           const clientText = `${rec.client?.name || ''} ${rec.client?.address || ''}`.toLowerCase();
           const methodText = (rec.paymentMethod || '').toLowerCase();
-          okText = `${num.toLowerCase()} ${clientText} ${methodText}`.includes(textQ);
+          okText = `${num.toLowerCase()} ${clientText} ${methodText} ${itemsText}`.includes(textQ);
         }
       }
 
@@ -290,8 +294,11 @@ document.addEventListener('DOMContentLoaded', () => {
         amt = rec.amount || 0;
       }
       let status = 'Recorded';
+      const isPending = !!(rec.status === 'Pending' || rec.amountPending);
       if (rec.status === 'Void') {
         status = 'Void';
+      } else if (isPending) {
+        status = 'Pending Amount';
       } else if (rec.__type === 'invoice') {
         const stats = invStats || getInvoicePaymentStats(rec);
         status = stats.isOverdue ? 'Overdue' : stats.status;
@@ -309,7 +316,9 @@ document.addEventListener('DOMContentLoaded', () => {
         biller: bName,
         date: rec.date || '',
         client: rec.client?.name || rec.to?.name || '',
-        amount: roundBDT(amt),
+        amount: isPending && (rec.__type === 'invoice' || rec.__type === 'receipt')
+          ? 'Pending'
+          : (rec.__type === 'challan' ? '' : roundBDT(amt)),
         status
       };
     });
@@ -329,9 +338,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 : '';
 
         const isVoid = rec.status === 'Void';
-        const invStatsRow = (rec.__type === 'invoice' && !isVoid) ? getInvoicePaymentStats(rec) : null;
+        const isPending = !isVoid && !!(rec.status === 'Pending' || rec.amountPending);
+        const invStatsRow = (rec.__type === 'invoice' && !isVoid && !isPending) ? getInvoicePaymentStats(rec) : null;
         let amtDisplay = '—';
-        if (rec.__type === 'invoice') {
+        if (isPending && (rec.__type === 'invoice' || rec.__type === 'receipt')) {
+          amtDisplay = '<span class="text-muted fst-italic">Pending</span>';
+        } else if (rec.__type === 'invoice') {
           const effAmt = invStatsRow ? invStatsRow.total : (rec.grandTotal || 0);
           amtDisplay = formatBDT(effAmt);
           if (invStatsRow && Math.abs(invStatsRow.adjustmentAmount || 0) > 0) {
@@ -350,6 +362,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let statusBadge = '';
         if (isVoid) {
           statusBadge = '<span class="badge bg-dark">Void</span>';
+        } else if (isPending) {
+          statusBadge = '<span class="badge bg-info text-dark">Pending Amount</span>';
         } else if (rec.__type === 'invoice') {
           const stats = invStatsRow || getInvoicePaymentStats(rec);
           if (stats.isOverdue) {
@@ -446,8 +460,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${rec.__type === 'receipt' ? `
                   <div class="small">
                     <div>Linked Invoice: <strong>${escapeHTML(full.invoiceNumber || 'None')}</strong></div>
-                    <div>Payment Method: <strong>${escapeHTML(full.paymentMethod || 'Cash')}</strong></div>
-                    <div>Amount Received: <strong class="text-success">${formatBDT(full.amount || 0)}</strong></div>
+                    <div>Payment Method: <strong>${escapeHTML(full.paymentMethod || 'Pending')}</strong></div>
+                    <div>Amount Received: ${full.status === 'Pending' || full.amountPending ? '<strong class="text-info-emphasis fst-italic">Pending</strong>' : `<strong class="text-success">${formatBDT(full.amount || 0)}</strong>`}</div>
+                    ${Array.isArray(full.items) && full.items.length ? `<div class="mt-1">Items: ${full.items.map(it => escapeHTML(it.name || it.desc || '')).filter(Boolean).join(', ')}</div>` : ''}
                   </div>
                 ` : rec.__type === 'quotation' ? `
                   <div class="small">
@@ -458,8 +473,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   </div>
                 ` : `
                   <div class="small">
-                    ${(full.items || []).map(it => `<div>• ${escapeHTML(it.name || '')} — ${escapeHTML(it.desc || '')} (Qty: ${escapeHTML(it.qty || 0)}${it.unitPrice != null ? ', Rate: ' + formatBDT(it.unitPrice) : ''})</div>`).join('')}
-                    ${full.grandTotal != null ? `<div class="mt-1 fw-bold">Total: ${formatBDT(full.grandTotal)}</div>` : ''}
+                    ${(full.items || []).map(it => `<div>• ${escapeHTML(it.name || '')} — ${escapeHTML(it.desc || '')} (Qty: ${escapeHTML(it.qty || 0)}${it.unitPrice != null && !isPending ? ', Rate: ' + formatBDT(it.unitPrice) : ''})</div>`).join('')}
+                    ${isPending && rec.__type === 'invoice' ? `<div class="mt-1 fw-bold text-info-emphasis fst-italic">Total: Pending</div>` : (full.grandTotal != null ? `<div class="mt-1 fw-bold">Total: ${formatBDT(full.grandTotal)}</div>` : '')}
                   </div>
                 `}
               </div>
@@ -530,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Build sub-reports: Outstanding Receivables & Aging
-    const filteredInvs = out.filter(r => r.__type === 'invoice' && r.status !== 'Void');
+    const filteredInvs = out.filter(r => r.__type === 'invoice' && r.status !== 'Void' && r.status !== 'Pending' && !r.amountPending);
     await buildReports(filteredInvs);
 
     // Build periodic revenue breakdown
@@ -646,13 +661,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     for (const rec of invs) {
-      if (rec.status === 'Void') continue;
+      if (rec.status === 'Void' || rec.status === 'Pending' || rec.amountPending) continue;
       const num = rec.invoiceNumber || rec.number;
       let full = rec;
       if (!rec.items || rec.source === 'disk') {
         full = await getDiskInvoiceByNumber(num);
       }
-      if (!full || full.status === 'Void') continue;
+      if (!full || full.status === 'Void' || full.status === 'Pending' || full.amountPending) continue;
       const latestAdj = getLatestAdjustmentForInvoice(num);
       const baseTotal = Number(full.grandTotal || 0) || 0;
       const total = roundBDT(latestAdj && isFinite(Number(latestAdj.adjustedTotal)) ? Number(latestAdj.adjustedTotal) : baseTotal);
@@ -797,10 +812,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     sortedPeriods.forEach(p => {
       const due = roundBDT(Math.max(0, p.invoiced - p.collected));
-      const rateNum = p.invoiced > 0 ? (p.collected / p.invoiced) * 100 : 100;
-      const rateStr = `${rateNum.toFixed(1)}%`;
+      const hasInvoiced = p.invoiced > 0;
+      const rateNum = hasInvoiced ? (p.collected / p.invoiced) * 100 : 0;
+      const rateStr = hasInvoiced ? `${rateNum.toFixed(1)}%` : '—';
       let badgeClass = 'bg-success';
-      if (rateNum < 50) badgeClass = 'bg-danger';
+      if (!hasInvoiced) badgeClass = 'bg-secondary';
+      else if (rateNum < 50) badgeClass = 'bg-danger';
       else if (rateNum < 85) badgeClass = 'bg-warning text-dark';
 
       const tr = document.createElement('tr');
@@ -1036,12 +1053,18 @@ document.addEventListener('DOMContentLoaded', () => {
           : matched === rc ? `receipt.html?rcpt=${encodeURIComponent(txid)}`
             : `quotation.html?no=${encodeURIComponent(txid)}`;
       openLink = `<div class="mt-2"><a href="${openPage}" class="btn btn-sm btn-outline-primary">Open Record ↗</a></div>`;
+      const isLocalPending = !!(matched.status === 'Pending' || matched.amountPending);
+      const isQrPending = String(fields.ST || '').toUpperCase() === 'PENDING';
       if (matched.status === 'Void') {
         matchBanner = `<div class="badge bg-dark mb-2">⚠️ Matched Local Record — MARKED VOID</div>`;
       } else if (docType !== matchedDocType) {
         matchBanner = `<div class="badge bg-danger mb-2">❌ Document Type Mismatch! Local: ${escapeHTML(matchedDocType)} vs QR: ${escapeHTML(docType)}</div>`;
       } else if (!qrAmtValid) {
         matchBanner = `<div class="badge bg-danger mb-2">❌ Invalid / Tampered Amount in QR Payload</div>`;
+      } else if (isLocalPending) {
+        matchBanner = `<div class="badge bg-info text-dark mb-2">⏳ Matched Local Record — Pending Amount (Blank / Provisional)</div>`;
+      } else if (isQrPending && localAmt != null) {
+        matchBanner = `<div class="badge bg-primary mb-2">ℹ️ Blank / Provisional QR — Finalized Locally as ${formatBDT(localAmt)}</div>`;
       } else if (localAmt != null && qrAmt != null && localAmt !== qrAmt) {
         matchBanner = `<div class="badge bg-danger mb-2">❌ Amount Mismatch! Local: ${formatBDT(localAmt)} vs QR: ${formatBDT(qrAmt)}</div>`;
       } else if (fields.DT && matched.date && fields.DT !== matched.date) {

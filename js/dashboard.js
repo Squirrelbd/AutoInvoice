@@ -99,6 +99,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const percent = Math.min(100, (bytes / (5 * 1024 * 1024)) * 100).toFixed(1);
         storageBadgeEl.textContent = `💾 Storage: ${kb} KB used (${percent}%)`;
       }
+
+      const attentionEl = document.getElementById('needsAttentionBar');
+      const att = kpi.attention || {};
+      const hasAttention = (att.pendingInvoices || 0) + (att.pendingReceipts || 0) + (att.overdueInvoices || 0) + (att.expiringQuotations || 0) > 0;
+      if (attentionEl) {
+        if (!hasAttention) {
+          attentionEl.classList.add('d-none');
+          attentionEl.innerHTML = '';
+        } else {
+          const billerQ = scopeId && scopeId !== 'all' ? `&biller=${encodeURIComponent(scopeId)}` : '';
+          const pills = [];
+          if (att.pendingInvoices > 0) {
+            pills.push(`<a href="invoice.html?status=pending${billerQ}" class="btn btn-sm btn-outline-info">⏳ ${att.pendingInvoices} Pending Invoice${att.pendingInvoices === 1 ? '' : 's'}</a>`);
+          }
+          if (att.pendingReceipts > 0) {
+            pills.push(`<a href="receipt.html?status=pending${billerQ}" class="btn btn-sm btn-outline-info">🧾 ${att.pendingReceipts} Pending Receipt${att.pendingReceipts === 1 ? '' : 's'}</a>`);
+          }
+          if (att.overdueInvoices > 0) {
+            pills.push(`<a href="invoice.html?status=overdue${billerQ}" class="btn btn-sm btn-outline-danger">🔴 ${att.overdueInvoices} Overdue (${escapeHTML(formatBDT(att.overdueTotal || 0))})</a>`);
+          }
+          if (att.expiringQuotations > 0) {
+            pills.push(`<a href="quotation.html?status=expiring${billerQ}" class="btn btn-sm bg-warning-subtle text-warning-emphasis border border-warning">⚠️ ${att.expiringQuotations} Expiring Qtn${att.expiringQuotations === 1 ? '' : 's'} (&le;7d)</a>`);
+          }
+          attentionEl.innerHTML = `
+            <div class="alert alert-light border shadow-sm mb-0 py-2 px-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+              <span class="small fw-semibold text-body-emphasis">⚡ Needs Attention:</span>
+              <div class="d-flex flex-wrap align-items-center gap-2">${pills.join('')}</div>
+            </div>
+          `;
+          attentionEl.classList.remove('d-none');
+        }
+      }
     } catch (e) {
       console.warn('Failed to refresh KPIs', e);
     }
@@ -197,6 +229,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const chCount = Array.isArray(parsed.challans) ? parsed.challans.length : 0;
           const qtnCount = Array.isArray(parsed.quotations) ? parsed.quotations.length : 0;
           const rcptCount = Array.isArray(parsed.receipts) ? parsed.receipts.length : 0;
+          const expCount = Array.isArray(parsed.expenses) ? parsed.expenses.length : 0;
+          const billerCount = Array.isArray(parsed.billers) ? parsed.billers.length : 0;
           const clientCount = Array.isArray(parsed.clients) ? parsed.clients.length : 0;
           const itemCount = Array.isArray(parsed.items) ? parsed.items.length : 0;
 
@@ -204,6 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const chEl = document.getElementById('restoreChCount');
           const qtnEl = document.getElementById('restoreQtnCount');
           const rcptEl = document.getElementById('restoreRcptCount');
+          const expEl = document.getElementById('restoreExpCount');
+          const billerEl = document.getElementById('restoreBillerCount');
           const clientEl = document.getElementById('restoreClientCount');
           const itemEl = document.getElementById('restoreItemCount');
           const metaTextEl = document.getElementById('restoreMetaText');
@@ -212,6 +248,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (chEl) chEl.textContent = chCount;
           if (qtnEl) qtnEl.textContent = qtnCount;
           if (rcptEl) rcptEl.textContent = rcptCount;
+          if (expEl) expEl.textContent = expCount;
+          if (billerEl) billerEl.textContent = billerCount;
           if (clientEl) clientEl.textContent = clientCount;
           if (itemEl) itemEl.textContent = itemCount;
 
@@ -235,15 +273,47 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const restoreModeMergeEl = document.getElementById('restoreModeMerge');
+  const restoreModeReplaceEl = document.getElementById('restoreModeReplace');
+  const autoBackupBeforeRestoreEl = document.getElementById('autoBackupBeforeRestore');
+  const restoreCautionAlertEl = document.getElementById('restoreCautionAlert');
+
+  function syncRestoreModeUI() {
+    const isReplace = !!(restoreModeReplaceEl && restoreModeReplaceEl.checked);
+    if (restoreCautionAlertEl) {
+      restoreCautionAlertEl.className = isReplace ? 'alert alert-warning mb-3 small' : 'alert alert-info mb-3 small';
+      restoreCautionAlertEl.innerHTML = isReplace
+        ? '<strong>Caution (Replace Mode):</strong> Restoring this backup will overwrite your current local AutoInvoice data.'
+        : '<strong>Merge Mode:</strong> Existing documents and contacts stay intact; records matching the backup\'s Document # will be updated.';
+    }
+    if (confirmRestoreBtn) {
+      confirmRestoreBtn.className = isReplace ? 'btn btn-danger btn-sm' : 'btn btn-primary btn-sm';
+      confirmRestoreBtn.textContent = isReplace ? 'Replace All Data' : 'Merge & Restore Data';
+    }
+  }
+  if (restoreModeMergeEl) restoreModeMergeEl.addEventListener('change', syncRestoreModeUI);
+  if (restoreModeReplaceEl) restoreModeReplaceEl.addEventListener('change', syncRestoreModeUI);
+  syncRestoreModeUI();
+
   function executeRestore() {
     if (!pendingBackupData) return;
     try {
-      const counts = importAllData(pendingBackupData);
+      const mode = (restoreModeReplaceEl && restoreModeReplaceEl.checked) ? 'replace' : 'merge';
+      if (autoBackupBeforeRestoreEl && autoBackupBeforeRestoreEl.checked && typeof exportAllData === 'function') {
+        const hasExisting = (typeof loadInvoices === 'function' && loadInvoices().length > 0)
+          || (typeof loadReceipts === 'function' && loadReceipts().length > 0)
+          || (typeof loadQuotations === 'function' && loadQuotations().length > 0)
+          || (typeof loadChallans === 'function' && loadChallans().length > 0)
+          || (typeof loadExpenses === 'function' && loadExpenses().length > 0);
+        if (hasExisting) exportAllData();
+      }
+      const counts = importAllData(pendingBackupData, { mode });
       if (restoreModalInstance) restoreModalInstance.hide();
+      populateDashboardBillerFilter();
       refreshKPIs();
       renderClientTable();
       renderItemTable();
-      notify(`Restore successful! Loaded ${counts.invoices} invoices, ${counts.challans} challans, ${counts.quotations} quotations, ${counts.receipts} receipts, and ${counts.items || 0} items.`, 'success');
+      notify(`${mode === 'merge' ? 'Merge' : 'Restore'} successful! Loaded ${counts.invoices} invoices, ${counts.challans} challans, ${counts.quotations} quotations, ${counts.receipts} receipts, and ${counts.items || 0} items.`, 'success');
       pendingBackupData = null;
     } catch (err) {
       notify(`Error restoring backup: ${err.message}`, 'danger');

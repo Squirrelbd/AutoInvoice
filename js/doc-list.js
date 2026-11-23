@@ -79,6 +79,7 @@
     const billerId = String(rec.billerId || (rec.company && rec.company.id) || 'biller_default').trim();
     const billerName = _getBillerName(billerId, rec.billerName || (rec.company && rec.company.name), ctx && ctx.billerMap);
     const isVoid = String(rec.status || '').toLowerCase() === 'void';
+    const isPending = !isVoid && (String(rec.status || '').toLowerCase() === 'pending' || !!rec.amountPending);
     const items = Array.isArray(rec.items) ? rec.items : [];
 
     let status = 'Saved';
@@ -94,6 +95,7 @@
     let metaNote = '';
     let canConvert = false;
     let dispatchInfo = null;
+    let daysRemaining = null;
 
     if (type === 'quotation') {
       amount = _round(Number(rec.grandTotal || 0) || 0);
@@ -101,6 +103,7 @@
       const qs = typeof root.getQuotationStatus === 'function' ? root.getQuotationStatus(rec) : null;
       status = isVoid ? 'Void' : (qs ? qs.status : (rec.converted ? 'Converted' : 'Valid'));
       statusBadgeClass = qs ? qs.badgeClass : (status === 'Void' ? 'bg-danger' : 'bg-secondary');
+      if (qs && qs.isValid) daysRemaining = qs.daysRemaining;
       if (qs && qs.badgeText && status === 'Valid') metaNote = qs.badgeText;
       if (rec.convertedToInvoice) {
         linkedRef = `Inv: ${rec.convertedToInvoice}`;
@@ -109,16 +112,20 @@
       canConvert = !isVoid && !rec.converted;
     } else if (type === 'invoice') {
       originalAmount = _round(Number(rec.grandTotal || 0) || 0);
-      const stats = (!isVoid && typeof root.getInvoicePaymentStats === 'function')
+      const stats = (!isVoid && !isPending && typeof root.getInvoicePaymentStats === 'function')
         ? root.getInvoicePaymentStats(rec)
         : null;
-      amount = isVoid ? originalAmount : (stats ? _round(stats.total) : originalAmount);
-      due = isVoid ? 0 : (stats ? _round(stats.due) : originalAmount);
-      paid = isVoid ? 0 : (stats ? _round(stats.paid) : 0);
-      isAdjusted = !isVoid && stats && Math.abs(_round(stats.adjustmentAmount || 0)) > 0;
+      amount = isPending ? 0 : (isVoid ? originalAmount : (stats ? _round(stats.total) : originalAmount));
+      due = (isVoid || isPending) ? 0 : (stats ? _round(stats.due) : originalAmount);
+      paid = (isVoid || isPending) ? 0 : (stats ? _round(stats.paid) : 0);
+      isAdjusted = !isVoid && !isPending && stats && Math.abs(_round(stats.adjustmentAmount || 0)) > 0;
       if (isVoid) {
         status = 'Void';
         statusBadgeClass = 'bg-danger';
+      } else if (isPending) {
+        status = 'Pending';
+        statusBadgeClass = 'bg-info-subtle text-info-emphasis border border-info-subtle';
+        metaNote = items.length ? `${items.length} item(s) · Fill later` : 'Blank · Fill later';
       } else if (stats && stats.isOverdue) {
         status = 'Overdue';
         statusBadgeClass = 'bg-danger-subtle text-danger border border-danger-subtle';
@@ -142,11 +149,11 @@
       }
       if (!isVoid && typeof root.getInvoiceDispatchStats === 'function') {
         dispatchInfo = root.getInvoiceDispatchStats(rec);
-        if (dispatchInfo && dispatchInfo.challans.length) {
+        if (!isPending && dispatchInfo && dispatchInfo.challans.length) {
           metaNote = dispatchInfo.status;
         }
       }
-      canConvert = !isVoid && due > 0;
+      canConvert = !isVoid && !isPending && due > 0;
     } else if (type === 'challan') {
       const invoicedBySet = ctx && ctx.invoicedChallans ? ctx.invoicedChallans.get(num) : '';
       const invTarget = String(rec.linkedInvoice || invoicedBySet || '').trim();
@@ -166,28 +173,32 @@
         status = 'Open';
         statusBadgeClass = 'bg-info-subtle text-info-emphasis border border-info-subtle';
       }
-      const totalQty = _round(items.reduce((s, it) => s + (Number(it.qty || 0) || 0), 0));
+      const totalQty = _round(items.reduce((s, it) => _round(s + (parseFloat(String(it.qty || 0).replace(/,/g, '')) || 0)), 0));
       amount = totalQty;
       metaNote = metaNote ? `${metaNote} · ${items.length} item(s)` : `${items.length} item(s), Qty ${totalQty}`;
       canConvert = !isVoid && !invTarget;
     } else if (type === 'receipt') {
-      amount = _round(Number(rec.amount || 0) || 0);
+      amount = isPending ? 0 : _round(Number(rec.amount || 0) || 0);
       const invRef = String(rec.invoiceNumber || rec.linkedInvoice || '').trim();
-      const invStats = (!isVoid && invRef && typeof root.getInvoicePaymentStats === 'function')
+      const invStats = (!isVoid && !isPending && invRef && typeof root.getInvoicePaymentStats === 'function')
         ? root.getInvoicePaymentStats(invRef)
         : null;
-      due = isVoid
+      due = (isVoid || isPending)
         ? 0
         : (invStats && invStats.status !== 'Unknown'
           ? _round(invStats.due)
           : _round(Math.max(0, Number(rec.due || 0) || 0)));
-      const adjAmt = (rec.adjustment && rec.adjustment.applied)
+      const adjAmt = (!isPending && rec.adjustment && rec.adjustment.applied)
         ? _round(Number(rec.adjustment.amount || 0))
         : 0;
-      isAdjusted = !isVoid && !!(rec.adjustment && rec.adjustment.applied);
+      isAdjusted = !isVoid && !isPending && !!(rec.adjustment && rec.adjustment.applied);
       if (isVoid) {
         status = 'Void';
         statusBadgeClass = 'bg-danger';
+      } else if (isPending) {
+        status = 'Pending';
+        statusBadgeClass = 'bg-info-subtle text-info-emphasis border border-info-subtle';
+        metaNote = items.length ? `${items.length} item(s) · Fill later` : 'Blank · Fill later';
       } else if (due <= 0) {
         status = 'Settled';
         statusBadgeClass = 'bg-success-subtle text-success border border-success-subtle';
@@ -199,10 +210,10 @@
         linkedRef = `Inv: ${invRef}`;
         linkedUrl = `invoice.html?no=${encodeURIComponent(invRef)}`;
       }
-      if (isAdjusted && Math.abs(adjAmt) > 0) {
+      if (!isPending && isAdjusted && Math.abs(adjAmt) > 0) {
         const sign = adjAmt > 0 ? '-' : '+';
         metaNote = `Adj ${sign}${_fmtBDT(Math.abs(adjAmt))}`;
-      } else if (isAdjusted) {
+      } else if (!isPending && isAdjusted) {
         metaNote = 'Adjusted';
       }
     }
@@ -226,7 +237,9 @@
       status,
       statusBadgeClass,
       isVoid,
+      isPending,
       isAdjusted,
+      daysRemaining,
       amount,
       originalAmount,
       due,
@@ -290,6 +303,8 @@
       if (statusFilter !== 'all' && statusFilter !== '') {
         if (type === 'receipt' && statusFilter === 'adjusted') {
           if (!row.isAdjusted || row.isVoid) return false;
+        } else if (type === 'quotation' && statusFilter === 'expiring') {
+          if (row.status !== 'Valid' || row.daysRemaining === null || row.daysRemaining < 0 || row.daysRemaining > 7) return false;
         } else if (row.status.toLowerCase() !== statusFilter) {
           return false;
         }
@@ -329,6 +344,7 @@
     quotation: [
       { value: 'all', label: 'All Statuses' },
       { value: 'valid', label: 'Valid / Active' },
+      { value: 'expiring', label: 'Expiring ≤7 Days' },
       { value: 'converted', label: 'Converted' },
       { value: 'expired', label: 'Expired' },
       { value: 'void', label: 'Void' }
@@ -339,6 +355,7 @@
       { value: 'partial', label: 'Partial' },
       { value: 'overdue', label: 'Overdue' },
       { value: 'paid', label: 'Paid' },
+      { value: 'pending', label: 'Pending Amount' },
       { value: 'void', label: 'Void' }
     ],
     challan: [
@@ -351,6 +368,7 @@
       { value: 'all', label: 'All Statuses' },
       { value: 'settled', label: 'Settled (0 Due)' },
       { value: 'partial', label: 'Partial (Due > 0)' },
+      { value: 'pending', label: 'Pending Amount' },
       { value: 'adjusted', label: 'Adjusted' },
       { value: 'void', label: 'Void' }
     ]
@@ -476,7 +494,7 @@
             combined.push(Object.assign({}, d, { __diskOnly: true }));
           }
         });
-      } catch (_) {}
+      } catch (_) { }
     }
 
     _pickerState = { mode, combined, onSelect: options.onSelect };
@@ -493,12 +511,13 @@
       }).filter(row => !row.isVoid);
 
       const visible = rows.filter(row => {
+        if (mode === 'challan' && row.isPending) return false;
         if (includeDone) return true;
         if (mode === 'challan') {
           const ds = row.raw.__diskOnly ? null : (typeof root.getInvoiceDispatchStats === 'function' ? root.getInvoiceDispatchStats(row.raw) : null);
           return !ds || ds.status !== 'Fully Delivered';
         }
-        return row.due > 0;
+        return !row.isPending && row.due > 0;
       });
 
       if (!visible.length) {
@@ -519,6 +538,8 @@
           } else {
             metricHtml = `<span class="badge bg-success-subtle text-success border border-success-subtle">Fully Delivered</span>`;
           }
+        } else if (row.isPending) {
+          metricHtml = `<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">Pending</span>`;
         } else {
           metricHtml = row.due > 0
             ? `<span class="fw-semibold text-danger">${_escHtml(_fmtBDT(row.due))}</span>`
@@ -527,6 +548,12 @@
         const origNote = row.isAdjusted
           ? `<div class="small text-muted" style="font-size:0.75em">Orig: ${_escHtml(_fmtBDT(row.originalAmount))}</div>`
           : '';
+        const totalDisplay = row.isPending
+          ? `<span class="text-info-emphasis fst-italic">Pending</span>`
+          : `${_escHtml(_fmtBDT(row.amount))}${origNote}`;
+        const selectBtn = row.isPending
+          ? `<button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Finalize invoice amount first">Pending</button>`
+          : `<button type="button" class="btn btn-sm btn-primary picker-select-inv-btn" data-inv="${_escAttr(row.number)}">Select</button>`;
         return `
           <tr>
             <td class="fw-semibold text-nowrap">
@@ -539,12 +566,10 @@
               ${row.title ? `<div class="small text-muted text-truncate" style="max-width:220px">${_escHtml(row.title)}</div>` : ''}
             </td>
             <td class="small text-muted d-none d-md-table-cell">${_escHtml(row.billerName)}</td>
-            <td class="text-end text-nowrap">${_escHtml(_fmtBDT(row.amount))}${origNote}</td>
+            <td class="text-end text-nowrap">${totalDisplay}</td>
             <td>${metricHtml}</td>
             <td class="text-end">
-              <button type="button" class="btn btn-sm btn-primary picker-select-inv-btn" data-inv="${_escAttr(row.number)}">
-                Select
-              </button>
+              ${selectBtn}
             </td>
           </tr>
         `;
@@ -566,7 +591,7 @@
         const invNo = btn.getAttribute('data-inv');
         let inv = typeof root.getInvoiceByNumber === 'function' ? root.getInvoiceByNumber(invNo) : null;
         if (!inv && typeof root.getDiskInvoiceByNumber === 'function') {
-          try { inv = await root.getDiskInvoiceByNumber(invNo); } catch (_) {}
+          try { inv = await root.getDiskInvoiceByNumber(invNo); } catch (_) { }
         }
         if (!inv) {
           inv = _pickerState.combined.find(x => getDocNumber(x, 'invoice') === invNo) || null;
@@ -576,10 +601,10 @@
           const inst = root.bootstrap.Modal.getOrCreateInstance(modalEl);
           if (inst._isTransitioning) {
             modalEl.addEventListener('shown.bs.modal', () => {
-              try { inst.hide(); } catch (_) {}
+              try { inst.hide(); } catch (_) { }
             }, { once: true });
           } else {
-            try { inst.hide(); } catch (_) {}
+            try { inst.hide(); } catch (_) { }
           }
         }
         if (typeof _pickerState.onSelect === 'function') {
@@ -592,7 +617,7 @@
     if (root.bootstrap && root.bootstrap.Modal) {
       const inst = root.bootstrap.Modal.getOrCreateInstance(modalEl);
       inst.show();
-      setTimeout(() => { try { searchEl.focus(); } catch (_) {} }, 160);
+      setTimeout(() => { try { searchEl.focus(); } catch (_) { } }, 160);
     }
   }
 
@@ -749,8 +774,10 @@
         const billed = _round(nonVoid.reduce((s, r) => s + r.amount, 0));
         const due = _round(nonVoid.reduce((s, r) => s + r.due, 0));
         const overdue = nonVoid.filter(r => r.status === 'Overdue').length;
+        const pendingCount = nonVoid.filter(r => r.isPending).length;
+        const activeCount = nonVoid.length - pendingCount;
         cards = [
-          { label: 'Active Invoices', val: String(nonVoid.length) },
+          { label: 'Active Invoices', val: String(activeCount), sub: pendingCount ? `+${pendingCount} pending blank` : '', subCls: 'text-info-emphasis' },
           { label: 'Effective Billed', val: _fmtBDT(billed) },
           { label: 'Receivables Due', val: _fmtBDT(due), cls: due > 0 ? 'text-danger' : 'text-success' },
           { label: 'Overdue Count', val: String(overdue), cls: overdue ? 'text-danger' : '' }
@@ -769,8 +796,10 @@
         const received = _round(nonVoid.reduce((s, r) => s + r.amount, 0));
         const adjCount = nonVoid.filter(r => r.isAdjusted).length;
         const settled = nonVoid.filter(r => r.status === 'Settled').length;
+        const pendingCount = nonVoid.filter(r => r.isPending).length;
+        const activeCount = nonVoid.length - pendingCount;
         cards = [
-          { label: 'Active Receipts', val: String(nonVoid.length) },
+          { label: 'Active Receipts', val: String(activeCount), sub: pendingCount ? `+${pendingCount} pending blank` : '', subCls: 'text-info-emphasis' },
           { label: 'Total Collected', val: _fmtBDT(received), cls: 'text-success' },
           { label: 'Settled Receipts', val: String(settled) },
           { label: 'With Adjustments', val: String(adjCount) }
@@ -783,6 +812,7 @@
             <div class="card-body py-2 px-3">
               <div class="small text-muted">${_escHtml(c.label)}</div>
               <div class="h6 mb-0 fw-bold ${_escAttr(c.cls || '')}">${_escHtml(c.val)}</div>
+              ${c.sub ? `<div class="smaller ${_escAttr(c.subCls || 'text-muted')} mt-1">${_escHtml(c.sub)}</div>` : ''}
             </div>
           </div>
         </div>
@@ -792,10 +822,12 @@
     function renderActionButtons(row) {
       const no = _escAttr(row.number);
       const btns = [];
-      btns.push(`<button type="button" class="btn btn-outline-primary dl-open-btn" data-no="${no}" title="Open ${no}" aria-label="Open ${_escAttr(row.number)}">Open</button>`);
+      const openLabel = row.isPending ? 'Fill Amount' : 'Open';
+      const openCls = row.isPending ? 'btn btn-primary dl-open-btn' : 'btn btn-outline-primary dl-open-btn';
+      btns.push(`<button type="button" class="${openCls}" data-no="${no}" title="${openLabel} ${no}" aria-label="${openLabel} ${_escAttr(row.number)}">${openLabel}</button>`);
       if (type === 'quotation' && row.canConvert) {
         btns.push(`<a href="invoice.html?qtn=${encodeURIComponent(row.number)}" class="btn btn-outline-success" title="Convert to Invoice" aria-label="Convert ${_escAttr(row.number)} to Invoice">Invoice</a>`);
-      } else if (type === 'invoice' && !row.isVoid) {
+      } else if (type === 'invoice' && !row.isVoid && !row.isPending) {
         if (row.due > 0) {
           btns.push(`<a href="receipt.html?inv=${encodeURIComponent(row.number)}" class="btn btn-outline-success" title="Receive Payment" aria-label="Receive payment for ${_escAttr(row.number)}">Receipt</a>`);
         }
@@ -840,8 +872,8 @@
             <td colspan="8" class="text-center py-5 text-muted">
               <div class="mb-2">${isEmptyRepo ? `No ${meta.plural.toLowerCase()} saved yet.` : `No ${meta.plural.toLowerCase()} match your search or filter criteria.`}</div>
               ${isEmptyRepo
-                ? `<button type="button" class="btn btn-sm btn-primary dl-empty-new-btn">+ Create First ${_escHtml(meta.singular)}</button>`
-                : `<button type="button" class="btn btn-sm btn-outline-secondary dl-empty-reset-btn">Clear Filters</button>`}
+            ? `<button type="button" class="btn btn-sm btn-primary dl-empty-new-btn">+ Create First ${_escHtml(meta.singular)}</button>`
+            : `<button type="button" class="btn btn-sm btn-outline-secondary dl-empty-reset-btn">Clear Filters</button>`}
             </td>
           </tr>
         `;
@@ -850,7 +882,9 @@
 
       tbody.innerHTML = filtered.map(row => {
         let amtHtml = '';
-        if (type === 'invoice') {
+        if (row.isPending && (type === 'invoice' || type === 'receipt')) {
+          amtHtml = `<div class="fw-semibold text-info-emphasis fst-italic">Pending</div>`;
+        } else if (type === 'invoice') {
           const origHtml = row.isAdjusted ? `<div class="small text-muted" style="font-size:0.75em">Orig: ${_escHtml(_fmtBDT(row.originalAmount))}</div>` : '';
           const dueHtml = (!row.isVoid && row.due > 0) ? `<div class="small text-danger" style="font-size:0.75em">Due: ${_escHtml(_fmtBDT(row.due))}</div>` : '';
           amtHtml = `<div class="fw-semibold">${_escHtml(_fmtBDT(row.amount))}</div>${origHtml}${dueHtml}`;
@@ -871,6 +905,9 @@
         const metaNoteHtml = row.metaNote
           ? `<div class="small text-muted mt-1" style="font-size:0.75em">${_escHtml(row.metaNote)}</div>`
           : '';
+        const clientDisplayHtml = row.clientName
+          ? _escHtml(row.clientName)
+          : (row.isPending ? '<span class="text-muted fst-italic">Blank / Unassigned</span>' : '—');
 
         return `
           <tr class="${row.isVoid ? 'opacity-75' : ''}">
@@ -888,7 +925,7 @@
             </td>
             <td class="text-nowrap small d-none d-sm-table-cell">${_escHtml(_fmtDate(row.date))}</td>
             <td>
-              <div class="fw-medium text-truncate dl-client-cell" style="max-width:105px">${_escHtml(row.clientName || '—')}</div>
+              <div class="fw-medium text-truncate dl-client-cell" style="max-width:105px">${clientDisplayHtml}</div>
               ${row.title ? `<div class="small text-muted text-truncate d-none d-sm-block" style="max-width:240px">${_escHtml(row.title)}</div>` : ''}
             </td>
             <td class="small text-muted d-none d-md-table-cell">${_escHtml(row.billerName)}</td>
@@ -979,13 +1016,29 @@
           cachedDiskRecords = list;
           refresh();
         }
-      }).catch(() => {});
+      }).catch(() => { });
+    }
+
+    // Apply URL query filter deep-links (e.g. ?status=pending, ?status=overdue, ?status=expiring, ?biller=..., ?q=...)
+    const urlParams = typeof root.parseQuery === 'function' ? root.parseQuery() : {};
+    if (urlParams.status && statusEl) {
+      const targetSt = String(urlParams.status).trim().toLowerCase();
+      const matchOpt = Array.from(statusEl.options).find(o => o.value.toLowerCase() === targetSt);
+      if (matchOpt) statusEl.value = matchOpt.value;
+    }
+    if (urlParams.biller && billerEl) {
+      const targetB = String(urlParams.biller).trim();
+      const matchB = Array.from(billerEl.options).find(o => o.value === targetB);
+      if (matchB) billerEl.value = matchB.value;
+    }
+    if (urlParams.q && searchEl) {
+      searchEl.value = String(urlParams.q);
     }
 
     refresh();
     return {
       refresh,
-      focusSearch() { try { searchEl.focus(); } catch (_) {} }
+      focusSearch() { try { searchEl.focus(); } catch (_) { } }
     };
   }
 
@@ -997,6 +1050,7 @@
       const k = keys[i];
       if (p[k]) qs.set(k, p[k]);
     }
+    if (p.blank) qs.set('blank', p.blank);
     if (p.autoprint) qs.set('autoprint', p.autoprint);
     if (!Array.from(qs.keys()).length) qs.set('new', '1');
     return `?${qs.toString()}`;
@@ -1012,11 +1066,12 @@
     const editorSection = document.getElementById(o.editorSectionId || 'docEditorSection');
     const backBtn = document.getElementById('backToListBtn');
     const newBtn = document.getElementById('listNewDocBtn');
+    const blankBtn = o.blankBtnId ? document.getElementById(o.blankBtnId) : null;
     const genBtn = document.getElementById('headerGenFromInvBtn');
     const mainEl = document.getElementById('mainContent');
 
     const isDirtyFn = typeof o.isDirty === 'function' ? o.isDirty : () => false;
-    const resetDirtyFn = typeof o.resetDirty === 'function' ? o.resetDirty : () => {};
+    const resetDirtyFn = typeof o.resetDirty === 'function' ? o.resetDirty : () => { };
     let listCtrl = null;
 
     function isEditorVisible() {
@@ -1043,7 +1098,7 @@
       if (n.pushHistory !== false && typeof history !== 'undefined' && history.pushState) {
         const nextSearch = _paramsToSearch(params);
         if (window.location.search !== nextSearch) {
-          try { history.pushState({ view: 'editor', search: nextSearch }, '', nextSearch); } catch (_) {}
+          try { history.pushState({ view: 'editor', search: nextSearch }, '', nextSearch); } catch (_) { }
         }
       }
       showEditor(true);
@@ -1052,7 +1107,7 @@
       }
       resetDirtyFn();
       if (mainEl && typeof mainEl.focus === 'function') {
-        try { mainEl.focus({ preventScroll: true }); } catch (_) {}
+        try { mainEl.focus({ preventScroll: true }); } catch (_) { }
       }
       return true;
     }
@@ -1069,11 +1124,11 @@
       if (typeof root.setCompanyHeader === 'function') root.setCompanyHeader();
       showEditor(false);
       if (n.pushHistory !== false && window.location.search && typeof history !== 'undefined' && history.pushState) {
-        try { history.pushState({ view: 'list' }, '', window.location.pathname); } catch (_) {}
+        try { history.pushState({ view: 'list' }, '', window.location.pathname); } catch (_) { }
       }
       if (listCtrl) listCtrl.refresh();
       if (newBtn && typeof newBtn.focus === 'function') {
-        try { newBtn.focus({ preventScroll: true }); } catch (_) {}
+        try { newBtn.focus({ preventScroll: true }); } catch (_) { }
       }
       return true;
     }
@@ -1091,6 +1146,7 @@
 
     if (backBtn) backBtn.addEventListener('click', () => enterList());
     if (newBtn) newBtn.addEventListener('click', () => openEditor({ new: '1' }));
+    if (blankBtn) blankBtn.addEventListener('click', () => openEditor({ new: '1', blank: '1' }));
     if (genBtn && typeof o.onGenerateFromInvoice === 'function') {
       genBtn.addEventListener('click', () => {
         openInvoicePicker({

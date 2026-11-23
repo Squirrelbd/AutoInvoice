@@ -164,6 +164,15 @@
     display: inline-block !important;
   }
 
+  tr.print-only {
+    display: table-row !important;
+  }
+
+  td.print-only,
+  th.print-only {
+    display: table-cell !important;
+  }
+
   /* Expand container to full page width without shadows or borders */
   main,
   main.container,
@@ -711,7 +720,7 @@
     margin-top: 8mm !important;
     page-break-inside: avoid !important;
     display: flex !important;
-    align-items: flex-end !important;
+    align-items: flex-start !important;
   }
 
   .signature-line {
@@ -748,8 +757,6 @@
   }
 
   body.receipt-page #printArea {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
     margin: 0 !important;
     padding: 0 !important;
   }
@@ -803,6 +810,82 @@
   .receipt-due-row td {
     background-color: #f8fafc !important;
     color: #0f172a !important;
+  }
+
+  /* Blank / Fill-Later Mode writable lines & optional receipt items table */
+  .blank-write-line,
+  .blank-words-line {
+    border-bottom: 1px solid #64748b !important;
+    min-height: 5mm !important;
+    height: 5mm !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .blank-write-line {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+  }
+
+  .blank-amt-line {
+    display: inline-block !important;
+    min-width: 28mm !important;
+    border-bottom: 1px solid #0f172a !important;
+    height: 4.2mm !important;
+  }
+
+  .blank-client-row {
+    display: flex !important;
+    align-items: flex-end !important;
+    gap: 2mm !important;
+    margin-bottom: 2mm !important;
+    font-size: 8.5pt !important;
+    color: #334155 !important;
+  }
+
+  .blank-client-label {
+    flex: 0 0 auto !important;
+    font-weight: 600 !important;
+  }
+
+  .blank-filler-row td,
+  .blank-doc-mode .invoice-table tbody td {
+    height: 7.5mm !important;
+    vertical-align: middle !important;
+  }
+
+  .receipt-items-table {
+    width: 100% !important;
+    border: 1px solid #94a3b8 !important;
+    border-collapse: collapse !important;
+    margin-bottom: 3mm !important;
+  }
+
+  .receipt-items-table th {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    font-size: 8pt !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 1.8mm 2.4mm !important;
+  }
+
+  .receipt-items-table td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 1.8mm 2.4mm !important;
+    font-size: 8.5pt !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    vertical-align: middle !important;
+  }
+
+  .blank-doc-mode .receipt-amount-row td {
+    background-color: #f0fdf4 !important;
+    color: #15803d !important;
+    border-top: 1.5px solid #16a34a !important;
+    border-bottom: 1.5px solid #16a34a !important;
   }
 
   .words-box #amountInWords {

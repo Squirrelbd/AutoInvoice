@@ -17,6 +17,45 @@ function roundBDT(n) {
   return res === 0 ? 0 : res;
 }
 
+/**
+ * Shared commercial totals calculator (BDT / % discount + exclusive / inclusive VAT)
+ * used by Invoice and Quotation calculators so conversion totals match to the Paisa.
+ */
+function computeTotalsBreakdown(subtotal, opts = {}) {
+  const sub = roundBDT(Math.max(0, Number(subtotal) || 0));
+  const dMode = opts.discountMode === 'percent' ? 'percent' : 'bdt';
+  const dVal = roundBDT(Math.max(0, Number(opts.discountValue) || 0));
+  let discount = dMode === 'percent' ? roundBDT(sub * (Math.min(dVal, 100) / 100)) : dVal;
+  discount = Math.min(discount, sub);
+  const vatRate = roundBDT(Math.max(0, Number(opts.vatRate) || 0));
+  const vatInclusive = !!opts.vatInclusive;
+  const afterDiscount = roundBDT(Math.max(0, sub - discount));
+  let taxable = afterDiscount;
+  let vatAmount = 0;
+  let grandTotal = afterDiscount;
+  if (vatRate > 0) {
+    if (vatInclusive) {
+      taxable = roundBDT(afterDiscount / (1 + vatRate / 100));
+      vatAmount = roundBDT(afterDiscount - taxable);
+      grandTotal = afterDiscount;
+    } else {
+      vatAmount = roundBDT(taxable * (vatRate / 100));
+      grandTotal = roundBDT(taxable + vatAmount);
+    }
+  }
+  return {
+    subtotal: sub,
+    discountMode: dMode,
+    discountValue: dVal,
+    discount,
+    vatRate,
+    vatInclusive,
+    taxable,
+    vatAmount,
+    grandTotal
+  };
+}
+
 function parseLocalISODate(iso) {
   if (iso instanceof Date) return new Date(iso.getTime());
   const s = String(iso || '').trim().slice(0, 10);
@@ -59,7 +98,7 @@ function escapeHTML(s) {
 
 function escapeAttr(s) {
   if (s == null) return '';
-  return String(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // Unified toast notification system — replaces native blocking alert()
@@ -152,7 +191,10 @@ function buildQRPayload(type, data = {}) {
   if (t === 'CHAL' || t === 'CHALLAN') {
     return `DOC=CHAL|TXID=${num}|DT=${dt}|BEN=${ben}|REC=${rec}|V=1`;
   }
-  const amt = roundBDT(data.amount != null ? data.amount : (data.total || 0));
+  const amt = data.pending ? 0 : roundBDT(data.amount != null ? data.amount : (data.total || 0));
+  if (data.pending) {
+    return `DOC=${t}|TXID=${num}|DT=${dt}|AMT=${amt}|CCY=BDT|BEN=${ben}|REC=${rec}|ST=PENDING|V=1`;
+  }
   return `DOC=${t}|TXID=${num}|DT=${dt}|AMT=${amt}|CCY=BDT|BEN=${ben}|REC=${rec}|V=1`;
 }
 
@@ -735,20 +777,25 @@ function buildPrintableHtmlSnapshot() {
 async function downloadRenderedPdf(prepareFn, filenameBase, triggerBtn) {
   if (typeof window === 'undefined') return;
   let originalHtml = null;
+  let afterPrintDispatched = false;
   if (triggerBtn) {
     originalHtml = triggerBtn.innerHTML;
     triggerBtn.disabled = true;
     triggerBtn.innerHTML = '⏳ Generating PDF...';
   }
   try {
-    if (typeof prepareFn === 'function') prepareFn();
+    await Promise.resolve(prepareFn && prepareFn());
+    const resolvedBase = typeof filenameBase === 'function' ? filenameBase() : filenameBase;
     const st = await checkPdfEndpointAvailable();
     if (!st || !st.available) {
       window.print();
+      afterPrintDispatched = true;
       return;
     }
     const html = buildPrintableHtmlSnapshot();
-    const cleanName = (String(filenameBase || document.title || 'AutoInvoice_Document').replace(/[^a-zA-Z0-9._-]/g, '_') || 'AutoInvoice_Document') + '.pdf';
+    window.dispatchEvent(new Event('afterprint'));
+    afterPrintDispatched = true;
+    const cleanName = (String(resolvedBase || document.title || 'AutoInvoice_Document').replace(/[^a-zA-Z0-9._-]/g, '_') || 'AutoInvoice_Document') + '.pdf';
     const res = await fetch('/api/pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -769,7 +816,9 @@ async function downloadRenderedPdf(prepareFn, filenameBase, triggerBtn) {
     console.warn('Direct PDF endpoint failed, opening browser print dialog:', err);
     window.print();
   } finally {
-    window.dispatchEvent(new Event('afterprint'));
+    if (!afterPrintDispatched) {
+      window.dispatchEvent(new Event('afterprint'));
+    }
     if (triggerBtn) {
       triggerBtn.disabled = false;
       triggerBtn.innerHTML = originalHtml;
@@ -788,8 +837,7 @@ function initPdfDownloadButton(btnId, prepareFn, filenameFn) {
     }
   });
   btn.addEventListener('click', () => {
-    const fname = typeof filenameFn === 'function' ? filenameFn() : (document.title || 'AutoInvoice_Document');
-    downloadRenderedPdf(prepareFn, fname, btn);
+    downloadRenderedPdf(prepareFn, filenameFn, btn);
   });
 }
 
@@ -803,6 +851,24 @@ function runAutoPrintIfRequested(prepareFn) {
       window.print();
     } catch (_) { }
   }, 350);
+}
+
+// Auto-select placeholder "0" / "0.00" on numeric inputs so typing immediately replaces instead of prefixing "0"
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+  document.addEventListener('focusin', (e) => {
+    const el = e && e.target;
+    if (!el || el.tagName !== 'INPUT' || el.readOnly || el.disabled) return;
+    if (el.getAttribute('inputmode') !== 'decimal' && el.type !== 'number') return;
+    const v = String(el.value || '').trim();
+    if (v === '0' || v === '0.00') {
+      const raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : (fn) => setTimeout(fn, 0);
+      raf(() => {
+        try {
+          if (document.activeElement === el && typeof el.select === 'function') el.select();
+        } catch (_) { }
+      });
+    }
+  });
 }
 
 

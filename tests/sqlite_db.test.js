@@ -271,13 +271,35 @@ console.log("  ✓ Final DB Status:", finalStatus.counts);
     const adsRes = await fetch(`${base}/server.js::$DATA`);
     assert.strictEqual(adsRes.status, 403, 'Windows NTFS ADS ::$DATA blocked');
 
-    // Null JSON body returns 400
+    // Null JSON body & missing primary key validation
     const nullInvRes = await fetch(`${base}/api/invoices`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: 'null'
     });
     assert.strictEqual(nullInvRes.status, 400, 'POST /api/invoices with null JSON returns 400');
+    const missingKeyInvRes = await fetch(`${base}/api/invoices`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client: { name: 'No Number' } })
+    });
+    assert.strictEqual(missingKeyInvRes.status, 400, 'POST /api/invoices missing invoiceNumber returns 400');
+    const canonInvRes = await fetch(`${base}/api/invoices`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        invoiceNumber: 'INV-PEND-API-1',
+        status: 'Pending',
+        amountPending: true,
+        paymentMethod: '',
+        client: { name: 'Pending API Client' },
+        items: [{ name: 'PLC Controller', desc: '', qty: 0, unit: 'Pcs', unitPrice: 0 }],
+        grandTotal: 0
+      })
+    });
+    assert.strictEqual(canonInvRes.status, 200);
+    const canonInvJson = await canonInvRes.json();
+    assert.strictEqual(canonInvJson.number, 'INV-PEND-API-1', 'POST /api/invoices returns canonical invoiceNumber');
 
     // Unconfirmed /api/clear blocked
     const unconfClear = await fetch(`${base}/api/clear`, {
@@ -331,6 +353,25 @@ console.log("  ✓ Final DB Status:", finalStatus.counts);
     } else {
       console.log("  ℹ Headless browser not installed; /api/pdf/status returned available: false");
     }
+
+    // Pending invoice + Pending receipt with optional items roundtrip & receipts.status column
+    const pendSync = await fetch(`${base}/api/db/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        invoices: [
+          { invoiceNumber: 'INV-BN-01', date: '2026-11-17', client: { name: 'ঢাকা ইঞ্জিনিয়ারিং লিঃ' }, grandTotal: 12345.67 },
+          { invoiceNumber: 'INV-PEND-SYNC-1', status: 'Pending', amountPending: true, paymentMethod: '', client: { name: '' }, items: [{ name: 'Sensor Unit' }], grandTotal: 0 }
+        ],
+        receipts: [
+          { receiptNumber: 'RCPT-PEND-SYNC-1', status: 'Pending', amountPending: true, paymentMethod: '', client: { name: 'Pending Client' }, items: [{ name: 'Cable Assembly', desc: '5m' }], amount: 0 }
+        ]
+      })
+    });
+    assert.strictEqual(pendSync.status, 200);
+    const dump2 = await (await fetch(`${base}/api/db/all`)).json();
+    const syncedPendRc = dump2.receipts.find(r => r.receiptNumber === 'RCPT-PEND-SYNC-1');
+    assert.ok(syncedPendRc && syncedPendRc.status === 'Pending' && syncedPendRc.amountPending === true && syncedPendRc.items[0].name === 'Cable Assembly', 'Pending receipt with items round-trips cleanly');
 
     // Verify GET endpoints return 200 JSON cleanly
     for (const ep of ['/api/invoices', '/api/expenses', '/api/billers']) {

@@ -289,6 +289,58 @@ test('getLatestAdjustmentForInvoice respects excludeReceiptNo during receipt re-
   return [t1, t2, t3];
 });
 
+test('importAllData merge mode & getDashboardKPIs attention strip counts', () => {
+  const win = document.getElementById('receiptFrame').contentWindow;
+  win.clearAllData();
+
+  const today = win.toLocalISODate(new Date());
+  const dSoon = new Date();
+  dSoon.setDate(dSoon.getDate() + 3);
+  const soonStr = win.toLocalISODate(dSoon);
+  const dFar = new Date();
+  dFar.setDate(dFar.getDate() + 20);
+  const farStr = win.toLocalISODate(dFar);
+
+  win.saveInvoice({ invoiceNumber: 'INV-M-1', date: today, dueDate: '2020-01-01', grandTotal: 4000, client: { name: 'Alpha' } });
+  win.saveInvoice({ invoiceNumber: 'INV-M-PEND', date: today, status: 'Pending', amountPending: true, grandTotal: 0, client: { name: 'Beta' } });
+  win.saveReceipt({ receiptNumber: 'RCPT-M-PEND', date: today, status: 'Pending', amountPending: true, amount: 0, client: { name: 'Beta' } });
+  win.saveQuotation({ quotationNumber: 'QTN-M-SOON', date: today, validUntil: soonStr, grandTotal: 1000, to: { name: 'Gamma' } });
+  win.saveQuotation({ quotationNumber: 'QTN-M-FAR', date: today, validUntil: farStr, grandTotal: 1000, to: { name: 'Gamma' } });
+
+  const kpi = win.getDashboardKPIs('all');
+  const t1 = ok(
+    kpi.attention.pendingInvoices === 1 &&
+    kpi.attention.pendingReceipts === 1 &&
+    kpi.attention.overdueInvoices === 1 &&
+    kpi.attention.overdueTotal === 4000 &&
+    kpi.attention.expiringQuotations === 1,
+    `Attention counts accurate: ${JSON.stringify(kpi.attention)}`
+  );
+
+  // Merge mode keeps existing INV-M-PEND, updates INV-M-1, adds INV-M-2
+  win.importAllData({
+    invoices: [
+      { invoiceNumber: 'INV-M-1', date: today, dueDate: '2020-01-01', grandTotal: 5500, client: { name: 'Alpha Updated' } },
+      { invoiceNumber: 'INV-M-2', date: today, grandTotal: 2500, client: { name: 'Delta' } }
+    ],
+    clients: [{ name: 'Delta', phone: '01700' }]
+  }, { mode: 'merge' });
+
+  const mergedInvs = win.loadInvoices();
+  const m1 = mergedInvs.find(i => i.invoiceNumber === 'INV-M-1');
+  const mPend = mergedInvs.find(i => i.invoiceNumber === 'INV-M-PEND');
+  const m2 = mergedInvs.find(i => i.invoiceNumber === 'INV-M-2');
+  const t2 = ok(
+    mergedInvs.length === 3 &&
+    m1?.grandTotal === 5500 &&
+    mPend?.status === 'Pending' &&
+    m2?.grandTotal === 2500 &&
+    win.loadReceipts().length === 1,
+    `Merge mode kept existing & updated matching records (${mergedInvs.length} invs)`
+  );
+  return [t1, t2];
+});
+
 
 
 

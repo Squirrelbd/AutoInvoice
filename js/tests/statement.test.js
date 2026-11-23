@@ -246,5 +246,7 @@ test('StatementEngine handles cumulative editable adjustments and upward surchar
   const dc2 = computeClientStatementData({ clientName: 'Cum Co' });
   const cr2 = dc2.periodReceipts.reduce((s, r) => roundBDT(s + r._effectiveCredit), 0);
   const t4 = ok(cr2 === 9500, `Adjustment removal overrides prior 1500 credit (4000+4500+1000=9500, got ${cr2})`);
-  return [t1, t2, t3, t4];
+  const supersededRow = window.StatementEngine.buildReceiptStatementRow(dc2.periodReceipts[0]);
+  const t5 = ok(!supersededRow.desc.includes('Settlement Adj'), 'Superseded receipt with _adjAmt=0 omits stale adjustment label');
+  return [t1, t2, t3, t4, t5];
 });

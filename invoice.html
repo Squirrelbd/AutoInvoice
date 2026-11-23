@@ -1,59 +1,107 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Create Invoice — AutoInvoice</title>
-    <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
-    <link rel="stylesheet" href="assets/vendor/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/styles.css" />
-    <link rel="stylesheet" href="css/print.css" />
-  </head>
-  <body>
-    <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#mainContent">Skip to content</a>
-    <nav class="navbar navbar-expand-lg app-navbar no-print">
-      <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="index.html">
-          <img src="assets/logo.svg" alt="AutoInvoice Logo" width="28" height="28" class="me-2" />
-          <span>AutoInvoice</span>
-        </a>
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="mainNavbar">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
-            <li class="nav-item"><a class="nav-link" href="quotation.html">Quotation</a></li>
-            <li class="nav-item"><a class="nav-link active fw-bold" aria-current="page" href="invoice.html">Invoice</a></li>
-            <li class="nav-item"><a class="nav-link" href="challan.html">Challan</a></li>
-            <li class="nav-item"><a class="nav-link" href="receipt.html">Receipt</a></li>
-            <li class="nav-item"><a class="nav-link" href="statement.html">Statement</a></li>
-            <li class="nav-item"><a class="nav-link" href="expenses.html">Expenses</a></li>
-            <li class="nav-item"><a class="nav-link" href="search.html">Search & Reports</a></li>
-          </ul>
-          <div class="d-flex align-items-center gap-2">
-            <button id="themeToggle" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">🌙</button>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create Invoice — AutoInvoice</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="stylesheet" href="assets/vendor/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/print.css" />
+</head>
+
+<body>
+  <a class="visually-hidden-focusable p-2 position-absolute bg-body border rounded m-2" href="#mainContent">Skip to
+    content</a>
+  <nav class="navbar navbar-expand-lg app-navbar no-print">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="index.html">
+        <img src="assets/logo.svg" alt="AutoInvoice Logo" width="28" height="28" class="me-2" />
+        <span>AutoInvoice</span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+          <li class="nav-item"><a class="nav-link" href="quotation.html">Quotation</a></li>
+          <li class="nav-item"><a class="nav-link active fw-bold" aria-current="page" href="invoice.html">Invoice</a>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="challan.html">Challan</a></li>
+          <li class="nav-item"><a class="nav-link" href="receipt.html">Receipt</a></li>
+          <li class="nav-item"><a class="nav-link" href="statement.html">Statement</a></li>
+          <li class="nav-item"><a class="nav-link" href="expenses.html">Expenses</a></li>
+          <li class="nav-item"><a class="nav-link" href="search.html">Search & Reports</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+          <button id="themeToggle" type="button" aria-label="Toggle dark/light theme" title="Toggle theme">🌙</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main id="mainContent" tabindex="-1" class="container pb-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 mb-3 border-bottom no-print"
+      id="docWorkspaceHeader">
+      <div class="d-flex align-items-center gap-2">
+        <h1 class="h4 fw-bold mb-0" id="pageHeading">Invoices</h1>
+        <span class="badge bg-secondary-subtle text-secondary border" id="docListCountBadge">0</span>
+      </div>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <button type="button" id="backToListBtn" class="btn btn-sm btn-outline-secondary d-none">&larr; All
+          Invoices</button>
+        <button type="button" id="listBlankInvoiceBtn" class="btn btn-sm btn-outline-info">📝 Blank Invoice</button>
+        <button type="button" id="listNewDocBtn" class="btn btn-sm btn-primary">+ New Invoice</button>
+      </div>
+    </div>
+
+    <section id="docListSection" class="no-print mb-3"></section>
+
+    <div id="docEditorSection" class="d-none">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2 no-print">
+        <div id="modeBadge" role="status" aria-live="polite"></div>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" role="switch" id="blankInvoiceMode" />
+          <label class="form-check-label small fw-semibold" for="blankInvoiceMode">Blank / Fill-Later Mode (leave
+            amounts blank &amp; lock INV #)</label>
+        </div>
+      </div>
+      <div id="paymentStatusBanner" class="mb-3 no-print d-none"></div>
+      <div id="completePaymentCard" class="card border-info bg-body-tertiary p-3 mb-3 no-print d-none">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch" id="recordPaymentOnSave" />
+            <label class="form-check-label fw-semibold small" for="recordPaymentOnSave">💰 Payment collected now? (Auto-create / complete Money Receipt on Save)</label>
+          </div>
+          <span class="small text-muted" id="quickPayTargetHint" role="status" aria-live="polite"></span>
+        </div>
+        <div id="completePaymentFields" class="row g-2 mt-2 d-none">
+          <div class="col-md-4 col-12">
+            <label for="quickPayAmount" class="form-label small fw-semibold mb-1">Amount Received (৳)</label>
+            <input id="quickPayAmount" type="text" inputmode="decimal" class="form-control form-control-sm" placeholder="Defaults to Grand Total" />
+          </div>
+          <div class="col-md-4 col-12">
+            <label for="quickPayMethod" class="form-label small fw-semibold mb-1">Payment Method</label>
+            <select id="quickPayMethod" class="form-select form-select-sm">
+              <option value="Cash">Cash</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cheque">Cheque</option>
+              <option value="bKash">bKash</option>
+              <option value="Nagad">Nagad</option>
+              <option value="Rocket">Rocket</option>
+              <option value="Card / POS">Card / POS</option>
+              <option value="Mobile Banking">Mobile Banking</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="col-md-4 col-12">
+            <label for="quickPayRef" class="form-label small fw-semibold mb-1">Trx / Cheque Ref</label>
+            <input id="quickPayRef" type="text" class="form-control form-control-sm" placeholder="Optional TrxID / Cheque #" />
           </div>
         </div>
       </div>
-    </nav>
-
-    <main id="mainContent" tabindex="-1" class="container pb-5">
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 mb-3 border-bottom no-print" id="docWorkspaceHeader">
-        <div class="d-flex align-items-center gap-2">
-          <h1 class="h4 fw-bold mb-0" id="pageHeading">Invoices</h1>
-          <span class="badge bg-secondary-subtle text-secondary border" id="docListCountBadge">0</span>
-        </div>
-        <div class="d-flex flex-wrap align-items-center gap-2">
-          <button type="button" id="backToListBtn" class="btn btn-sm btn-outline-secondary d-none">&larr; All Invoices</button>
-          <button type="button" id="listNewDocBtn" class="btn btn-sm btn-primary">+ New Invoice</button>
-        </div>
-      </div>
-
-      <section id="docListSection" class="no-print mb-3"></section>
-
-      <div id="docEditorSection" class="d-none">
-      <div id="modeBadge" class="mb-2 no-print"></div>
-      <div id="paymentStatusBanner" class="mb-3 no-print d-none"></div>
       <!-- Company Header & Printable Invoice Document -->
       <section class="border rounded p-4 mb-3 print-area shadow-sm bg-body" id="printArea">
         <!-- 1. Header: Company Brand & Document Title -->
@@ -64,7 +112,8 @@
               <span class="company-title" id="companyName">Amirul Islam</span>
               <div class="company-slogan" id="companySlogan">Freelance Embedded Systems Service provider</div>
               <div class="company-address" id="companyAddress">Banasree, Rampura, Dhaka, Bangladesh</div>
-              <div class="company-contacts" id="companyContacts">Phone: +8801747144755 | Email: mahadi.ma.ak@gmail.com</div>
+              <div class="company-contacts" id="companyContacts">Phone: +8801747144755 | Email: mahadi.ma.ak@gmail.com
+              </div>
             </div>
           </div>
           <div class="text-end">
@@ -84,7 +133,9 @@
             <div class="invoice-card h-100 p-3">
               <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
                 <span class="card-section-label">Bill To / Invoiced To</span>
-                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none no-print fw-semibold" id="onboardClientBtn" data-bs-toggle="modal" data-bs-target="#clientOnboardModal">+ Onboard Client</button>
+                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none no-print fw-semibold"
+                  id="onboardClientBtn" data-bs-toggle="modal" data-bs-target="#clientOnboardModal">+ Onboard
+                  Client</button>
               </div>
 
               <!-- Interactive Form Inputs (Hidden during print) -->
@@ -92,9 +143,12 @@
                 <select id="clientSelect" class="form-select form-select-sm mb-2" aria-label="Select Registered Client">
                   <option value="">-- Choose Existing Client --</option>
                 </select>
-                <input id="clientName" class="form-control form-control-sm mb-2" list="clientList" autocomplete="off" placeholder="Client / Company Name *" aria-label="Client or Company Name" />
+                <input id="clientName" class="form-control form-control-sm mb-2" list="clientList" autocomplete="off"
+                  placeholder="Client / Company Name *" aria-label="Client or Company Name" />
                 <datalist id="clientList"></datalist>
-                <textarea id="clientAddress" class="form-control form-control-sm" rows="2" placeholder="Client Billing & Delivery Address" aria-label="Client Billing and Delivery Address"></textarea>
+                <textarea id="clientAddress" class="form-control form-control-sm" rows="2"
+                  placeholder="Client Billing & Delivery Address"
+                  aria-label="Client Billing and Delivery Address"></textarea>
               </div>
 
               <!-- Formatted Client Card (Shown in Print & Live Preview) -->
@@ -104,6 +158,14 @@
                 <div class="client-address-text mt-1" id="clientAddressDisplay" style="white-space: pre-line;"></div>
                 <div class="client-comms-text mt-1" id="clientCommsDisplay"></div>
                 <div class="client-comms-text mt-1 fw-semibold" id="clientBinDisplay"></div>
+              </div>
+              <div id="blankClientLines" class="d-none mt-2">
+                <div class="blank-client-row"><span class="blank-client-label">Client:</span><span
+                    class="blank-write-line" aria-hidden="true"></span></div>
+                <div class="blank-client-row"><span class="blank-client-label">Address:</span><span
+                    class="blank-write-line" aria-hidden="true"></span></div>
+                <div class="blank-client-row mb-0"><span class="blank-client-label">Phone:</span><span
+                    class="blank-write-line" aria-hidden="true"></span></div>
               </div>
             </div>
           </div>
@@ -117,31 +179,37 @@
               <table class="table table-sm meta-table mb-0">
                 <tbody>
                   <tr>
-                    <td class="text-muted fw-semibold" style="width: 42%;"><label for="invoiceNumber">Invoice Number:</label></td>
+                    <td class="text-muted fw-semibold" style="width: 42%;"><label for="invoiceNumber">Invoice
+                        Number:</label></td>
                     <td>
-                      <input id="invoiceNumber" class="form-control form-control-sm fw-bold no-print" readonly aria-label="Invoice Number" />
+                      <input id="invoiceNumber" class="form-control form-control-sm fw-bold no-print" readonly
+                        aria-label="Invoice Number" />
                       <span class="print-only fw-bold font-monospace" id="invoiceNumberPrint"></span>
                     </td>
                   </tr>
                   <tr>
                     <td class="text-muted fw-semibold"><label for="invoiceDate">Issue Date:</label></td>
                     <td>
-                      <input id="invoiceDate" type="date" class="form-control form-control-sm no-print" aria-label="Issue Date" />
+                      <input id="invoiceDate" type="date" class="form-control form-control-sm no-print"
+                        aria-label="Issue Date" />
                       <span class="print-only" id="invoiceDatePrint"></span>
                     </td>
                   </tr>
                   <tr>
                     <td class="text-muted fw-semibold"><label for="dueDate">Payment Due Date:</label></td>
                     <td>
-                      <input id="dueDate" type="date" class="form-control form-control-sm no-print" aria-label="Payment Due Date" />
+                      <input id="dueDate" type="date" class="form-control form-control-sm no-print"
+                        aria-label="Payment Due Date" />
                       <span class="print-only" id="dueDatePrint"></span>
                     </td>
                   </tr>
                   <tr>
                     <td class="text-muted fw-semibold"><label for="paymentMethod">Payment Method:</label></td>
                     <td>
-                      <select id="paymentMethod" class="form-select form-select-sm no-print" aria-label="Payment Method">
-                        <option value="Cash">Cash</option>
+                      <select id="paymentMethod" class="form-select form-select-sm no-print"
+                        aria-label="Payment Method">
+                        <option value="">-- Blank (Fill Later) --</option>
+                        <option value="Cash" selected>Cash</option>
                         <option value="Bank Transfer">Bank Transfer</option>
                         <option value="Cheque">Cheque</option>
                         <option value="bKash">bKash</option>
@@ -156,7 +224,9 @@
                   <tr>
                     <td class="text-muted fw-semibold"><label for="linkedChallan">Delivery Challan Ref:</label></td>
                     <td>
-                      <input id="linkedChallan" class="form-control form-control-sm no-print" list="challanList" autocomplete="off" placeholder="Optional (e.g. CH-2026-0001)" aria-label="Delivery Challan Reference" />
+                      <input id="linkedChallan" class="form-control form-control-sm no-print" list="challanList"
+                        autocomplete="off" placeholder="Optional (e.g. CH-2026-0001)"
+                        aria-label="Delivery Challan Reference" />
                       <datalist id="challanList"></datalist>
                       <span class="print-only" id="linkedChallanPrint">—</span>
                     </td>
@@ -164,14 +234,16 @@
                   <tr>
                     <td class="text-muted fw-semibold"><label for="poRef">PO / Work Order #:</label></td>
                     <td>
-                      <input id="poRef" class="form-control form-control-sm no-print" placeholder="Optional PO / WO reference" aria-label="Purchase Order or Work Order Reference" />
+                      <input id="poRef" class="form-control form-control-sm no-print"
+                        placeholder="Optional PO / WO reference" aria-label="Purchase Order or Work Order Reference" />
                       <span class="print-only" id="poRefPrint">—</span>
                     </td>
                   </tr>
                   <tr>
                     <td class="text-muted fw-semibold"><label for="docTitle">Project / Service:</label></td>
                     <td>
-                      <input id="docTitle" class="form-control form-control-sm no-print" placeholder="Optional project title" aria-label="Project or Service Title" />
+                      <input id="docTitle" class="form-control form-control-sm no-print"
+                        placeholder="Optional project title" aria-label="Project or Service Title" />
                       <span class="print-only" id="docTitlePrint">—</span>
                     </td>
                   </tr>
@@ -203,8 +275,10 @@
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 no-print">
           <div class="d-flex gap-2">
             <button id="addRowBtn" class="btn btn-outline-primary btn-sm" type="button">+ Add Row</button>
-            <button id="pickCatalogBtn" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#catalogPickerModal">📦 Choose from Catalog</button>
-            <button id="addCatalogItemBtn" class="btn btn-outline-success btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#itemOnboardModal">+ New Catalog Item</button>
+            <button id="pickCatalogBtn" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="modal"
+              data-bs-target="#catalogPickerModal">📦 Choose from Catalog</button>
+            <button id="addCatalogItemBtn" class="btn btn-outline-success btn-sm" type="button" data-bs-toggle="modal"
+              data-bs-target="#itemOnboardModal">+ New Catalog Item</button>
           </div>
         </div>
         <datalist id="itemList"></datalist>
@@ -220,7 +294,8 @@
             <div class="invoice-notes-box p-2 rounded">
               <div class="smaller text-muted fw-semibold text-uppercase">Terms & Instructions:</div>
               <div class="smaller text-secondary mt-1" id="paymentNotesText">
-                Payment is requested via Bank Transfer / Cash according to commercial invoice terms. Thank you for your partnership!
+                Payment is requested via Bank Transfer / Cash according to commercial invoice terms. Thank you for your
+                partnership!
               </div>
               <div id="remittanceBox" class="mt-2 pt-2 border-top d-none">
                 <div class="smaller text-muted fw-semibold text-uppercase mb-1">Remittance / Payment Details:</div>
@@ -241,14 +316,17 @@
                   <td class="text-muted small">
                     <div class="d-flex align-items-center justify-content-between gap-1">
                       <label for="invoiceDiscount" class="mb-0" id="discountRateLabel">Discount:</label>
-                      <select id="discountMode" class="form-select form-select-sm no-print" style="max-width: 65px;" aria-label="Discount Type">
+                      <select id="discountMode" class="form-select form-select-sm no-print" style="max-width: 65px;"
+                        aria-label="Discount Type">
                         <option value="bdt" selected>৳</option>
                         <option value="percent">%</option>
                       </select>
                     </div>
                   </td>
                   <td class="text-end">
-                    <input id="invoiceDiscount" type="text" inputmode="decimal" class="form-control form-control-sm text-end no-print ms-auto" style="max-width: 110px;" value="0" aria-label="Invoice Discount" />
+                    <input id="invoiceDiscount" type="text" inputmode="decimal"
+                      class="form-control form-control-sm text-end no-print ms-auto" style="max-width: 110px;" value="0"
+                      aria-label="Invoice Discount" />
                     <span class="print-only text-danger fw-semibold" id="discountDisplayPrint">-৳0.00</span>
                   </td>
                 </tr>
@@ -257,11 +335,14 @@
                     <div class="d-flex align-items-center justify-content-between gap-1 flex-wrap">
                       <label for="invoiceVatRate" class="mb-0" id="vatRateLabel">VAT (%):</label>
                       <div class="d-flex align-items-center gap-1 no-print">
-                        <select id="vatMode" class="form-select form-select-sm" style="max-width: 72px;" aria-label="VAT Calculation Mode">
+                        <select id="vatMode" class="form-select form-select-sm" style="max-width: 72px;"
+                          aria-label="VAT Calculation Mode">
                           <option value="excl" selected>+VAT</option>
                           <option value="incl">Incl.</option>
                         </select>
-                        <input id="invoiceVatRate" type="text" inputmode="decimal" class="form-control form-control-sm text-end" style="max-width: 62px;" value="0" aria-label="VAT Rate Percentage" />
+                        <input id="invoiceVatRate" type="text" inputmode="decimal"
+                          class="form-control form-control-sm text-end" style="max-width: 62px;" value="0"
+                          aria-label="VAT Rate Percentage" />
                       </div>
                     </div>
                   </td>
@@ -278,6 +359,14 @@
                 <tr id="dueBreakdownRow" class="d-none">
                   <td class="text-danger small fw-semibold">Remaining Due:</td>
                   <td class="text-end text-danger fw-bold small" id="dueAmountDisplay">৳0.00</td>
+                </tr>
+                <tr id="blankReceivedRow" class="d-none">
+                  <td class="fw-semibold">Amount Received:</td>
+                  <td class="text-end">৳ <span class="blank-amt-line" aria-hidden="true"></span></td>
+                </tr>
+                <tr id="blankDueRow" class="d-none">
+                  <td class="text-muted fw-semibold">Remaining Due:</td>
+                  <td class="text-end">৳ <span class="blank-amt-line" aria-hidden="true"></span></td>
                 </tr>
               </tbody>
             </table>
@@ -299,6 +388,7 @@
           </div>
           <div class="col-6 text-end">
             <div class="signature-line-wrap text-end ms-auto">
+              <div class="biller-signature-wrap mb-1" aria-hidden="true"></div>
               <div class="signature-line"></div>
               <div class="fw-semibold small" id="receivedLabel">Received by / Customer Acceptance</div>
               <div class="text-muted smaller">Customer Seal &amp; Signature</div>
@@ -306,7 +396,7 @@
           </div>
         </div>
 
-        <div class="print-doc-footer print-only text-center mt-3">
+        <div class="print-doc-footer print-only text-center mt-3" id="invoiceDocFooter">
           This is a computer-generated commercial document issued by AutoInvoice.
         </div>
       </section>
@@ -317,174 +407,200 @@
         <button id="createReceiptBtn" class="btn btn-outline-success">🧾 Create Receipt</button>
         <button id="createChallanBtn" class="btn btn-outline-primary">📦 Create Challan</button>
         <button id="duplicateInvoiceBtn" class="btn btn-outline-secondary">✨ Duplicate as New</button>
+        <button id="downloadBlankInvoiceBtn" type="button" class="btn btn-outline-info">📄 Download Blank / Pending
+          PDF</button>
+        <button id="saveAndNextBlankBtn" type="button" class="btn btn-outline-info d-none">➕ Save &amp; Next Blank</button>
         <button id="downloadPdfBtn" class="btn btn-outline-primary d-none">⬇️ Save A4 PDF</button>
         <button id="printBtn" class="btn btn-secondary">🖨️ Print / PDF</button>
         <div class="dropdown d-inline-block">
-          <button class="btn btn-outline-success dropdown-toggle" type="button" id="shareDocDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <button class="btn btn-outline-success dropdown-toggle" type="button" id="shareDocDropdown"
+            data-bs-toggle="dropdown" aria-expanded="false">
             📤 Share
           </button>
           <ul class="dropdown-menu shadow-sm" aria-labelledby="shareDocDropdown">
-            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" id="shareWhatsAppBtn"><span>💬</span> Send via WhatsApp</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" id="shareEmailBtn"><span>✉️</span> Send via Email</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" id="shareWhatsAppBtn"><span>💬</span>
+                Send via WhatsApp</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" id="shareEmailBtn"><span>✉️</span>
+                Send via Email</a></li>
           </ul>
         </div>
         <button id="exportInvoiceBtn" class="btn btn-outline-secondary">📥 Download JSON</button>
         <button id="resetBtn" class="btn btn-outline-danger ms-auto">Reset</button>
       </div>
-      </div>
-    </main>
-
-    <!-- Client Onboarding Modal -->
-    <div class="modal fade no-print" id="clientOnboardModal" tabindex="-1" aria-labelledby="clientOnboardModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fw-bold" id="clientOnboardModalLabel">👥 Onboard New Client</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <form id="quickClientForm">
-            <div class="modal-body">
-              <div class="mb-2">
-                <label for="quickClientName" class="form-label small fw-semibold">Client / Company Name *</label>
-                <input type="text" class="form-control" id="quickClientName" required placeholder="e.g. Beximco Pharmaceuticals Ltd" />
-              </div>
-              <div class="row g-2 mb-2">
-                <div class="col-md-6">
-                  <label for="quickClientCompany" class="form-label small fw-semibold">Contact / Attention</label>
-                  <input type="text" class="form-control form-control-sm" id="quickClientCompany" placeholder="e.g. Mr. Rafiqul Islam" />
-                </div>
-                <div class="col-md-6">
-                  <label for="quickClientTitle" class="form-label small fw-semibold">Designation</label>
-                  <input type="text" class="form-control form-control-sm" id="quickClientTitle" placeholder="e.g. Head of Procurement" />
-                </div>
-              </div>
-              <div class="mb-2">
-                <label for="quickClientAddress" class="form-label small fw-semibold">Full Address</label>
-                <textarea class="form-control form-control-sm" id="quickClientAddress" rows="2" placeholder="e.g. 19 Dhanmondi R/A, Dhaka-1205"></textarea>
-              </div>
-              <div class="row g-2">
-                <div class="col-md-6">
-                  <label for="quickClientPhone" class="form-label small fw-semibold">Phone</label>
-                  <input type="text" class="form-control form-control-sm" id="quickClientPhone" placeholder="e.g. +880 1711-000000" />
-                </div>
-                <div class="col-md-6">
-                  <label for="quickClientEmail" class="form-label small fw-semibold">Email</label>
-                  <input type="email" class="form-control form-control-sm" id="quickClientEmail" placeholder="e.g. accounts@client.com" />
-                </div>
-                <div class="col-12 mt-2">
-                  <label for="quickClientBin" class="form-label small fw-semibold">Client BIN / TIN / Mushak Reg # (Optional)</label>
-                  <input type="text" class="form-control form-control-sm" id="quickClientBin" placeholder="e.g. 001234567-0102" />
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-sm btn-success">Save & Select Client</button>
-            </div>
-          </form>
-        </div>
-      </div>
     </div>
+  </main>
 
-    <!-- Catalog Item Picker Modal -->
-    <div class="modal fade no-print" id="catalogPickerModal" tabindex="-1" aria-labelledby="catalogPickerModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fw-bold" id="catalogPickerModalLabel">📦 Products & Services Catalog</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
+  <!-- Client Onboarding Modal -->
+  <div class="modal fade no-print" id="clientOnboardModal" tabindex="-1" aria-labelledby="clientOnboardModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="clientOnboardModalLabel">👥 Onboard New Client</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="quickClientForm">
           <div class="modal-body">
-            <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
-              <div class="input-group" style="max-width: 380px;">
-                <span class="input-group-text">🔍</span>
-                <input type="text" id="catalogSearchInput" class="form-control form-control-sm" placeholder="Search catalog items..." aria-label="Search catalog items" />
-              </div>
-              <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#itemOnboardModal">
-                + New Item to Catalog
-              </button>
+            <div class="mb-2">
+              <label for="quickClientName" class="form-label small fw-semibold">Client / Company Name *</label>
+              <input type="text" class="form-control" id="quickClientName" required
+                placeholder="e.g. Beximco Pharmaceuticals Ltd" />
             </div>
-            <div class="table-responsive border rounded">
-              <table class="table table-hover table-striped align-middle mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>Item Name</th>
-                    <th>Description</th>
-                    <th>Unit</th>
-                    <th class="text-end">Rate (৳)</th>
-                    <th class="text-end" style="width: 100px;">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="catalogPickerBody">
-                  <tr><td colspan="5" class="text-center text-muted py-3">Loading catalog...</td></tr>
-                </tbody>
-              </table>
+            <div class="row g-2 mb-2">
+              <div class="col-md-6">
+                <label for="quickClientCompany" class="form-label small fw-semibold">Contact / Attention</label>
+                <input type="text" class="form-control form-control-sm" id="quickClientCompany"
+                  placeholder="e.g. Mr. Rafiqul Islam" />
+              </div>
+              <div class="col-md-6">
+                <label for="quickClientTitle" class="form-label small fw-semibold">Designation</label>
+                <input type="text" class="form-control form-control-sm" id="quickClientTitle"
+                  placeholder="e.g. Head of Procurement" />
+              </div>
+            </div>
+            <div class="mb-2">
+              <label for="quickClientAddress" class="form-label small fw-semibold">Full Address</label>
+              <textarea class="form-control form-control-sm" id="quickClientAddress" rows="2"
+                placeholder="e.g. 19 Dhanmondi R/A, Dhaka-1205"></textarea>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label for="quickClientPhone" class="form-label small fw-semibold">Phone</label>
+                <input type="text" class="form-control form-control-sm" id="quickClientPhone"
+                  placeholder="e.g. +880 1711-000000" />
+              </div>
+              <div class="col-md-6">
+                <label for="quickClientEmail" class="form-label small fw-semibold">Email</label>
+                <input type="email" class="form-control form-control-sm" id="quickClientEmail"
+                  placeholder="e.g. accounts@client.com" />
+              </div>
+              <div class="col-12 mt-2">
+                <label for="quickClientBin" class="form-label small fw-semibold">Client BIN / TIN / Mushak Reg #
+                  (Optional)</label>
+                <input type="text" class="form-control form-control-sm" id="quickClientBin"
+                  placeholder="e.g. 001234567-0102" />
+              </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-success">Save & Select Client</button>
           </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Catalog Item Picker Modal -->
+  <div class="modal fade no-print" id="catalogPickerModal" tabindex="-1" aria-labelledby="catalogPickerModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="catalogPickerModalLabel">📦 Products & Services Catalog</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+            <div class="input-group" style="max-width: 380px;">
+              <span class="input-group-text">🔍</span>
+              <input type="text" id="catalogSearchInput" class="form-control form-control-sm"
+                placeholder="Search catalog items..." aria-label="Search catalog items" />
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal"
+              data-bs-target="#itemOnboardModal">
+              + New Item to Catalog
+            </button>
+          </div>
+          <div class="table-responsive border rounded">
+            <table class="table table-hover table-striped align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Item Name</th>
+                  <th>Description</th>
+                  <th>Unit</th>
+                  <th class="text-end">Rate (৳)</th>
+                  <th class="text-end" style="width: 100px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="catalogPickerBody">
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-3">Loading catalog...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Quick Item Onboard Modal -->
-    <div class="modal fade no-print" id="itemOnboardModal" tabindex="-1" aria-labelledby="itemOnboardModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fw-bold" id="itemOnboardModalLabel">➕ Add Item to Catalog</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <form id="quickItemForm">
-            <div class="modal-body">
-              <div class="mb-2">
-                <label for="quickItemName" class="form-label small fw-semibold">Item / Service Name *</label>
-                <input type="text" class="form-control" id="quickItemName" required placeholder="e.g. Website Maintenance" />
-              </div>
-              <div class="mb-2">
-                <label for="quickItemDesc" class="form-label small fw-semibold">Description</label>
-                <textarea class="form-control form-control-sm" id="quickItemDesc" rows="2" placeholder="e.g. Monthly security updates and backups"></textarea>
-              </div>
-              <div class="row g-2">
-                <div class="col-md-6">
-                  <label for="quickItemUnit" class="form-label small fw-semibold">Default Unit</label>
-                  <input type="text" class="form-control form-control-sm" id="quickItemUnit" list="quickUnitOptions" placeholder="Pcs" />
-                  <datalist id="quickUnitOptions">
-                    <option value="Pcs"></option>
-                    <option value="Sets"></option>
-                    <option value="Hours"></option>
-                    <option value="Days"></option>
-                    <option value="Month"></option>
-                    <option value="Lot"></option>
-                    <option value="Box"></option>
-                  </datalist>
-                </div>
-                <div class="col-md-6">
-                  <label for="quickItemPrice" class="form-label small fw-semibold">Default Unit Price (৳)</label>
-                  <input type="text" inputmode="decimal" class="form-control form-control-sm" id="quickItemPrice" placeholder="0.00" />
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-sm btn-success">Save & Insert Item</button>
-            </div>
-          </form>
+  <!-- Quick Item Onboard Modal -->
+  <div class="modal fade no-print" id="itemOnboardModal" tabindex="-1" aria-labelledby="itemOnboardModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="itemOnboardModalLabel">➕ Add Item to Catalog</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+        <form id="quickItemForm">
+          <div class="modal-body">
+            <div class="mb-2">
+              <label for="quickItemName" class="form-label small fw-semibold">Item / Service Name *</label>
+              <input type="text" class="form-control" id="quickItemName" required
+                placeholder="e.g. Website Maintenance" />
+            </div>
+            <div class="mb-2">
+              <label for="quickItemDesc" class="form-label small fw-semibold">Description</label>
+              <textarea class="form-control form-control-sm" id="quickItemDesc" rows="2"
+                placeholder="e.g. Monthly security updates and backups"></textarea>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label for="quickItemUnit" class="form-label small fw-semibold">Default Unit</label>
+                <input type="text" class="form-control form-control-sm" id="quickItemUnit" list="quickUnitOptions"
+                  placeholder="Pcs" />
+                <datalist id="quickUnitOptions">
+                  <option value="Pcs"></option>
+                  <option value="Sets"></option>
+                  <option value="Hours"></option>
+                  <option value="Days"></option>
+                  <option value="Month"></option>
+                  <option value="Lot"></option>
+                  <option value="Box"></option>
+                </datalist>
+              </div>
+              <div class="col-md-6">
+                <label for="quickItemPrice" class="form-label small fw-semibold">Default Unit Price (৳)</label>
+                <input type="text" inputmode="decimal" class="form-control form-control-sm" id="quickItemPrice"
+                  placeholder="0.00" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-success">Save & Insert Item</button>
+          </div>
+        </form>
       </div>
     </div>
+  </div>
 
-    <script src="assets/vendor/bootstrap.bundle.min.js"></script>
-    <script src="js/vendor/qrcode.min.js"></script>
-    <script src="js/constants.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/records.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/catalog.js"></script>
-    <script src="js/theme.js"></script>
-    <script src="js/biller.js"></script>
-    <script src="js/doc-list.js"></script>
-    <script src="js/invoice.js"></script>
-  </body>
+  <script src="assets/vendor/bootstrap.bundle.min.js"></script>
+  <script src="js/vendor/qrcode.min.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/records.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/catalog.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/biller.js"></script>
+  <script src="js/doc-list.js"></script>
+  <script src="js/invoice.js"></script>
+</body>
+
 </html>

@@ -407,10 +407,16 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ error: 'Invoice payload must be a JSON object' }));
           return;
         }
+        const num = String(invoice.invoiceNumber || invoice.number || '').trim();
+        if (!num) {
+          res.writeHead(400, jsonHeaders(req));
+          res.end(JSON.stringify({ error: 'Invoice payload must include invoiceNumber or number' }));
+          return;
+        }
         try {
           db.upsertInvoice(invoice);
           res.writeHead(200, jsonHeaders(req));
-          res.end(JSON.stringify({ success: true, number: invoice.number }));
+          res.end(JSON.stringify({ success: true, number: num }));
         } catch (e) {
           res.writeHead(500, jsonHeaders(req));
           res.end(JSON.stringify({ error: e.message }));
@@ -450,10 +456,16 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ error: 'Expense payload must be a JSON object' }));
           return;
         }
+        const id = String(expense.id || expense.voucherNo || expense.expenseNumber || '').trim();
+        if (!id) {
+          res.writeHead(400, jsonHeaders(req));
+          res.end(JSON.stringify({ error: 'Expense payload must include id, voucherNo, or expenseNumber' }));
+          return;
+        }
         try {
           db.upsertExpense(expense);
           res.writeHead(200, jsonHeaders(req));
-          res.end(JSON.stringify({ success: true, id: expense.id }));
+          res.end(JSON.stringify({ success: true, id }));
         } catch (e) {
           res.writeHead(500, jsonHeaders(req));
           res.end(JSON.stringify({ error: e.message }));
@@ -718,3 +730,14 @@ server.listen(PORT, HOST, () => {
   console.log(`Search:    http://localhost:${PORT}/search.html`);
   console.log(`Tests:     http://localhost:${PORT}/tests/tests.html`);
 });
+
+function gracefulShutdown() {
+  try {
+    if (db && typeof db.checkpointWal === 'function') db.checkpointWal('TRUNCATE');
+    if (db && typeof db.closeDb === 'function') db.closeDb();
+  } catch (_) { }
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 2000).unref();
+}
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);

@@ -18,6 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const itemRowsEl = document.getElementById('itemRows');
   const addRowBtn = document.getElementById('addRowBtn');
   const grandTotalEl = document.getElementById('grandTotal');
+  const subtotalDisplayEl = document.getElementById('subtotalDisplay');
+  const discountRowEl = document.getElementById('discountRow');
+  const discountRateLabelEl = document.getElementById('discountRateLabel');
+  const discountModeEl = document.getElementById('discountMode');
+  const discountInputEl = document.getElementById('quotationDiscount');
+  const discountPrintEl = document.getElementById('discountDisplayPrint');
+  const vatRowEl = document.getElementById('vatRow');
+  const vatRateLabelEl = document.getElementById('vatRateLabel');
+  const vatModeEl = document.getElementById('vatMode');
+  const vatRateInputEl = document.getElementById('quotationVatRate');
+  const vatAmountDisplayEl = document.getElementById('vatAmountDisplay');
   const amountInWordsEl = document.getElementById('amountInWords');
   const saveBtn = document.getElementById('saveQuotationBtn') || document.getElementById('saveBtn');
   const printBtn = document.getElementById('printBtn');
@@ -68,6 +79,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scopePrint) scopePrint.textContent = scopeTextEl?.value || '';
     if (termsPrint) termsPrint.textContent = termsTextEl?.value || '';
     if (closingNotePrint) closingNotePrint.textContent = closingNoteTextEl?.value || '';
+
+    const totals = typeof getQuotationTotalsBreakdown === 'function' ? getQuotationTotalsBreakdown() : null;
+    if (totals) {
+      if (subtotalDisplayEl) subtotalDisplayEl.textContent = formatBDT(totals.subtotal);
+      if (discountRateLabelEl) {
+        discountRateLabelEl.textContent = totals.discountMode === 'percent' && totals.discountValue > 0
+          ? `Discount (${totals.discountValue}%):`
+          : 'Discount:';
+      }
+      if (discountPrintEl) discountPrintEl.textContent = `-${formatBDT(totals.discount)}`;
+      if (discountRowEl) discountRowEl.classList.toggle('no-print', totals.discount <= 0);
+      if (vatAmountDisplayEl) vatAmountDisplayEl.textContent = formatBDT(totals.vatAmount);
+      if (vatRateLabelEl) {
+        vatRateLabelEl.textContent = totals.vatRate > 0
+          ? (totals.vatInclusive ? `Incl. VAT (${totals.vatRate}%):` : `VAT (${totals.vatRate}%):`)
+          : 'VAT (%):';
+      }
+      if (vatRowEl) vatRowEl.classList.toggle('no-print', totals.vatRate <= 0);
+    }
   }
 
   function computeValidUntilFromDays() {
@@ -193,6 +223,8 @@ document.addEventListener('DOMContentLoaded', () => {
           unitPrice: item.unitPrice || 0,
           qty: 1
         });
+        updateGrandTotal();
+        debouncedRenderQR();
       }
     });
   }
@@ -247,6 +279,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scopeTextEl) scopeTextEl.value = defaultScope;
     if (termsTextEl) termsTextEl.value = defaultTerms;
     if (closingNoteTextEl) closingNoteTextEl.value = defaultClosingNote;
+    if (discountModeEl) discountModeEl.value = 'bdt';
+    if (discountInputEl) discountInputEl.value = '0';
+    if (vatModeEl) vatModeEl.value = 'excl';
+    if (vatRateInputEl) vatRateInputEl.value = '0';
     itemRowsEl.innerHTML = '';
     addRow();
     computeValidUntilFromDays();
@@ -285,6 +321,13 @@ document.addEventListener('DOMContentLoaded', () => {
         scopeTextEl.value = q.scope || defaultScope;
         termsTextEl.value = q.terms || defaultTerms;
         if (closingNoteTextEl) closingNoteTextEl.value = q.closingNote !== undefined ? q.closingNote : defaultClosingNote;
+        if (discountModeEl) discountModeEl.value = q.discountMode || 'bdt';
+        if (discountInputEl) {
+          const dv = q.discountMode === 'percent' ? (q.discountValue || 0) : (q.discount != null ? q.discount : (q.discountValue || 0));
+          discountInputEl.value = String(dv || 0);
+        }
+        if (vatModeEl) vatModeEl.value = q.vatInclusive ? 'incl' : 'excl';
+        if (vatRateInputEl) vatRateInputEl.value = String(q.vatRate || 0);
         itemRowsEl.innerHTML = '';
         (q.items || []).forEach(r => addRowFromData({ desc: r.desc, qty: r.qty, unit: r.unit || 'Pcs', unitPrice: r.unitPrice }));
         if (!(q.items || []).length) addRow();
@@ -462,25 +505,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function getGrandTotalNumber() {
-    let sum = 0;
+  function getQuotationTotalsBreakdown() {
+    let subtotal = 0;
     itemRowsEl.querySelectorAll('tr').forEach(tr => {
       const qtyEl = tr.querySelector('.qty');
       const priceEl = tr.querySelector('.price');
       const qty = parseFloat((qtyEl?.value || '0').replace(/[^0-9.]/g, '')) || 0;
       const price = parseFloat((priceEl?.value || '0').replace(/[^0-9.]/g, '')) || 0;
-      sum = roundBDT(sum + roundBDT(qty * price));
+      subtotal = roundBDT(subtotal + roundBDT(qty * price));
     });
-    return sum;
+    const discountMode = discountModeEl ? discountModeEl.value : 'bdt';
+    const discountValue = discountInputEl ? roundBDT(Math.max(0, parseFloat(String(discountInputEl.value || '0').replace(/[^0-9.]/g, '')) || 0)) : 0;
+    const vatRate = vatRateInputEl ? roundBDT(Math.max(0, parseFloat(String(vatRateInputEl.value || '0').replace(/[^0-9.]/g, '')) || 0)) : 0;
+    const vatInclusive = vatModeEl ? vatModeEl.value === 'incl' : false;
+    if (typeof computeTotalsBreakdown === 'function') {
+      return computeTotalsBreakdown(subtotal, { discountMode, discountValue, vatRate, vatInclusive });
+    }
+    const disc = discountMode === 'percent' ? roundBDT(subtotal * (Math.min(discountValue, 100) / 100)) : discountValue;
+    const discount = Math.min(disc, subtotal);
+    const afterDiscount = roundBDT(Math.max(0, subtotal - discount));
+    const vatAmount = vatRate > 0 ? (vatInclusive ? roundBDT(afterDiscount - roundBDT(afterDiscount / (1 + vatRate / 100))) : roundBDT(afterDiscount * (vatRate / 100))) : 0;
+    const grandTotal = vatInclusive ? afterDiscount : roundBDT(afterDiscount + vatAmount);
+    return { subtotal, discountMode, discountValue, discount, vatRate, vatInclusive, taxable: vatInclusive ? roundBDT(afterDiscount - vatAmount) : afterDiscount, vatAmount, grandTotal };
+  }
+
+  function getGrandTotalNumber() {
+    return getQuotationTotalsBreakdown().grandTotal;
   }
 
   function updateGrandTotal() {
-    const total = getGrandTotalNumber();
-    grandTotalEl.textContent = formatBDT(total);
-    amountInWordsEl.textContent = numberToWordsBDT(total);
+    const totals = getQuotationTotalsBreakdown();
+    if (subtotalDisplayEl) subtotalDisplayEl.textContent = formatBDT(totals.subtotal);
+    grandTotalEl.textContent = formatBDT(totals.grandTotal);
+    amountInWordsEl.textContent = numberToWordsBDT(totals.grandTotal);
+    syncQuotationPrintValues();
   }
 
   addRowBtn.addEventListener('click', () => { addRow(); isDirty = true; });
+  [discountModeEl, discountInputEl, vatModeEl, vatRateInputEl].forEach((el, idx) => {
+    if (!el) return;
+    const evt = (idx === 0 || idx === 2) ? 'change' : 'input';
+    el.addEventListener(evt, () => {
+      isDirty = true;
+      updateGrandTotal();
+      debouncedRenderQR();
+    });
+  });
 
   function buildRecord() {
     const items = [];
@@ -491,7 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const unitPrice = parseFloat((tr.querySelector('.price')?.value || '0').replace(/[^0-9.]/g, '')) || 0;
       items.push({ desc, qty, unit, unitPrice, total: roundBDT(qty * unitPrice) });
     });
-    const totalAmount = getGrandTotalNumber();
+    const totals = getQuotationTotalsBreakdown();
     const existingQ = currentQuotationRecord || (quotationNumberEl.value.trim() ? getQuotationByNumber(quotationNumberEl.value.trim()) : null);
     const vDays = parseInt(validityDaysEl?.value, 10) || 30;
     const vUntil = validUntilEl?.value || '';
@@ -521,8 +591,15 @@ document.addEventListener('DOMContentLoaded', () => {
       terms: termsTextEl.value.trim(),
       closingNote: (closingNoteTextEl?.value || '').trim(),
       items,
-      grandTotal: totalAmount,
-      amountInWords: numberToWordsBDT(totalAmount),
+      subtotal: totals.subtotal,
+      discountMode: totals.discountMode,
+      discountValue: totals.discountValue,
+      discount: totals.discount,
+      vatRate: totals.vatRate,
+      vatInclusive: totals.vatInclusive,
+      vatAmount: totals.vatAmount,
+      grandTotal: totals.grandTotal,
+      amountInWords: numberToWordsBDT(totals.grandTotal),
       qrData: buildQRText(),
       billerId: bId,
       company: companySnap,
@@ -597,6 +674,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (validityDaysEl && !validityDaysEl.value) validityDaysEl.value = 30;
       computeValidUntilFromDays();
       currentQuotationRecord = null;
+      if (typeof history !== 'undefined' && history.replaceState) {
+        try { history.replaceState(null, '', '?new=1'); } catch (_) { }
+      }
       updateModeBadge(false);
       updateConversionBadge(null);
       updateValidityBadge(null);
@@ -804,12 +884,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.addEventListener('billerchange', () => {
+    const qs = new URLSearchParams(window.location.search);
+    const isEditing = !!(qs.get('no') || qs.get('id') || qs.get('load') || currentQuotationRecord);
+    if (isEditing) return;
     if (typeof setCompanyHeader === 'function') {
       setCompanyHeader();
     }
-    const qs = new URLSearchParams(window.location.search);
-    const isEditing = !!(qs.get('no') || qs.get('id') || qs.get('load') || currentQuotationRecord);
-    if (!isEditing && quotationNumberEl) {
+    if (quotationNumberEl) {
       quotationNumberEl.value = peekNextQuotationNumber();
     }
     syncQuotationPrintValues();

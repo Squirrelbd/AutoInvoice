@@ -187,7 +187,7 @@ function exportAllData() {
   return backup;
 }
 
-function importAllData(jsonStr) {
+function importAllData(jsonStr, options = {}) {
   let data;
   try {
     data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
@@ -199,7 +199,46 @@ function importAllData(jsonStr) {
     throw new Error('Backup file must contain a valid JSON object.');
   }
 
+  const isMerge = !!(options && options.mode === 'merge');
+
+  function _mergeByKey(existingArr, incomingArr, keyFn) {
+    const out = [];
+    const indexByKey = new Map();
+    const pushItem = (item) => {
+      if (!item || typeof item !== 'object') return;
+      const k = String(keyFn(item) || '').trim();
+      if (!k) {
+        out.push(item);
+        return;
+      }
+      if (indexByKey.has(k)) {
+        out[indexByKey.get(k)] = item;
+      } else {
+        indexByKey.set(k, out.length);
+        out.push(item);
+      }
+    };
+    (Array.isArray(existingArr) ? existingArr : []).forEach(pushItem);
+    (Array.isArray(incomingArr) ? incomingArr : []).forEach(pushItem);
+    return out;
+  }
+
+  function _mergeStringList(existingArr, incomingArr) {
+    const out = [];
+    const seen = new Set();
+    [...(Array.isArray(existingArr) ? existingArr : []), ...(Array.isArray(incomingArr) ? incomingArr : [])].forEach(val => {
+      const s = String(val || '').trim();
+      const k = s.toLowerCase();
+      if (s && !seen.has(k)) {
+        seen.add(k);
+        out.push(s);
+      }
+    });
+    return out;
+  }
+
   const counts = {
+    mode: isMerge ? 'merge' : 'replace',
     invoices: Array.isArray(data.invoices) ? data.invoices.length : 0,
     challans: Array.isArray(data.challans) ? data.challans.length : 0,
     receipts: Array.isArray(data.receipts) ? data.receipts.length : 0,
@@ -235,53 +274,68 @@ function importAllData(jsonStr) {
     }
   }
 
-  if (Array.isArray(data.billers)) _writeJSON(STORAGE_KEYS.billers, data.billers);
+  if (Array.isArray(data.billers)) {
+    const nextBillers = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.billers, []), data.billers, b => b.id) : data.billers;
+    _writeJSON(STORAGE_KEYS.billers, nextBillers);
+  }
   const settings = (data.settings && typeof data.settings === 'object') ? data.settings : {};
   const activeId = data.activeBillerId || settings.activeBillerId;
-  if (activeId) localStorage.setItem(STORAGE_KEYS.activeBillerId, String(activeId));
+  if (activeId && (!isMerge || (typeof localStorage !== 'undefined' && !localStorage.getItem(STORAGE_KEYS.activeBillerId)))) {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEYS.activeBillerId, String(activeId));
+  }
 
   if (Array.isArray(data.invoices)) {
-    _writeJSON(STORAGE_KEYS.invoices, data.invoices);
-    data.invoices.forEach(inv => {
+    const nextInvoices = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.invoices, []), data.invoices, x => x.invoiceNumber || x.number || x.id) : data.invoices;
+    _writeJSON(STORAGE_KEYS.invoices, nextInvoices);
+    nextInvoices.forEach(inv => {
       const num = inv.invoiceNumber || inv.number;
       if (num && typeof finalizeInvoiceNumber === 'function') finalizeInvoiceNumber(num, inv.billerId);
     });
   }
   if (Array.isArray(data.challans)) {
-    _writeJSON(STORAGE_KEYS.challans, data.challans);
-    data.challans.forEach(ch => {
+    const nextChallans = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.challans, []), data.challans, x => x.challanNumber || x.number || x.id) : data.challans;
+    _writeJSON(STORAGE_KEYS.challans, nextChallans);
+    nextChallans.forEach(ch => {
       const num = ch.challanNumber || ch.number;
       if (num && typeof finalizeChallanNumber === 'function') finalizeChallanNumber(num, ch.billerId);
     });
   }
   if (Array.isArray(data.receipts)) {
-    _writeJSON(STORAGE_KEYS.receipts, data.receipts);
-    data.receipts.forEach(rc => {
+    const nextReceipts = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.receipts, []), data.receipts, x => x.receiptNumber || x.number || x.id) : data.receipts;
+    _writeJSON(STORAGE_KEYS.receipts, nextReceipts);
+    nextReceipts.forEach(rc => {
       const num = rc.receiptNumber || rc.number;
       if (num && typeof finalizeReceiptNumber === 'function') finalizeReceiptNumber(num, rc.billerId);
     });
   }
   if (Array.isArray(data.quotations)) {
-    _writeJSON(STORAGE_KEYS.quotations, data.quotations);
-    data.quotations.forEach(qtn => {
+    const nextQuotations = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.quotations, []), data.quotations, x => x.quotationNumber || x.number || x.id) : data.quotations;
+    _writeJSON(STORAGE_KEYS.quotations, nextQuotations);
+    nextQuotations.forEach(qtn => {
       const num = qtn.quotationNumber || qtn.number;
       if (num && typeof finalizeQuotationNumber === 'function') finalizeQuotationNumber(num, qtn.billerId);
     });
   }
   if (Array.isArray(data.expenses)) {
-    _writeJSON(STORAGE_KEYS.expenses, data.expenses);
-    data.expenses.forEach(exp => {
+    const nextExpenses = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.expenses, []), data.expenses, x => x.id || x.expenseNumber) : data.expenses;
+    _writeJSON(STORAGE_KEYS.expenses, nextExpenses);
+    nextExpenses.forEach(exp => {
       const num = exp.id || exp.expenseNumber;
       if (num && typeof finalizeExpenseNumber === 'function') finalizeExpenseNumber(num, exp.billerId);
     });
   }
-  if (Array.isArray(data.expenseCategories)) _writeJSON(STORAGE_KEYS.expenseCategories, data.expenseCategories);
+  if (Array.isArray(data.expenseCategories)) {
+    const nextCats = isMerge ? _mergeStringList(_readJSON(STORAGE_KEYS.expenseCategories, []), data.expenseCategories) : data.expenseCategories;
+    _writeJSON(STORAGE_KEYS.expenseCategories, nextCats);
+  }
   if (Array.isArray(data.clients)) {
-    _writeJSON(STORAGE_KEYS.clients, data.clients);
+    const nextClients = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.clients, []), data.clients, c => String(c.name || '').trim().toLowerCase()) : data.clients;
+    _writeJSON(STORAGE_KEYS.clients, nextClients);
     try { if (typeof localStorage !== 'undefined') localStorage.setItem('ai_clients_seeded', '1'); } catch (_) { }
   }
   if (Array.isArray(data.items)) {
-    _writeJSON(STORAGE_KEYS.items, data.items);
+    const nextItems = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.items, []), data.items, it => it.id || String(it.name || '').trim().toLowerCase()) : data.items;
+    _writeJSON(STORAGE_KEYS.items, nextItems);
     try { if (typeof localStorage !== 'undefined') localStorage.setItem('ai_items_seeded', '1'); } catch (_) { }
   }
 
@@ -304,6 +358,7 @@ function importAllData(jsonStr) {
     }
   }
 
+  if (!isMerge) _forceNextSyncPrune = true;
   return counts;
 }
 
@@ -1355,18 +1410,25 @@ function getDashboardKPIs(billerId) {
   let totalInvoiced = 0;
   let totalDue = 0;
   let totalCollected = 0;
+  let overdueInvoices = 0;
+  let overdueTotal = 0;
 
   invs.forEach(inv => {
     const stats = getInvoicePaymentStats(inv);
-    totalInvoiced = _safeRound(totalInvoiced + stats.total);
+    const isTaxWithholding = /\b(AIT|VDS)\b/i.test(stats.adjustmentReason || '');
+    totalInvoiced = _safeRound(totalInvoiced + (isTaxWithholding ? stats.originalTotal : stats.total));
     totalCollected = _safeRound(totalCollected + stats.paid);
     totalDue = _safeRound(totalDue + stats.due);
+    if (stats.isOverdue) {
+      overdueInvoices++;
+      overdueTotal = _safeRound(overdueTotal + stats.due);
+    }
   });
 
   // Include direct / unlinked receipts (and receipts on Void invoices) in collected cash flow
-  const invNumbers = new Set(invs.filter(i => i.status !== 'Void').map(i => i.invoiceNumber || i.number).filter(Boolean));
+  const invNumbers = new Set(invs.filter(i => i.status !== 'Void' && i.status !== 'Pending' && !i.amountPending).map(i => i.invoiceNumber || i.number).filter(Boolean));
   rcpts.forEach(r => {
-    if (r.status === 'Void') return;
+    if (r.status === 'Void' || r.status === 'Pending' || r.amountPending) return;
     if (!r.invoiceNumber || !invNumbers.has(r.invoiceNumber)) {
       totalCollected = _safeRound(totalCollected + (Number(r.amount || 0) || 0));
     }
@@ -1381,6 +1443,21 @@ function getDashboardKPIs(billerId) {
   const netProfit = _safeRound(roundedCollected - totalExpenses);
   const profitMargin = roundedCollected > 0 ? _safeRound((netProfit / roundedCollected) * 100) : 0;
 
+  const isActiveNonPending = x => x.status !== 'Void' && x.status !== 'Pending' && !x.amountPending;
+  const isPendingDoc = x => x.status !== 'Void' && (x.status === 'Pending' || !!x.amountPending);
+  const pendingInvoices = invs.filter(isPendingDoc).length;
+  const pendingReceipts = rcpts.filter(isPendingDoc).length;
+  let expiringQuotations = 0;
+  if (typeof getQuotationStatus === 'function') {
+    qtns.forEach(q => {
+      if (!q || q.status === 'Void' || q.converted) return;
+      const qs = getQuotationStatus(q);
+      if (qs && qs.isValid && !qs.isExpired && qs.daysRemaining >= 0 && qs.daysRemaining <= 7) {
+        expiringQuotations++;
+      }
+    });
+  }
+
   return {
     totalInvoiced: _safeRound(totalInvoiced),
     totalCollected: roundedCollected,
@@ -1388,11 +1465,20 @@ function getDashboardKPIs(billerId) {
     totalExpenses,
     netProfit,
     profitMargin,
+    attention: {
+      pendingInvoices,
+      pendingReceipts,
+      overdueInvoices,
+      overdueTotal: _safeRound(overdueTotal),
+      expiringQuotations
+    },
     counts: {
-      invoices: invs.filter(x => x.status !== 'Void').length,
+      invoices: invs.filter(isActiveNonPending).length,
+      pendingInvoices,
       challans: chs.filter(x => x.status !== 'Void').length,
       quotations: qtns.filter(x => x.status !== 'Void').length,
-      receipts: rcpts.filter(x => x.status !== 'Void').length,
+      receipts: rcpts.filter(isActiveNonPending).length,
+      pendingReceipts,
       expenses: exps.length,
       clients: loadClients().length,
       items: loadItems().length
@@ -1429,13 +1515,15 @@ function _safeRound(n) {
 }
 
 // Money receipt helpers
-function getReceiptsByInvoiceNumber(no) {
-  return loadReceipts().filter(x => x.invoiceNumber === no && x.status !== 'Void');
+function getReceiptsByInvoiceNumber(no, opts = {}) {
+  const includePending = !!(opts && opts.includePending);
+  return loadReceipts().filter(x => x.invoiceNumber === no && x.status !== 'Void' && (includePending || (x.status !== 'Pending' && !x.amountPending)));
 }
 
 function getTotalPaidForInvoice(no, excludeReceiptNo) {
   return getReceiptsByInvoiceNumber(no).reduce((sum, r) => {
     if (excludeReceiptNo && r.receiptNumber === excludeReceiptNo) return sum;
+    if (r.status === 'Pending' || r.amountPending) return sum;
     const amt = Number(r.amount || 0);
     return _safeRound(sum + (isFinite(amt) ? amt : 0));
   }, 0);
@@ -1443,7 +1531,7 @@ function getTotalPaidForInvoice(no, excludeReceiptNo) {
 
 function _getLatestAdjustedReceiptForInvoice(no, excludeReceiptNo) {
   const recs = getReceiptsByInvoiceNumber(no)
-    .filter(r => (!excludeReceiptNo || r.receiptNumber !== excludeReceiptNo) && r.adjustment && r.adjustment.applied);
+    .filter(r => (!excludeReceiptNo || r.receiptNumber !== excludeReceiptNo) && r.status !== 'Pending' && !r.amountPending && r.adjustment && r.adjustment.applied);
   if (!recs.length) return null;
   recs.sort((a, b) => {
     const ta = (a.adjustment.timestamp || a.savedAt || a.date || '');
@@ -1464,6 +1552,22 @@ function getInvoicePaymentStats(no, excludeReceiptNo) {
   if (inv.status === 'Void') {
     return { total: 0, paid: 0, due: 0, status: 'Void', isOverdue: false, receipts: [] };
   }
+  if (inv.status === 'Pending' || inv.amountPending) {
+    const invNoPending = inv.invoiceNumber || inv.number || (typeof no === 'string' ? no : '');
+    const allLinkedPending = getReceiptsByInvoiceNumber(invNoPending, { includePending: true });
+    return {
+      total: 0,
+      originalTotal: 0,
+      adjustmentAmount: 0,
+      adjustmentReason: '',
+      paid: getTotalPaidForInvoice(invNoPending, excludeReceiptNo),
+      due: 0,
+      status: 'Pending',
+      isOverdue: false,
+      receipts: allLinkedPending.filter(r => r.status !== 'Pending' && !r.amountPending),
+      pendingReceipts: allLinkedPending.filter(r => r.status === 'Pending' || r.amountPending)
+    };
+  }
   const invNo = inv.invoiceNumber || inv.number || (typeof no === 'string' ? no : '');
   const baseTotal = _safeRound(Number(inv.grandTotal || 0) || 0);
   const latestAdj = getLatestAdjustmentForInvoice(invNo, excludeReceiptNo);
@@ -1471,6 +1575,8 @@ function getInvoicePaymentStats(no, excludeReceiptNo) {
     ? _safeRound(Number(latestAdj.adjustedTotal))
     : baseTotal;
   const receipts = getReceiptsByInvoiceNumber(invNo);
+  const pendingReceipts = getReceiptsByInvoiceNumber(invNo, { includePending: true })
+    .filter(r => r.status === 'Pending' || r.amountPending);
   const paid = getTotalPaidForInvoice(invNo, excludeReceiptNo);
   let due = _safeRound(total - paid);
   if (due < 0) due = 0; // due amount can be set to 0, never negative
@@ -1497,7 +1603,8 @@ function getInvoicePaymentStats(no, excludeReceiptNo) {
     due,
     status,
     isOverdue,
-    receipts
+    receipts,
+    pendingReceipts
   };
 }
 
@@ -1734,14 +1841,14 @@ function computeClientStatementData(options = {}) {
 
   const targetLower = clientName.toLowerCase();
   const allInvoices = Array.from(invMap.values()).filter(inv => {
-    if (inv.status === 'Void') return false;
+    if (inv.status === 'Void' || inv.status === 'Pending' || inv.amountPending) return false;
     const nameMatch = (inv.client?.name || inv.to?.name || '').trim().toLowerCase() === targetLower;
     const billerMatch = billerId === 'all' || (inv.billerId || 'biller_default') === billerId;
     return nameMatch && billerMatch;
   });
 
   const allReceipts = Array.from(rcMap.values()).filter(rc => {
-    if (rc.status === 'Void') return false;
+    if (rc.status === 'Void' || rc.status === 'Pending' || rc.amountPending) return false;
     const nameMatch = (rc.client?.name || rc.to?.name || '').trim().toLowerCase() === targetLower;
     const billerMatch = billerId === 'all' || (rc.billerId || 'biller_default') === billerId;
     return nameMatch && billerMatch;
@@ -1844,7 +1951,7 @@ function toggleVoidRecord(type, number) {
   const list = _readJSON(cfg.key, []);
   const rec = list.find(r => (r[cfg.field] || r.number) === target);
   if (!rec) return null;
-  rec.status = rec.status === 'Void' ? 'Saved' : 'Void';
+  rec.status = rec.status === 'Void' ? (rec.amountPending ? 'Pending' : 'Saved') : 'Void';
   rec.updatedAt = new Date().toISOString();
   _writeJSON(cfg.key, list);
   if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {

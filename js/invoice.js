@@ -29,6 +29,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const headerTotalEl = document.getElementById('headerTotal');
   const amountWordsEl = document.getElementById('amountInWords');
   const saveBtn = document.getElementById('saveInvoiceBtn');
+  const downloadBlankBtn = document.getElementById('downloadBlankInvoiceBtn');
+  const saveAndNextBlankBtn = document.getElementById('saveAndNextBlankBtn');
+  const completePaymentCardEl = document.getElementById('completePaymentCard');
+  const recordPaymentOnSaveEl = document.getElementById('recordPaymentOnSave');
+  const completePaymentFieldsEl = document.getElementById('completePaymentFields');
+  const quickPayAmountEl = document.getElementById('quickPayAmount');
+  const quickPayMethodEl = document.getElementById('quickPayMethod');
+  const quickPayRefEl = document.getElementById('quickPayRef');
+  const quickPayTargetHintEl = document.getElementById('quickPayTargetHint');
   const exportBtn = document.getElementById('exportInvoiceBtn');
   const printBtn = document.getElementById('printBtn');
   const resetBtn = document.getElementById('resetBtn');
@@ -36,9 +45,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const linkedChallanEl = document.getElementById('linkedChallan');
   const qrContainer = document.getElementById('qrContainer');
   const paymentStatusBannerEl = document.getElementById('paymentStatusBanner');
+  const blankModeToggle = document.getElementById('blankInvoiceMode');
+  const blankClientLinesEl = document.getElementById('blankClientLines');
+  const clientDisplayBlockEl = document.getElementById('clientDisplayBlock');
+  const blankReceivedRowEl = document.getElementById('blankReceivedRow');
+  const blankDueRowEl = document.getElementById('blankDueRow');
+  const invoiceDocFooterEl = document.getElementById('invoiceDocFooter');
   const LAST_CLIENT_KEY = 'ai_last_client_invoice';
   let activeParams = parseQuery();
   let sourceBillerId = null;
+
+  function isBlankInvoiceMode() {
+    return !!(blankModeToggle && blankModeToggle.checked);
+  }
 
   function getDraftKey() {
     const num = (invoiceNumberEl ? invoiceNumberEl.value.trim() : '');
@@ -61,9 +80,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function resetQuickPaymentPanel() {
+    if (recordPaymentOnSaveEl) recordPaymentOnSaveEl.checked = false;
+    if (completePaymentFieldsEl) completePaymentFieldsEl.classList.add('d-none');
+    if (quickPayAmountEl) quickPayAmountEl.value = '';
+    if (quickPayMethodEl) quickPayMethodEl.value = 'Cash';
+    if (quickPayRefEl) quickPayRefEl.value = '';
+    if (quickPayTargetHintEl) quickPayTargetHintEl.textContent = '';
+    if (completePaymentCardEl) completePaymentCardEl.classList.add('d-none');
+  }
+
+  function syncCompletePaymentPanel(inv) {
+    if (!completePaymentCardEl) return;
+    const targetInv = inv || (invoiceNumberEl?.value ? getInvoiceByNumber(invoiceNumberEl.value) : null);
+    const isPendingRec = !!(targetInv && targetInv.status !== 'Void' && (targetInv.status === 'Pending' || targetInv.amountPending));
+    if (!isPendingRec) {
+      resetQuickPaymentPanel();
+      return;
+    }
+    completePaymentCardEl.classList.remove('d-none');
+    const bId = targetInv.billerId || sourceBillerId || (typeof getActiveBillerId === 'function' ? getActiveBillerId() : 'biller_default');
+    const pendingRc = typeof getReceiptsByInvoiceNumber === 'function'
+      ? getReceiptsByInvoiceNumber(targetInv.invoiceNumber || targetInv.number, { includePending: true }).find(r => r.status === 'Pending' || r.amountPending)
+      : null;
+    if (quickPayTargetHintEl) {
+      if (pendingRc) {
+        quickPayTargetHintEl.textContent = `Will complete linked pending receipt ${pendingRc.receiptNumber}`;
+      } else if (typeof peekNextReceiptNumber === 'function') {
+        quickPayTargetHintEl.textContent = `Will issue new receipt ${peekNextReceiptNumber(bId)}`;
+      } else {
+        quickPayTargetHintEl.textContent = '';
+      }
+    }
+  }
+
+  if (recordPaymentOnSaveEl) {
+    recordPaymentOnSaveEl.addEventListener('change', () => {
+      const checked = !!recordPaymentOnSaveEl.checked;
+      if (completePaymentFieldsEl) completePaymentFieldsEl.classList.toggle('d-none', !checked);
+      if (checked) {
+        if (quickPayMethodEl && paymentMethodEl && paymentMethodEl.value) {
+          quickPayMethodEl.value = paymentMethodEl.value;
+        }
+        const gt = getGrandTotalNumber();
+        if (quickPayAmountEl && !quickPayAmountEl.value.trim() && gt > 0) {
+          quickPayAmountEl.value = gt.toFixed(2);
+        }
+      }
+    });
+  }
+
   function renderPaymentStatusBanner(inv) {
     if (!paymentStatusBannerEl) return;
     const stats = getInvoicePaymentStats(inv);
+    syncCompletePaymentPanel(inv);
+    if (stats.status === 'Pending') {
+      paymentStatusBannerEl.className = 'alert alert-info p-3 mb-3 no-print shadow-sm';
+      paymentStatusBannerEl.innerHTML = `
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <div>
+            <span class="badge bg-info text-dark fs-6 me-2">⏳ Pending Amount (Blank / Fill-Later)</span>
+            <span class="small">This unique invoice number is locked. Fill in item quantities/prices (and client info if blank) and click <strong>Complete &amp; Save Invoice</strong> to finalize, then record the received amount.</span>
+          </div>
+        </div>
+      `;
+      paymentStatusBannerEl.classList.remove('d-none');
+      updateReceiptBreakdown(null);
+      return;
+    }
     const isOverdue = stats.isOverdue;
     let alertClass = 'alert-info';
     let badgeHtml = '';
@@ -85,12 +169,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let rcptLinks = '';
-    if (stats.receipts && stats.receipts.length) {
-      rcptLinks = stats.receipts.map(r => `
+    const hasSettledRcpts = !!(stats.receipts && stats.receipts.length);
+    const hasPendingRcpts = !!(stats.pendingReceipts && stats.pendingReceipts.length);
+    if (hasSettledRcpts || hasPendingRcpts) {
+      const settledHtml = (stats.receipts || []).map(r => `
         <a href="receipt.html?rcpt=${encodeURIComponent(r.receiptNumber)}" class="badge bg-primary-subtle text-primary border text-decoration-none p-1 me-1">
           🧾 ${escapeHTML(r.receiptNumber)} (${formatBDT(r.amount)})
         </a>
       `).join('');
+      const pendingHtml = (stats.pendingReceipts || []).map(r => `
+        <a href="receipt.html?rcpt=${encodeURIComponent(r.receiptNumber)}" class="badge bg-info-subtle text-info-emphasis border text-decoration-none p-1 me-1">
+          ⏳ ${escapeHTML(r.receiptNumber)} (Pending)
+        </a>
+      `).join('');
+      rcptLinks = settledHtml + pendingHtml;
     } else {
       rcptLinks = '<span class="text-muted small">No receipts recorded</span>';
     }
@@ -105,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
           : '<span class="badge bg-secondary me-1">Pending Dispatch</span>';
       const chLinks = ds.challans.length
         ? ds.challans.map(c => {
-            const cQty = (c.items || []).reduce((s, it) => s + (Number(it.qty || 0) || 0), 0);
+            const cQty = roundBDT((c.items || []).reduce((s, it) => roundBDT(s + (parseFloat(String(it.qty || 0).replace(/,/g, '')) || 0)), 0));
             return `<a href="challan.html?no=${encodeURIComponent(c.challanNumber)}" class="badge bg-info-subtle text-info-emphasis border text-decoration-none p-1 me-1">🚚 ${escapeHTML(c.challanNumber)} (${cQty})</a>`;
           }).join('')
         : '<span class="text-muted small">No challans dispatched</span>';
@@ -172,6 +264,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function syncClientDisplay() {
     const name = clientNameEl ? clientNameEl.value.trim() : '';
     const addr = clientAddressEl ? clientAddressEl.value.trim() : '';
+    const isBlank = isBlankInvoiceMode();
+    const useBlankLines = isBlank && !name;
+    if (clientDisplayBlockEl) clientDisplayBlockEl.classList.toggle('d-none', useBlankLines);
+    if (blankClientLinesEl) blankClientLinesEl.classList.toggle('d-none', !useBlankLines);
+
     const nameDisp = document.getElementById('clientNameDisplay');
     const contactDisp = document.getElementById('clientContactDisplay');
     const addrDisp = document.getElementById('clientAddressDisplay');
@@ -181,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!name) {
       if (nameDisp) nameDisp.textContent = '—';
       if (contactDisp) contactDisp.textContent = '';
-      if (addrDisp) addrDisp.textContent = 'No client address specified';
+      if (addrDisp) addrDisp.textContent = isBlank ? '' : 'No client address specified';
       if (commsDisp) commsDisp.textContent = '';
       if (binDisp) binDisp.textContent = '';
       return;
@@ -230,15 +327,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const docTitlePrint = document.getElementById('docTitlePrint');
     const subtotalEl = document.getElementById('subtotalDisplay');
 
+    const isBlank = isBlankInvoiceMode();
+    if (printAreaEl) printAreaEl.classList.toggle('blank-doc-mode', isBlank);
+
     if (invNumPrint && invoiceNumberEl) invNumPrint.textContent = invoiceNumberEl.value || '—';
     if (invDatePrint && invoiceDateEl) {
-      invDatePrint.textContent = typeof formatDisplayDate === 'function' ? formatDisplayDate(invoiceDateEl.value) : invoiceDateEl.value;
+      if (isBlank && !invoiceDateEl.value) invDatePrint.innerHTML = '<span class="blank-amt-line"></span>';
+      else invDatePrint.textContent = typeof formatDisplayDate === 'function' ? formatDisplayDate(invoiceDateEl.value) : invoiceDateEl.value;
     }
     if (dueDatePrint && dueDateEl) {
-      dueDatePrint.textContent = typeof formatDisplayDate === 'function' ? formatDisplayDate(dueDateEl.value) : dueDateEl.value;
+      if (isBlank && !dueDateEl.value) dueDatePrint.innerHTML = '<span class="blank-amt-line"></span>';
+      else dueDatePrint.textContent = typeof formatDisplayDate === 'function' ? formatDisplayDate(dueDateEl.value) : dueDateEl.value;
     }
     if (payMethodPrint && paymentMethodEl) {
-      payMethodPrint.textContent = paymentMethodEl.value || 'Cash';
+      if (isBlank && !paymentMethodEl.value) payMethodPrint.innerHTML = '<span class="blank-amt-line"></span>';
+      else payMethodPrint.textContent = paymentMethodEl.value || 'Cash';
     }
     if (linkChPrint) {
       let chVal = (linkedChallanEl && linkedChallanEl.value.trim()) ? linkedChallanEl.value.trim() : '';
@@ -255,8 +358,36 @@ document.addEventListener('DOMContentLoaded', () => {
       docTitlePrint.textContent = (docTitleInput && docTitleInput.value.trim()) ? docTitleInput.value.trim() : '—';
     }
     const totals = getInvoiceTotalsBreakdown();
+    const blankTotals = isBlank && totals.grandTotal === 0;
     if (subtotalEl) {
-      subtotalEl.textContent = formatBDT(totals.subtotal);
+      if (isBlank && totals.subtotal === 0) subtotalEl.innerHTML = '৳ <span class="blank-amt-line" style="min-width:85px;" aria-hidden="true"></span>';
+      else subtotalEl.textContent = formatBDT(totals.subtotal);
+    }
+    if (grandTotalEl) {
+      if (blankTotals) grandTotalEl.innerHTML = '৳ <span class="blank-amt-line" style="min-width:95px;" aria-hidden="true"></span>';
+      else grandTotalEl.textContent = formatBDT(totals.grandTotal);
+    }
+    if (amountWordsEl) {
+      if (blankTotals) amountWordsEl.innerHTML = '<span class="blank-words-line" aria-hidden="true"></span>';
+      else amountWordsEl.textContent = numberToWordsBDT(totals.grandTotal);
+    }
+    if (blankReceivedRowEl) blankReceivedRowEl.classList.toggle('d-none', !isBlank);
+    if (blankDueRowEl) blankDueRowEl.classList.toggle('d-none', !isBlank);
+    if (invoiceDocFooterEl) {
+      invoiceDocFooterEl.textContent = isBlank
+        ? 'Blank / Provisional Commercial Invoice — Amounts and payment details to be finalized upon completion.'
+        : 'This is a computer-generated commercial document issued by AutoInvoice.';
+    }
+
+    const existingInv = invoiceNumberEl.value ? getInvoiceByNumber(invoiceNumberEl.value) : null;
+    const isEditingPending = !!(existingInv && (existingInv.status === 'Pending' || existingInv.amountPending));
+    if (saveAndNextBlankBtn) {
+      saveAndNextBlankBtn.classList.toggle('d-none', !isBlank);
+    }
+    if (saveBtn) {
+      if (isBlank) saveBtn.textContent = '💾 Save Pending Invoice';
+      else if (isEditingPending) saveBtn.textContent = '✅ Complete & Save Invoice';
+      else saveBtn.textContent = '💾 Save Invoice';
     }
     if (discountRateLabelEl) {
       discountRateLabelEl.textContent = totals.discountMode === 'percent' && totals.discountValue > 0
@@ -298,10 +429,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const modeBadgeEl = document.getElementById('modeBadge');
-  function updateModeBadge(isEditing, docNo) {
+  function updateModeBadge(isEditing, docNo, isPending = false) {
     if (!modeBadgeEl) return;
-    if (isEditing) {
+    if (isEditing && isPending) {
+      modeBadgeEl.innerHTML = `<span class="badge bg-info text-dark fs-6 px-3 py-2 shadow-sm">⏳ Pending Invoice: ${escapeHTML(docNo)}</span>`;
+    } else if (isEditing) {
       modeBadgeEl.innerHTML = `<span class="badge bg-primary fs-6 px-3 py-2 shadow-sm">📝 Editing Invoice: ${escapeHTML(docNo)}</span>`;
+    } else if (isBlankInvoiceMode()) {
+      modeBadgeEl.innerHTML = `<span class="badge bg-info text-dark fs-6 px-3 py-2 shadow-sm">📝 Blank / Pending Invoice</span>`;
     } else {
       modeBadgeEl.innerHTML = `<span class="badge bg-success fs-6 px-3 py-2 shadow-sm">✨ New Invoice</span>`;
     }
@@ -327,13 +462,16 @@ document.addEventListener('DOMContentLoaded', () => {
       datalistId: 'itemList',
       onItemPicked: (item) => {
         isDirty = true;
+        const asBlank = isBlankInvoiceMode();
         addRowFromData({
           name: item.name || '',
           desc: item.desc || '',
           unit: item.unit || 'Pcs',
-          unitPrice: item.unitPrice || 0,
-          qty: 1
+          unitPrice: asBlank ? 0 : (item.unitPrice || 0),
+          qty: asBlank ? 0 : 1
         });
+        updateGrandTotal();
+        debouncedRenderQR();
       }
     });
   }
@@ -374,13 +512,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const debouncedRenderQR = debounce(() => renderQR(qrContainer, buildQRText()), 300);
 
-  function resetInvoiceFieldsToNew() {
+  function resetInvoiceFieldsToNew(options = {}) {
+    const asBlank = !!options.blank;
+    if (blankModeToggle) blankModeToggle.checked = asBlank;
     const csEl = document.getElementById('clientSelect');
     if (csEl) csEl.value = '';
     if (clientNameEl) clientNameEl.value = '';
     if (clientAddressEl) clientAddressEl.value = '';
-    if (paymentMethodEl) paymentMethodEl.value = 'Cash';
+    if (paymentMethodEl) paymentMethodEl.value = asBlank ? '' : 'Cash';
     if (linkedChallanEl) linkedChallanEl.value = '';
+    if (dueDateEl) dueDateEl.value = '';
     if (poRefEl) poRefEl.value = '';
     if (docTitleInput) docTitleInput.value = '';
     if (docTitleHeader) docTitleHeader.textContent = '';
@@ -391,12 +532,14 @@ document.addEventListener('DOMContentLoaded', () => {
     sourceBillerId = null;
     if (typeof setCompanyHeader === 'function') setCompanyHeader();
     if (paymentStatusBannerEl) paymentStatusBannerEl.classList.add('d-none');
+    resetQuickPaymentPanel();
     updateReceiptBreakdown(null);
   }
 
   async function loadEditorFromParams(params) {
     activeParams = Object.assign({}, params || {});
-    if (typeof setCompanyHeader === 'function') setCompanyHeader();
+    const isBlankParam = activeParams.blank === '1' || activeParams.blank === 'true';
+    resetInvoiceFieldsToNew({ blank: isBlankParam });
     if (params && params.no) {
       let inv = getInvoiceByNumber(params.no);
       if (!inv && typeof getDiskInvoiceByNumber === 'function') {
@@ -405,25 +548,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       if (inv) {
+        const isPendingInv = !!(inv.status === 'Pending' || inv.amountPending);
+        if (blankModeToggle) blankModeToggle.checked = isPendingInv;
         invoiceNumberEl.value = inv.invoiceNumber;
         invoiceDateEl.value = inv.date || '';
         clientNameEl.value = inv.client?.name || '';
         clientAddressEl.value = inv.client?.address || '';
         if (docTitleInput) docTitleInput.value = inv.title || '';
         if (docTitleHeader) docTitleHeader.textContent = inv.title || '';
-        if (linkedChallanEl && inv.linkedChallan) linkedChallanEl.value = inv.linkedChallan;
+        if (linkedChallanEl) linkedChallanEl.value = inv.linkedChallan || '';
         if (poRefEl) poRefEl.value = inv.poRef || '';
-        if (paymentMethodEl && inv.paymentMethod) paymentMethodEl.value = inv.paymentMethod;
-        if (dueDateEl && inv.dueDate) dueDateEl.value = inv.dueDate;
+        if (paymentMethodEl) paymentMethodEl.value = inv.paymentMethod != null ? inv.paymentMethod : (isPendingInv ? '' : 'Cash');
+        if (dueDateEl) dueDateEl.value = inv.dueDate || '';
         if (discountModeEl) discountModeEl.value = inv.discountMode || 'bdt';
         if (discountInputEl) discountInputEl.value = String(inv.discountMode === 'percent' ? (inv.discountValue || 0) : (inv.discount || 0));
         if (vatModeEl) vatModeEl.value = inv.vatInclusive ? 'incl' : 'excl';
         if (vatRateInputEl) vatRateInputEl.value = String(inv.vatRate || 0);
         itemRowsEl.innerHTML = '';
-        (inv.items || []).forEach(addRowFromData);
+        if (Array.isArray(inv.items) && inv.items.length) {
+          inv.items.forEach(addRowFromData);
+        } else {
+          addRow();
+        }
         updateGrandTotal();
         renderQR(qrContainer, inv.qrData || buildQRText());
-        updateModeBadge(true, inv.invoiceNumber);
+        updateModeBadge(true, inv.invoiceNumber, isPendingInv);
         if (inv.billerId || inv.company) {
           const invBiller = (typeof getBillerById === 'function' && inv.billerId ? getBillerById(inv.billerId) : null) || inv.company;
           if (invBiller) setCompanyHeader(invBiller);
@@ -435,14 +584,16 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
             const d = JSON.parse(existingDraft);
             if (d && confirm(`Unsaved edits found for invoice ${inv.invoiceNumber}. Would you like to restore them?`)) {
+              const dPending = !!(d.status === 'Pending' || d.amountPending);
+              if (blankModeToggle) blankModeToggle.checked = dPending;
               clientNameEl.value = d.client?.name || clientNameEl.value;
               clientAddressEl.value = d.client?.address || clientAddressEl.value;
               if (docTitleInput && d.title) docTitleInput.value = d.title;
               if (docTitleHeader && d.title) docTitleHeader.textContent = d.title;
-              if (linkedChallanEl && d.linkedChallan) linkedChallanEl.value = d.linkedChallan;
+              if (linkedChallanEl && d.linkedChallan != null) linkedChallanEl.value = d.linkedChallan;
               if (poRefEl && d.poRef != null) poRefEl.value = d.poRef;
-              if (paymentMethodEl && d.paymentMethod) paymentMethodEl.value = d.paymentMethod;
-              if (dueDateEl && d.dueDate) dueDateEl.value = d.dueDate;
+              if (paymentMethodEl && d.paymentMethod !== undefined) paymentMethodEl.value = d.paymentMethod;
+              if (dueDateEl && d.dueDate !== undefined) dueDateEl.value = d.dueDate;
               if (discountModeEl && d.discountMode) discountModeEl.value = d.discountMode;
               if (discountInputEl && (d.discountValue != null || d.discount != null)) {
                 discountInputEl.value = String(d.discountMode === 'percent' ? (d.discountValue || 0) : (d.discount || 0));
@@ -453,6 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 itemRowsEl.innerHTML = '';
                 d.items.forEach(addRowFromData);
               }
+              updateModeBadge(true, inv.invoiceNumber, dPending);
               updateGrandTotal();
               renderQR(qrContainer, buildQRText());
             } else {
@@ -572,22 +724,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // New document flow
-    resetInvoiceFieldsToNew();
+    resetInvoiceFieldsToNew({ blank: isBlankParam });
     updateModeBadge(false);
     invoiceNumberEl.value = peekNextInvoiceNumber();
 
-    const savedDraft = localStorage.getItem('ai_invoice_draft_new') || localStorage.getItem('ai_invoice_draft');
+    const savedDraft = isBlankParam ? null : (localStorage.getItem('ai_invoice_draft_new') || localStorage.getItem('ai_invoice_draft'));
     if (savedDraft) {
       try {
         const draft = JSON.parse(savedDraft);
         if (draft && (draft.client?.name || (draft.items && draft.items.length))) {
           const restore = confirm('Unsaved invoice draft found. Would you like to restore it?');
           if (restore) {
+            const dPending = !!(draft.status === 'Pending' || draft.amountPending);
+            if (blankModeToggle) blankModeToggle.checked = dPending;
             clientNameEl.value = draft.client?.name || '';
             clientAddressEl.value = draft.client?.address || '';
             if (docTitleInput) docTitleInput.value = draft.title || '';
             if (docTitleHeader) docTitleHeader.textContent = draft.title || '';
-            if (paymentMethodEl && draft.paymentMethod) paymentMethodEl.value = draft.paymentMethod;
+            if (paymentMethodEl && draft.paymentMethod !== undefined) paymentMethodEl.value = draft.paymentMethod;
             if (linkedChallanEl && draft.linkedChallan) linkedChallanEl.value = draft.linkedChallan;
             if (poRefEl && draft.poRef) poRefEl.value = draft.poRef;
             if (discountModeEl && draft.discountMode) discountModeEl.value = draft.discountMode;
@@ -598,14 +752,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (vatRateInputEl && draft.vatRate != null) vatRateInputEl.value = String(draft.vatRate);
             const todayD = new Date();
             invoiceDateEl.value = draft.date || formatISO(todayD);
-            dueDateEl.value = draft.dueDate || formatISO(addWorkingDays(todayD, 15));
+            dueDateEl.value = draft.dueDate !== undefined ? draft.dueDate : (dPending ? '' : formatISO(addWorkingDays(todayD, 15)));
             itemRowsEl.innerHTML = '';
             (draft.items || []).forEach(addRowFromData);
+            updateModeBadge(false);
             updateGrandTotal();
             renderQR(qrContainer, buildQRText());
             syncClientDisplay();
             syncPrintDisplayValues();
-            isDirty = false;
+            isDirty = true;
             return;
           } else {
             clearDraft();
@@ -621,16 +776,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const today = new Date();
     const todayIso = formatISO(today);
     invoiceDateEl.value = todayIso;
-    dueDateEl.value = formatISO(addWorkingDays(today, 15));
+    dueDateEl.value = isBlankParam ? '' : formatISO(addWorkingDays(today, 15));
 
-    try {
-      const lastClient = JSON.parse(localStorage.getItem(LAST_CLIENT_KEY) || '{}');
-      if (lastClient.name) {
-        clientNameEl.value = lastClient.name;
-        clientAddressEl.value = lastClient.address || '';
+    if (!isBlankParam) {
+      try {
+        const lastClient = JSON.parse(localStorage.getItem(LAST_CLIENT_KEY) || '{}');
+        if (lastClient.name) {
+          clientNameEl.value = lastClient.name;
+          clientAddressEl.value = lastClient.address || '';
+        }
+      } catch (e) {
+        console.warn('Failed to load last client', e);
       }
-    } catch (e) {
-      console.warn('Failed to load last client', e);
     }
 
     itemRowsEl.innerHTML = '';
@@ -645,7 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Update due date when invoice date changes on unsaved/new invoices
   invoiceDateEl.addEventListener('change', () => {
     if (invoiceDateEl.value) {
-      if (!activeParams?.no) {
+      if (!activeParams?.no && !isBlankInvoiceMode()) {
         const base = parseISO(invoiceDateEl.value);
         dueDateEl.value = formatISO(addWorkingDays(base, 15));
       }
@@ -705,15 +862,87 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(getDraftKey(), JSON.stringify(record));
   }, 5000);
 
+  function _clearInvoiceAmountsForBlank() {
+    itemRowsEl.querySelectorAll('tr:not(.blank-filler-row)').forEach(tr => {
+      const pEl = tr.querySelector('.price');
+      if (pEl) pEl.value = '0';
+      const totCell = tr.querySelector('.total');
+      if (totCell) totCell.textContent = '';
+    });
+    if (discountInputEl) discountInputEl.value = '0';
+    if (vatRateInputEl) vatRateInputEl.value = '0';
+  }
+
+  if (blankModeToggle) {
+    blankModeToggle.addEventListener('change', () => {
+      if (blankModeToggle.checked) {
+        if (getGrandTotalNumber() > 0) {
+          if (!confirm('Switching to Blank / Fill-Later Mode will clear item prices, discount, and VAT so totals stay blank. Proceed?')) {
+            blankModeToggle.checked = false;
+            return;
+          }
+          _clearInvoiceAmountsForBlank();
+        }
+        if (paymentMethodEl && paymentMethodEl.value === 'Cash') paymentMethodEl.value = '';
+        if (!activeParams?.no && dueDateEl) dueDateEl.value = '';
+      } else {
+        if (paymentMethodEl && !paymentMethodEl.value) paymentMethodEl.value = 'Cash';
+        if (dueDateEl && !dueDateEl.value && invoiceDateEl?.value) {
+          dueDateEl.value = formatISO(addWorkingDays(parseISO(invoiceDateEl.value), 15));
+        }
+      }
+      isDirty = true;
+      const existingInv = invoiceNumberEl.value ? getInvoiceByNumber(invoiceNumberEl.value) : null;
+      updateModeBadge(!!activeParams?.no, invoiceNumberEl.value, !!(existingInv && (existingInv.status === 'Pending' || existingInv.amountPending)));
+      itemRowsEl.querySelectorAll('tr:not(.blank-filler-row)').forEach(syncRowPrintMirrors);
+      updateGrandTotal();
+      syncPrintDisplayValues();
+      renderQR(qrContainer, buildQRText());
+    });
+  }
+
   // Actions
-  saveBtn.addEventListener('click', () => {
-    const record = buildInvoiceRecord();
-    const validMsg = validateRecord(record);
-    if (validMsg) { showToast(validMsg, 'warning'); return; }
+  function saveInvoiceRecord(opts = {}) {
+    const isPendingSave = !!(opts && opts.forcePending) || isBlankInvoiceMode();
+    const collectPaymentNow = !isPendingSave && !!(recordPaymentOnSaveEl && recordPaymentOnSaveEl.checked);
+    if (recordPaymentOnSaveEl && recordPaymentOnSaveEl.checked && isPendingSave) {
+      showToast('Enter item quantities and prices first before completing and collecting payment.', 'warning');
+      return null;
+    }
+    if (!isPendingSave) {
+      if (paymentMethodEl && !paymentMethodEl.value) paymentMethodEl.value = 'Cash';
+      if (dueDateEl && !dueDateEl.value && invoiceDateEl?.value) {
+        dueDateEl.value = formatISO(addWorkingDays(parseISO(invoiceDateEl.value), 15));
+      }
+    }
+    const record = buildInvoiceRecord({ pending: isPendingSave });
+    if (!isPendingSave) {
+      const validMsg = validateRecord(record);
+      if (validMsg) { showToast(validMsg, 'warning'); return null; }
+    }
+    let payAmt = 0;
+    if (collectPaymentNow) {
+      const rawPay = (quickPayAmountEl?.value || '').trim();
+      payAmt = rawPay ? roundBDT(parseFloat(rawPay.replace(/[^0-9.]/g, '')) || 0) : record.grandTotal;
+      const priorPaid = typeof getTotalPaidForInvoice === 'function'
+        ? roundBDT(getTotalPaidForInvoice(record.invoiceNumber))
+        : 0;
+      const remainingPayable = roundBDT(Math.max(0, record.grandTotal - priorPaid));
+      if (payAmt <= 0) {
+        showToast('Enter a received amount greater than ৳0.00.', 'warning');
+        return null;
+      }
+      if (payAmt > remainingPayable) {
+        showToast(`Received amount (${formatBDT(payAmt)}) exceeds remaining balance (${formatBDT(remainingPayable)}).`, 'warning');
+        return null;
+      }
+    }
     saveInvoice(record);
-    localStorage.setItem(LAST_CLIENT_KEY, JSON.stringify(record.client));
+    if (!isPendingSave && record.client?.name) {
+      localStorage.setItem(LAST_CLIENT_KEY, JSON.stringify(record.client));
+    }
     finalizeInvoiceNumber(record.invoiceNumber, record.billerId);
-    if (activeParams && activeParams.qtn && typeof getQuotationByNumber === 'function' && typeof saveQuotation === 'function') {
+    if (!isPendingSave && activeParams && activeParams.qtn && typeof getQuotationByNumber === 'function' && typeof saveQuotation === 'function') {
       const qtn = getQuotationByNumber(activeParams.qtn);
       if (qtn) {
         qtn.converted = true;
@@ -722,18 +951,66 @@ document.addEventListener('DOMContentLoaded', () => {
         saveQuotation(qtn);
       }
     }
+    let completedRc = null;
+    if (collectPaymentNow && typeof saveReceipt === 'function') {
+      const existingPendingRc = typeof getReceiptsByInvoiceNumber === 'function'
+        ? getReceiptsByInvoiceNumber(record.invoiceNumber, { includePending: true }).find(r => r.status === 'Pending' || r.amountPending)
+        : null;
+      const rcNo = existingPendingRc?.receiptNumber || (typeof peekNextReceiptNumber === 'function' ? peekNextReceiptNumber(record.billerId) : '');
+      const rcDate = formatISO(new Date());
+      const payMethod = (quickPayMethodEl?.value || record.paymentMethod || 'Cash');
+      const trxRef = (quickPayRefEl?.value || '').trim();
+      const rcItems = (existingPendingRc?.items && existingPendingRc.items.length)
+        ? existingPendingRc.items
+        : (record.items || []).map(it => ({ name: it.name || '', desc: it.desc || '' })).filter(it => it.name || it.desc);
+      const rcQr = typeof buildQRPayload === 'function'
+        ? buildQRPayload('RCPT', {
+            number: rcNo,
+            date: rcDate,
+            amount: payAmt,
+            client: record.client?.name || '',
+            company: record.company?.name || (typeof COMPANY !== 'undefined' ? COMPANY.name : '')
+          })
+        : '';
+      completedRc = {
+        id: existingPendingRc?.id,
+        createdAt: existingPendingRc?.createdAt,
+        status: 'Saved',
+        amountPending: false,
+        _type: 'receipt',
+        billerId: record.billerId,
+        receiptNumber: rcNo,
+        date: rcDate,
+        invoiceNumber: record.invoiceNumber,
+        client: { name: record.client?.name || '', address: record.client?.address || '' },
+        paymentMethod: payMethod,
+        trxRef,
+        items: rcItems,
+        amount: payAmt,
+        amountInWords: typeof numberToWordsBDT === 'function' ? numberToWordsBDT(payAmt) : '',
+        qrData: rcQr,
+        company: record.company
+      };
+      saveReceipt(completedRc);
+      if (typeof finalizeReceiptNumber === 'function') finalizeReceiptNumber(completedRc.receiptNumber, record.billerId);
+    }
     activeParams = { no: record.invoiceNumber };
     if (typeof history !== 'undefined' && history.replaceState) {
       try { history.replaceState(null, '', `?no=${encodeURIComponent(record.invoiceNumber)}`); } catch (_) { }
     }
     isDirty = false;
     clearDraft();
-    updateModeBadge(true, record.invoiceNumber);
+    updateModeBadge(true, record.invoiceNumber, isPendingSave);
     renderPaymentStatusBanner(record);
-    if (clientOnboarding) clientOnboarding.refresh(record.client?.name);
+    if (clientOnboarding && record.client?.name) clientOnboarding.refresh(record.client.name);
     if (typeof saveItem === 'function' && Array.isArray(record.items)) {
       record.items.forEach(it => {
-        if (it.name) saveItem({ name: it.name, desc: it.desc, unitPrice: it.unitPrice, unit: it.unit || 'Pcs' });
+        if (!it.name) return;
+        if (isPendingSave) {
+          saveItem({ name: it.name, desc: it.desc, unit: it.unit || 'Pcs', unitPrice: it.unitPrice || 0 }, { preserveExisting: true });
+        } else {
+          saveItem({ name: it.name, desc: it.desc, unitPrice: it.unitPrice, unit: it.unit || 'Pcs' });
+        }
       });
       if (itemCatalog) itemCatalog.refresh();
     }
@@ -744,8 +1021,18 @@ document.addEventListener('DOMContentLoaded', () => {
         saveChallan(ch);
       }
     }
-    showToast('Invoice saved successfully.', 'success');
-  });
+    if (!opts || !opts.silent) {
+      if (completedRc) {
+        showToast(`Invoice ${record.invoiceNumber} finalized & Receipt ${completedRc.receiptNumber} recorded (${formatBDT(payAmt)}).`, 'success');
+      } else {
+        showToast(isPendingSave ? `Pending invoice ${record.invoiceNumber} saved & number locked.` : 'Invoice saved successfully.', 'success');
+      }
+    }
+    syncPrintDisplayValues();
+    return record;
+  }
+
+  saveBtn.addEventListener('click', () => saveInvoiceRecord({}));
 
   if (duplicateInvoiceBtn) {
     duplicateInvoiceBtn.addEventListener('click', () => {
@@ -756,13 +1043,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const todayIso = formatISO(today);
       invoiceDateEl.value = todayIso;
       dueDateEl.value = formatISO(addWorkingDays(today, 15));
+      if (linkedChallanEl) linkedChallanEl.value = '';
+      if (blankModeToggle) blankModeToggle.checked = false;
+      if (paymentMethodEl && !paymentMethodEl.value) paymentMethodEl.value = 'Cash';
       isDirty = true;
       activeParams = {}; // switch to fresh draft scope
       sourceBillerId = null;
+      if (typeof history !== 'undefined' && history.replaceState) {
+        try { history.replaceState(null, '', '?new=1'); } catch (_) { }
+      }
       clearDraft();
       updateModeBadge(false);
       if (paymentStatusBannerEl) paymentStatusBannerEl.classList.add('d-none');
+      resetQuickPaymentPanel();
       updateReceiptBreakdown(null);
+      itemRowsEl.querySelectorAll('tr:not(.blank-filler-row)').forEach(syncRowPrintMirrors);
       updateGrandTotal();
       syncPrintDisplayValues();
       renderQR(qrContainer, buildQRText());
@@ -786,6 +1081,12 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Please save or specify an invoice number first.', 'warning');
         return;
       }
+      if (isBlankInvoiceMode()) {
+        const saved = saveInvoiceRecord({ forcePending: true, silent: true });
+        if (!saved) return;
+        window.location.href = `receipt.html?inv=${encodeURIComponent(saved.invoiceNumber)}&blank=1`;
+        return;
+      }
       if (isDirty && !confirm('You have unsaved changes on this invoice. Continue to Receipt without saving these changes first?')) {
         return;
       }
@@ -796,17 +1097,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const createChallanBtn = document.getElementById('createChallanBtn');
   if (createChallanBtn) {
     createChallanBtn.addEventListener('click', () => {
-      const record = buildInvoiceRecord();
-      const validMsg = validateRecord(record);
-      if (validMsg) { showToast(`Cannot create challan: ${validMsg}`, 'warning'); return; }
-      saveInvoice(record);
-      finalizeInvoiceNumber(record.invoiceNumber, record.billerId);
-      activeParams = { no: record.invoiceNumber };
-      clearDraft();
-      isDirty = false;
-      updateModeBadge(true, record.invoiceNumber);
-      renderPaymentStatusBanner(record);
-      window.open(`challan.html?inv=${encodeURIComponent(record.invoiceNumber)}`, '_blank');
+      const existingInv = invoiceNumberEl.value ? getInvoiceByNumber(invoiceNumberEl.value) : null;
+      if (isBlankInvoiceMode() || (existingInv && (existingInv.status === 'Pending' || existingInv.amountPending))) {
+        showToast('Complete and save final invoice amounts before creating a Delivery Challan.', 'warning');
+        return;
+      }
+      const saved = saveInvoiceRecord({ silent: true });
+      if (!saved) return;
+      window.open(`challan.html?inv=${encodeURIComponent(saved.invoiceNumber)}`, '_blank');
     });
   }
 
@@ -835,15 +1133,94 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   printBtn.addEventListener('click', () => {
+    if (isBlankInvoiceMode()) {
+      const saved = saveInvoiceRecord({ forcePending: true, silent: true });
+      if (saved && typeof showToast === 'function') {
+        showToast(`Reserved ${saved.invoiceNumber} as Pending Amount before printing.`, 'info');
+      }
+    }
     prepareForPrint();
     window.print();
   });
-  if (typeof initPdfDownloadButton === 'function') {
-    initPdfDownloadButton('downloadPdfBtn', prepareForPrint, () => {
-      if (typeof setPrintDocumentTitle === 'function') {
-        return setPrintDocumentTitle(invoiceNumberEl?.value || 'Invoice', clientNameEl?.value || '');
+  if (downloadBlankBtn) {
+    downloadBlankBtn.addEventListener('click', async () => {
+      const existingInv = invoiceNumberEl.value ? getInvoiceByNumber(invoiceNumberEl.value) : null;
+      const isFinalizedExisting = !!(existingInv && existingInv.status !== 'Pending' && !existingInv.amountPending);
+      if (isFinalizedExisting) {
+        if (!confirm(`Invoice ${existingInv.invoiceNumber} is already finalized. Create a NEW blank invoice with a fresh unique number instead (keeping selected client & item names)?`)) {
+          return;
+        }
+        const { bId } = _resolveInvoiceBiller();
+        activeParams = {};
+        if (invoiceNumberEl) invoiceNumberEl.value = peekNextInvoiceNumber(bId);
+        if (dueDateEl) dueDateEl.value = '';
+        if (linkedChallanEl) linkedChallanEl.value = '';
+        if (paymentStatusBannerEl) paymentStatusBannerEl.classList.add('d-none');
+        updateReceiptBreakdown(null);
+        _clearInvoiceAmountsForBlank();
+      } else if (getGrandTotalNumber() > 0) {
+        if (!confirm('This invoice currently has priced totals. Clear prices/totals and download as a Blank / Pending invoice?')) {
+          return;
+        }
+        _clearInvoiceAmountsForBlank();
       }
-      return invoiceNumberEl?.value || 'Invoice';
+      if (blankModeToggle) blankModeToggle.checked = true;
+      if (paymentMethodEl && paymentMethodEl.value === 'Cash') paymentMethodEl.value = '';
+      itemRowsEl.querySelectorAll('tr:not(.blank-filler-row)').forEach(syncRowPrintMirrors);
+      updateGrandTotal();
+      const saved = saveInvoiceRecord({ forcePending: true, silent: true });
+      if (!saved) return;
+      if (typeof showToast === 'function') {
+        showToast(`Reserved ${saved.invoiceNumber} as Pending Amount. Reopen later to fill in amounts.`, 'info');
+      }
+      const getBlankFilename = () => (typeof setPrintDocumentTitle === 'function'
+        ? `${setPrintDocumentTitle(invoiceNumberEl?.value || 'Invoice', clientNameEl?.value || '')}_Blank`
+        : `${invoiceNumberEl?.value || 'Invoice'}_Blank`);
+      if (typeof downloadRenderedPdf === 'function') {
+        await downloadRenderedPdf(prepareForPrint, getBlankFilename, downloadBlankBtn);
+      } else {
+        prepareForPrint();
+        window.print();
+      }
+    });
+  }
+  if (saveAndNextBlankBtn) {
+    saveAndNextBlankBtn.addEventListener('click', () => {
+      if (!isBlankInvoiceMode()) return;
+      const saved = saveInvoiceRecord({ forcePending: true, silent: true });
+      if (!saved) return;
+      activeParams = {};
+      resetInvoiceFieldsToNew({ blank: true });
+      itemRowsEl.innerHTML = '';
+      addRow();
+      if (invoiceDateEl) invoiceDateEl.value = formatISO(new Date());
+      if (invoiceNumberEl) invoiceNumberEl.value = peekNextInvoiceNumber();
+      if (typeof history !== 'undefined' && history.replaceState) {
+        try { history.replaceState(null, '', '?new=1&blank=1'); } catch (_) { }
+      }
+      clearDraft();
+      updateModeBadge(false);
+      updateGrandTotal();
+      syncClientDisplay();
+      syncPrintDisplayValues();
+      renderQR(qrContainer, buildQRText());
+      isDirty = false;
+      if (typeof showToast === 'function') {
+        showToast(`Reserved ${saved.invoiceNumber} — ready for next blank ${invoiceNumberEl?.value || ''}.`, 'success');
+      }
+    });
+  }
+  if (typeof initPdfDownloadButton === 'function') {
+    initPdfDownloadButton('downloadPdfBtn', () => {
+      if (isBlankInvoiceMode()) {
+        saveInvoiceRecord({ forcePending: true, silent: true });
+      }
+      prepareForPrint();
+    }, () => {
+      const base = typeof setPrintDocumentTitle === 'function'
+        ? setPrintDocumentTitle(invoiceNumberEl?.value || 'Invoice', clientNameEl?.value || '')
+        : (invoiceNumberEl?.value || 'Invoice');
+      return isBlankInvoiceMode() ? `${base}_Blank` : base;
     });
   }
 
@@ -871,6 +1248,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (shareWhatsAppBtn) {
     shareWhatsAppBtn.addEventListener('click', (e) => {
       e.preventDefault();
+      if (isBlankInvoiceMode()) {
+        showToast('Complete and save final amounts before sharing this invoice.', 'warning');
+        return;
+      }
       if (typeof shareDocumentWhatsApp === 'function') {
         shareDocumentWhatsApp('invoice', getShareData());
       }
@@ -880,6 +1261,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (shareEmailBtn) {
     shareEmailBtn.addEventListener('click', (e) => {
       e.preventDefault();
+      if (isBlankInvoiceMode()) {
+        showToast('Complete and save final amounts before sharing this invoice.', 'warning');
+        return;
+      }
       if (typeof shareDocumentEmail === 'function') {
         shareDocumentEmail('invoice', getShareData());
       }
@@ -887,6 +1272,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   resetBtn.addEventListener('click', () => {
     if (confirm('Clear all fields?')) {
+      clearDraft();
       resetInvoiceFieldsToNew();
       const today = new Date();
       if (invoiceDateEl) invoiceDateEl.value = formatISO(today);
@@ -901,7 +1287,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (invoiceNumberEl) invoiceNumberEl.value = peekNextInvoiceNumber();
       renderQR(qrContainer, buildQRText());
-      clearDraft();
       updateModeBadge(false);
       if (typeof syncClientDisplay === 'function') syncClientDisplay();
       if (typeof syncPrintDisplayValues === 'function') syncPrintDisplayValues();
@@ -919,22 +1304,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Helpers
   function syncRowPrintMirrors(tr) {
-    if (!tr) return;
+    if (!tr || tr.classList.contains('blank-filler-row')) return;
+    const isBlank = isBlankInvoiceMode();
     const nameVal = tr.querySelector('.item-name-input')?.value || '';
     const descVal = tr.querySelector('.item-desc-input')?.value || '';
-    const qtyVal = tr.querySelector('.qty')?.value || '0';
+    const qtyRaw = tr.querySelector('.qty')?.value || '0';
+    const qtyNum = parseFloat(String(qtyRaw).replace(/[^0-9.]/g, '')) || 0;
     const unitVal = tr.querySelector('.unit')?.value || 'Pcs';
     const priceNum = parseFloat(String(tr.querySelector('.price')?.value || '0').replace(/[^0-9.]/g, '')) || 0;
+    const lineTotal = roundBDT(qtyNum * priceNum);
     const nMir = tr.querySelector('.item-print-name');
     const dMir = tr.querySelector('.item-print-desc');
     const qMir = tr.querySelector('.item-print-qty');
     const uMir = tr.querySelector('.item-print-unit');
     const pMir = tr.querySelector('.item-print-price');
+    const totalCell = tr.querySelector('.total');
     if (nMir) nMir.textContent = nameVal;
     if (dMir) dMir.textContent = descVal;
-    if (qMir) qMir.textContent = String(qtyVal);
-    if (uMir) uMir.textContent = unitVal;
-    if (pMir) pMir.textContent = formatBDT(priceNum);
+    if (qMir) qMir.textContent = (isBlank && qtyNum === 0) ? '' : String(qtyRaw);
+    if (uMir) uMir.textContent = (isBlank && !nameVal.trim() && !descVal.trim() && qtyNum === 0) ? '' : unitVal;
+    if (pMir) pMir.textContent = (isBlank && priceNum === 0) ? '' : formatBDT(priceNum);
+    if (totalCell) totalCell.textContent = (isBlank && lineTotal === 0) ? '' : formatBDT(lineTotal);
+  }
+
+  function syncBlankFillerRows() {
+    if (!itemRowsEl) return;
+    itemRowsEl.querySelectorAll('tr.blank-filler-row').forEach(r => r.remove());
+    if (!isBlankInvoiceMode()) return;
+    const existingCount = itemRowsEl.querySelectorAll('tr').length;
+    const targetRows = 5;
+    for (let i = existingCount; i < targetRows; i++) {
+      const filler = document.createElement('tr');
+      filler.className = 'blank-filler-row print-only';
+      filler.innerHTML = '<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td class="action-col no-print"></td>';
+      itemRowsEl.appendChild(filler);
+    }
   }
 
   function addRowFromData(row) {
@@ -943,6 +1347,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const rowNum = itemRowsEl.children.length + 1;
     const qtyNum = row.qty || 0;
     const priceNum = row.unitPrice || 0;
+    const isBlank = isBlankInvoiceMode();
+    const lineTotal = roundBDT(qtyNum * priceNum);
+    const showBlankQty = isBlank && qtyNum === 0;
+    const showBlankPrice = isBlank && priceNum === 0;
+    const showBlankTotal = isBlank && lineTotal === 0;
     tr.innerHTML = `
       <td>
         <textarea class="form-control auto-grow no-print item-name-input" rows="1" placeholder="Item name" aria-label="Item name, row ${rowNum}">${escapeHTML(row.name || '')}</textarea>
@@ -954,17 +1363,17 @@ document.addEventListener('DOMContentLoaded', () => {
       </td>
       <td class="text-center">
         <input type="text" inputmode="decimal" class="form-control form-control-sm text-center qty no-print" aria-label="Quantity, row ${rowNum}" value="${escapeAttr(qtyNum)}" />
-        <span class="print-only item-print-qty">${escapeHTML(String(qtyNum))}</span>
+        <span class="print-only item-print-qty">${showBlankQty ? '' : escapeHTML(String(qtyNum))}</span>
       </td>
       <td class="text-center">
         <input type="text" class="form-control form-control-sm text-center unit no-print" list="quickUnitOptions" aria-label="Unit, row ${rowNum}" value="${escapeAttr(unitVal)}" />
-        <span class="print-only item-print-unit">${escapeHTML(unitVal)}</span>
+        <span class="print-only item-print-unit">${(isBlank && !row.name && !row.desc && qtyNum === 0) ? '' : escapeHTML(unitVal)}</span>
       </td>
       <td class="text-end">
         <input type="text" inputmode="decimal" class="form-control form-control-sm text-end price no-print" aria-label="Unit price, row ${rowNum}" value="${escapeAttr(priceNum)}" />
-        <span class="print-only item-print-price">${formatBDT(priceNum)}</span>
+        <span class="print-only item-print-price">${showBlankPrice ? '' : formatBDT(priceNum)}</span>
       </td>
-      <td class="text-end total">${formatBDT(roundBDT(qtyNum * priceNum))}</td>
+      <td class="text-end total">${showBlankTotal ? '' : formatBDT(lineTotal)}</td>
       <td class="action-col no-print"><button class="btn btn-sm btn-outline-danger" aria-label="Delete item, row ${rowNum}">Delete</button></td>
     `;
     attachRowEvents(tr);
@@ -994,7 +1403,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const qty = parseFloat((qtyEl.value || '0').replace(/[^0-9.]/g, '')) || 0;
       const price = parseFloat((priceEl.value || '0').replace(/[^0-9.]/g, '')) || 0;
       const total = roundBDT(qty * price);
-      totalCell.textContent = formatBDT(total);
+      if (total > 0 && blankModeToggle && blankModeToggle.checked) {
+        blankModeToggle.checked = false;
+        if (paymentMethodEl && !paymentMethodEl.value) paymentMethodEl.value = 'Cash';
+        const existingInv = invoiceNumberEl.value ? getInvoiceByNumber(invoiceNumberEl.value) : null;
+        updateModeBadge(!!activeParams?.no, invoiceNumberEl.value, !!(existingInv && (existingInv.status === 'Pending' || existingInv.amountPending)));
+        itemRowsEl.querySelectorAll('tr:not(.blank-filler-row)').forEach(r => { if (r !== tr) syncRowPrintMirrors(r); });
+      }
+      totalCell.textContent = (isBlankInvoiceMode() && total === 0) ? '' : formatBDT(total);
       syncRowPrintMirrors(tr);
       updateGrandTotal();
       debouncedRenderQR();
@@ -1060,44 +1476,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getInvoiceTotalsBreakdown() {
     let subtotal = 0;
-    itemRowsEl.querySelectorAll('tr').forEach(tr => {
+    itemRowsEl.querySelectorAll('tr:not(.blank-filler-row)').forEach(tr => {
       const qty = parseFloat(String(tr.querySelector('.qty')?.value || '0').replace(/[^0-9.]/g, '')) || 0;
       const price = parseFloat(String(tr.querySelector('.price')?.value || '0').replace(/[^0-9.]/g, '')) || 0;
       subtotal = roundBDT(subtotal + roundBDT(qty * price));
     });
     const discountMode = discountModeEl ? discountModeEl.value : 'bdt';
     const discountValue = discountInputEl ? roundBDT(Math.max(0, parseFloat(String(discountInputEl.value || '0').replace(/[^0-9.]/g, '')) || 0)) : 0;
-    let discount = discountValue;
-    if (discountMode === 'percent') {
-      discount = roundBDT(subtotal * (Math.min(discountValue, 100) / 100));
-    }
-    discount = Math.min(discount, subtotal);
     const vatRate = vatRateInputEl ? roundBDT(Math.max(0, parseFloat(String(vatRateInputEl.value || '0').replace(/[^0-9.]/g, '')) || 0)) : 0;
     const vatInclusive = vatModeEl ? vatModeEl.value === 'incl' : false;
-    const afterDiscount = roundBDT(Math.max(0, subtotal - discount));
-    let taxable = afterDiscount;
-    let vatAmount = 0;
-    let grandTotal = afterDiscount;
-    if (vatRate > 0) {
-      if (vatInclusive) {
-        taxable = roundBDT(afterDiscount / (1 + vatRate / 100));
-        vatAmount = roundBDT(afterDiscount - taxable);
-        grandTotal = afterDiscount;
-      } else {
-        vatAmount = roundBDT(taxable * (vatRate / 100));
-        grandTotal = roundBDT(taxable + vatAmount);
-      }
+    if (typeof computeTotalsBreakdown === 'function') {
+      return computeTotalsBreakdown(subtotal, { discountMode, discountValue, vatRate, vatInclusive });
     }
-    return { subtotal, discountMode, discountValue, discount, vatRate, vatInclusive, taxable, vatAmount, grandTotal };
+    const disc = discountMode === 'percent' ? roundBDT(subtotal * (Math.min(discountValue, 100) / 100)) : discountValue;
+    const discount = Math.min(disc, subtotal);
+    const afterDiscount = roundBDT(Math.max(0, subtotal - discount));
+    const vatAmount = vatRate > 0 ? (vatInclusive ? roundBDT(afterDiscount - roundBDT(afterDiscount / (1 + vatRate / 100))) : roundBDT(afterDiscount * (vatRate / 100))) : 0;
+    const grandTotal = vatInclusive ? afterDiscount : roundBDT(afterDiscount + vatAmount);
+    return { subtotal, discountMode, discountValue, discount, vatRate, vatInclusive, taxable: vatInclusive ? roundBDT(afterDiscount - vatAmount) : afterDiscount, vatAmount, grandTotal };
   }
 
   function updateGrandTotal() {
     const totals = getInvoiceTotalsBreakdown();
-    grandTotalEl.textContent = formatBDT(totals.grandTotal);
+    const isBlank = isBlankInvoiceMode();
+    if (isBlank && totals.grandTotal === 0) {
+      grandTotalEl.innerHTML = '<span class="blank-amt-line" style="min-width:95px;"></span>';
+    } else {
+      grandTotalEl.textContent = formatBDT(totals.grandTotal);
+    }
     const subtotalEl = document.getElementById('subtotalDisplay');
-    if (subtotalEl) subtotalEl.textContent = formatBDT(totals.subtotal);
+    if (subtotalEl) {
+      if (isBlank && totals.subtotal === 0) subtotalEl.innerHTML = '<span class="blank-amt-line" style="min-width:85px;"></span>';
+      else subtotalEl.textContent = formatBDT(totals.subtotal);
+    }
     if (headerTotalEl) headerTotalEl.textContent = `Total: ${formatBDT(totals.grandTotal)}`;
-    if (amountWordsEl) amountWordsEl.textContent = numberToWordsBDT(totals.grandTotal);
+    if (amountWordsEl) {
+      if (isBlank && totals.grandTotal === 0) amountWordsEl.innerHTML = '<span class="blank-words-line"></span>';
+      else amountWordsEl.textContent = numberToWordsBDT(totals.grandTotal);
+    }
     if (typeof syncPrintDisplayValues === 'function') syncPrintDisplayValues();
   }
 
@@ -1112,13 +1528,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function buildQRText() {
     const num = invoiceNumberEl.value;
-    const totalNum = getGrandTotalNumber();
+    const isBlank = isBlankInvoiceMode();
+    const totalNum = isBlank ? 0 : getGrandTotalNumber();
     const client = clientNameEl.value || '';
     const { biller } = _resolveInvoiceBiller();
     return buildQRPayload('INV', {
       number: num,
       date: invoiceDateEl.value,
       amount: totalNum,
+      pending: isBlank,
       client,
       company: biller.name || (typeof COMPANY !== 'undefined' ? COMPANY.name : '')
     });
@@ -1127,25 +1545,28 @@ document.addEventListener('DOMContentLoaded', () => {
   renderQR(qrContainer, buildQRText());
   adjustColumnWidths();
 
-  function buildInvoiceRecord() {
+  function buildInvoiceRecord(opts = {}) {
+    const isPending = !!(opts && opts.pending) || isBlankInvoiceMode();
     const items = [];
-    itemRowsEl.querySelectorAll('tr').forEach(tr => {
-      items.push({
-        name: (tr.querySelector('.item-name-input')?.value || '').trim(),
-        desc: (tr.querySelector('.item-desc-input')?.value || '').trim(),
-        qty: parseFloat(String(tr.querySelector('.qty')?.value || '0').replace(/[^0-9.]/g, '')) || 0,
-        unit: (tr.querySelector('.unit')?.value || 'Pcs').trim() || 'Pcs',
-        unitPrice: parseFloat(String(tr.querySelector('.price')?.value || '0').replace(/[^0-9.]/g, '')) || 0,
-      });
+    itemRowsEl.querySelectorAll('tr:not(.blank-filler-row)').forEach(tr => {
+      const name = (tr.querySelector('.item-name-input')?.value || '').trim();
+      const desc = (tr.querySelector('.item-desc-input')?.value || '').trim();
+      const qty = parseFloat(String(tr.querySelector('.qty')?.value || '0').replace(/[^0-9.]/g, '')) || 0;
+      const unit = (tr.querySelector('.unit')?.value || 'Pcs').trim() || 'Pcs';
+      const unitPrice = roundBDT(parseFloat(String(tr.querySelector('.price')?.value || '0').replace(/[^0-9.]/g, '')) || 0);
+      if (isPending && !name && !desc && qty === 0 && unitPrice === 0) return;
+      items.push({ name, desc, qty, unit, unitPrice: isPending ? 0 : unitPrice });
     });
     const totals = getInvoiceTotalsBreakdown();
-    const totalAmount = totals.grandTotal;
+    const totalAmount = isPending ? 0 : totals.grandTotal;
     const { existingInv, bId, biller } = _resolveInvoiceBiller();
     const companySnap = typeof slimCompanySnapshot === 'function' ? slimCompanySnapshot(biller) : biller;
+    const nextStatus = existingInv?.status === 'Void' ? 'Void' : (isPending ? 'Pending' : 'Saved');
     return {
       id: existingInv?.id,
       createdAt: existingInv?.createdAt,
-      status: existingInv?.status,
+      status: nextStatus,
+      amountPending: isPending,
       _type: 'invoice',
       billerId: bId,
       invoiceNumber: invoiceNumberEl.value,
@@ -1157,15 +1578,15 @@ document.addEventListener('DOMContentLoaded', () => {
       client: { name: clientNameEl.value.trim(), address: clientAddressEl.value.trim() },
       linkedChallan: linkedChallanEl ? linkedChallanEl.value.trim() : '',
       items,
-      subtotal: totals.subtotal,
+      subtotal: isPending ? 0 : totals.subtotal,
       discountMode: totals.discountMode,
       discountValue: totals.discountValue,
-      discount: totals.discount,
+      discount: isPending ? 0 : totals.discount,
       vatRate: totals.vatRate,
       vatInclusive: totals.vatInclusive,
-      vatAmount: totals.vatAmount,
+      vatAmount: isPending ? 0 : totals.vatAmount,
       grandTotal: totalAmount,
-      amountInWords: numberToWordsBDT(totalAmount),
+      amountInWords: isPending ? '' : numberToWordsBDT(totalAmount),
       qrData: buildQRText(),
       company: companySnap
     };
@@ -1189,7 +1610,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const table = document.getElementById('itemsTable');
       if (!table) return;
       let itemLen = 0, descLen = 0, itemCount = 0, descCount = 0;
-      table.querySelectorAll('tbody tr').forEach(tr => {
+      table.querySelectorAll('tbody tr:not(.blank-filler-row)').forEach(tr => {
         const itemVal = (tr.children[0].querySelector('textarea')?.value || '').length;
         const descVal = (tr.children[1].querySelector('textarea')?.value || '').length;
         itemLen += itemVal; descLen += descVal; itemCount++; descCount++;
@@ -1225,12 +1646,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Ensure textareas and print mirrors are synchronized before print
   function prepareForPrint() {
-    itemRowsEl.querySelectorAll('tr').forEach(syncRowPrintMirrors);
+    syncBlankFillerRows();
+    itemRowsEl.querySelectorAll('tr:not(.blank-filler-row)').forEach(syncRowPrintMirrors);
     renderQR(qrContainer, buildQRText());
     if (typeof syncClientDisplay === 'function') syncClientDisplay();
     if (typeof syncPrintDisplayValues === 'function') syncPrintDisplayValues();
     if (typeof setPrintDocumentTitle === 'function') {
-      setPrintDocumentTitle(invoiceNumberEl?.value || 'Invoice', clientNameEl?.value || '');
+      const base = setPrintDocumentTitle(invoiceNumberEl?.value || 'Invoice', clientNameEl?.value || '');
+      if (isBlankInvoiceMode()) document.title = `${base}_Blank`;
     }
     document.querySelectorAll('textarea').forEach(el => {
       el.style.height = 'auto';
@@ -1239,6 +1662,9 @@ document.addEventListener('DOMContentLoaded', () => {
     adjustColumnWidths();
   }
   window.addEventListener('beforeprint', prepareForPrint);
+  window.addEventListener('afterprint', () => {
+    if (itemRowsEl) itemRowsEl.querySelectorAll('tr.blank-filler-row').forEach(r => r.remove());
+  });
 
   // Date helpers delegating to shared js/utils.js local date functions
   function parseISO(iso) { return parseLocalISODate(iso) || new Date(); }
@@ -1246,12 +1672,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function addWorkingDays(startDate, days) { return addWorkingDaysLocal(startDate, days); }
 
   window.addEventListener('billerchange', () => {
+    const params = new URLSearchParams(window.location.search);
+    const isEditing = params.get('no') || params.get('id') || params.get('load') || activeParams?.no;
+    if (isEditing) return;
     if (typeof setCompanyHeader === 'function') {
       setCompanyHeader();
     }
-    const params = new URLSearchParams(window.location.search);
-    const isEditing = params.get('no') || params.get('id') || params.get('load') || activeParams?.no;
-    if (!isEditing && invoiceNumberEl) {
+    if (invoiceNumberEl) {
       invoiceNumberEl.value = peekNextInvoiceNumber();
     }
     renderQR(qrContainer, buildQRText());
@@ -1261,6 +1688,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (window.AutoInvoiceDocList && typeof window.AutoInvoiceDocList.connectWorkspace === 'function') {
     window.AutoInvoiceDocList.connectWorkspace({
       type: 'invoice',
+      blankBtnId: 'listBlankInvoiceBtn',
       getRecords: () => (typeof loadInvoices === 'function' ? loadInvoices() : []),
       loadDiskSummaries: typeof loadDiskInvoicesSummaries === 'function'
         ? async () => {
@@ -1271,7 +1699,7 @@ document.addEventListener('DOMContentLoaded', () => {
         : null,
       isDirty: () => isDirty,
       resetDirty: () => { isDirty = false; },
-      hasEditorParams: (p) => !!(p && (p.new === '1' || p.new === 'true' || p.no || p.ch || p.qtn || p.id || p.load || p.autoprint === '1')),
+      hasEditorParams: (p) => !!(p && (p.new === '1' || p.new === 'true' || p.blank === '1' || p.blank === 'true' || p.no || p.ch || p.qtn || p.id || p.load || p.autoprint === '1')),
       loadEditor: async (p) => { await loadEditorFromParams(p); },
       onEnterList: () => { clearDraft(); activeParams = {}; },
       onAfterMutate: (no, action) => {

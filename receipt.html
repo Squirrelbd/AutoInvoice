@@ -46,6 +46,7 @@
         <div class="d-flex flex-wrap align-items-center gap-2">
           <button type="button" id="backToListBtn" class="btn btn-sm btn-outline-secondary d-none">&larr; All Receipts</button>
           <button type="button" id="headerGenFromInvBtn" class="btn btn-sm btn-outline-primary">📄 Generate from Invoice</button>
+          <button type="button" id="listBlankReceiptBtn" class="btn btn-sm btn-outline-info">📝 Blank Receipt</button>
           <button type="button" id="listNewDocBtn" class="btn btn-sm btn-primary">+ New Receipt</button>
         </div>
       </div>
@@ -53,7 +54,16 @@
       <section id="docListSection" class="no-print mb-3"></section>
 
       <div id="docEditorSection" class="d-none">
-      <div id="modeBadge" class="mb-2 no-print"></div>
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2 no-print">
+        <div id="modeBadge" role="status" aria-live="polite"></div>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" role="switch" id="blankReceiptMode" />
+          <label class="form-check-label small fw-semibold" for="blankReceiptMode">Blank / Fill-Later Mode (leave amount blank &amp; lock RCPT #)</label>
+        </div>
+      </div>
+      <div id="pendingReceiptBanner" class="alert alert-info d-none no-print mb-2 py-2 small" role="status">
+        <strong>⏳ Pending Amount:</strong> This money receipt number is reserved with a blank amount. Enter the <strong>Amount Received</strong> below and click <strong>Complete &amp; Save Receipt</strong> when payment is collected.
+      </div>
       <section class="border rounded p-3 mb-3 print-area receipt-card" id="printArea">
         <!-- 1. Corporate Header Section -->
         <div class="d-flex justify-content-between align-items-center mb-3" id="headerTop">
@@ -103,6 +113,11 @@
                 <div class="client-address-text mt-1 text-muted" id="clientAddressDisplay" style="white-space: pre-line;"></div>
                 <div class="client-comms-text mt-1 text-muted small" id="clientCommsDisplay"></div>
               </div>
+              <div id="blankClientLines" class="d-none mt-2">
+                <div class="blank-client-row"><span class="blank-client-label">Name:</span><span class="blank-write-line" aria-hidden="true"></span></div>
+                <div class="blank-client-row"><span class="blank-client-label">Address:</span><span class="blank-write-line" aria-hidden="true"></span></div>
+                <div class="blank-client-row mb-0"><span class="blank-client-label">Phone:</span><span class="blank-write-line" aria-hidden="true"></span></div>
+              </div>
             </div>
           </div>
 
@@ -132,7 +147,8 @@
                     <td class="text-muted fw-semibold"><label for="paymentMethod">Payment Method:</label></td>
                     <td>
                       <select id="paymentMethod" class="form-select form-select-sm no-print" aria-label="Payment Method">
-                        <option value="Cash">Cash</option>
+                        <option value="">-- Blank (Fill Later) --</option>
+                        <option value="Cash" selected>Cash</option>
                         <option value="Bank Transfer">Bank Transfer</option>
                         <option value="Cheque">Cheque</option>
                         <option value="bKash">bKash</option>
@@ -174,6 +190,34 @@
 
         <!-- 3. Financial Settlement & Payment Particulars Table -->
         <div class="mb-3">
+          <table class="table table-sm table-bordered receipt-items-table mb-2 d-none" id="receiptItemsPrintTable">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" style="width: 8%; text-align: center;">#</th>
+                <th scope="col">Item Name / Particulars</th>
+                <th scope="col" style="width: 26%; text-align: right;">Amount (৳)</th>
+              </tr>
+            </thead>
+            <tbody id="receiptItemsPrintTbody"></tbody>
+          </table>
+
+          <div class="card p-2 mb-2 bg-body-tertiary border no-print" id="receiptCustomItemsCard">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <span class="small fw-semibold">Item Names / Particulars (Optional)</span>
+              <div class="d-flex gap-2">
+                <button type="button" id="importInvItemsBtn" class="btn btn-sm btn-outline-secondary d-none">Import from Linked Invoice</button>
+                <button type="button" id="addReceiptItemBtn" class="btn btn-sm btn-outline-primary">+ Add Item</button>
+              </div>
+            </div>
+            <datalist id="receiptItemList"></datalist>
+            <div id="receiptCustomItemsWrap" class="mt-2 d-none">
+              <table class="table table-sm align-middle mb-0">
+                <caption class="visually-hidden">Optional money receipt item names</caption>
+                <tbody id="receiptCustomItemsBody"></tbody>
+              </table>
+            </div>
+          </div>
+
           <table class="table receipt-table mb-0">
             <thead>
               <tr>
@@ -228,7 +272,7 @@
               </div>
               <div class="col-md-3 pt-md-3">
                 <div class="form-check form-switch mb-1">
-                  <input class="form-check-input" type="checkbox" id="zeroDueToggle" />
+                  <input class="form-check-input" type="checkbox" role="switch" id="zeroDueToggle" />
                   <label class="form-check-label small" for="zeroDueToggle" title="Zero out the remaining due by adjustment (renegotiation)">Zero Due / Withholding</label>
                 </div>
                 <select id="adjustmentReason" class="form-select form-select-sm" aria-label="Adjustment or Withholding Reason" disabled>
@@ -273,6 +317,7 @@
         <div class="row sign-row mt-4 pt-2">
           <div class="col-6">
             <div class="signature-line-wrap">
+              <div class="biller-signature-wrap mb-1" aria-hidden="true"></div>
               <div class="signature-line"></div>
               <div class="fw-semibold small" id="deliveredLabel">Received by / Cashier</div>
             </div>
@@ -290,13 +335,15 @@
           </div>
         </div>
 
-        <div class="print-doc-footer text-center mt-3 pt-2">
+        <div class="print-doc-footer text-center mt-3 pt-2" id="receiptDocFooter">
           Thank you for your payment. This is a computer-generated money receipt.
         </div>
       </section>
 
       <div class="d-flex gap-2 align-items-center flex-wrap no-print">
         <button id="saveReceiptBtn" class="btn btn-primary">Save Receipt</button>
+        <button id="downloadBlankReceiptBtn" type="button" class="btn btn-outline-info">📄 Download Blank PDF</button>
+        <button id="saveAndNextBlankBtn" type="button" class="btn btn-outline-info d-none">➕ Save &amp; Next Blank</button>
         <button id="downloadPdfBtn" class="btn btn-outline-primary d-none">⬇️ Save A4 PDF</button>
         <button id="printBtn" class="btn btn-secondary">Print PDF</button>
         <div class="dropdown d-inline-block">

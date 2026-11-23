@@ -61,3 +61,37 @@ test('Invoice Percentage Discount & VAT Inclusive extraction maintain Paisa accu
   const t2 = ok(netTaxable === 7826.09 && vatIncluded === 1173.91 && roundBDT(netTaxable + vatIncluded) === grossAfterDisc, 'VAT-inclusive split sums cleanly back to gross');
   return [t1, t2];
 });
+
+test('Pending/Blank invoice status, accounting exclusion, void restore, and monotonic number locking', () => {
+  const firstPeek = peekNextInvoiceNumber();
+  saveInvoice({
+    invoiceNumber: firstPeek,
+    date: '2026-11-23',
+    status: 'Pending',
+    amountPending: true,
+    client: { name: 'Blank Co' },
+    items: [{ name: 'PLC Panel', desc: '', qty: 0, unit: 'Pcs', unitPrice: 0 }],
+    grandTotal: 0
+  });
+  finalizeInvoiceNumber(firstPeek);
+
+  const nextPeek = peekNextInvoiceNumber();
+  const t1 = ok(nextPeek !== firstPeek, `Locked blank invoice number ${firstPeek} is not reused (next is ${nextPeek})`);
+
+  const stats = getInvoicePaymentStats(firstPeek);
+  const t2 = ok(stats.status === 'Pending' && stats.total === 0 && stats.due === 0, 'Pending invoice reports Pending (not Paid)');
+
+  const stmt = computeClientStatementData({ clientName: 'Blank Co' });
+  const t3 = ok(stmt.allInvoices.length === 0 && stmt.periodInvoices.length === 0, 'Pending invoice excluded from client statement ledger');
+
+  const kpis = getDashboardKPIs('all');
+  const t4 = ok(kpis.totalInvoiced === 0 && kpis.totalDue === 0, 'Pending invoice does not inflate KPI invoiced/due totals');
+
+  toggleVoidRecord('invoice', firstPeek);
+  const voided = getInvoiceByNumber(firstPeek);
+  toggleVoidRecord('invoice', firstPeek);
+  const restored = getInvoiceByNumber(firstPeek);
+  const t5 = ok(voided?.status === 'Void' && restored?.status === 'Pending', 'Void toggle restores Pending status when amountPending is true');
+
+  return [t1, t2, t3, t4, t5];
+});

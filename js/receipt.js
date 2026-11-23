@@ -26,17 +26,171 @@ document.addEventListener('DOMContentLoaded', () => {
   const zeroDueToggle = document.getElementById('zeroDueToggle');
   const adjustmentReasonEl = document.getElementById('adjustmentReason');
   const saveBtn = document.getElementById('saveReceiptBtn');
+  const downloadBlankBtn = document.getElementById('downloadBlankReceiptBtn');
+  const saveAndNextBlankBtn = document.getElementById('saveAndNextBlankBtn');
   const printBtn = document.getElementById('printBtn');
   const downloadCsvBtn = document.getElementById('downloadCsvBtn');
   const duplicateReceiptBtn = document.getElementById('duplicateReceiptBtn');
   const exportReceiptBtn = document.getElementById('exportReceiptBtn');
   const resetBtn = document.getElementById('resetBtn');
   const receiptQREl = document.getElementById('receiptQR');
+  const blankModeToggle = document.getElementById('blankReceiptMode');
+  const pendingBannerEl = document.getElementById('pendingReceiptBanner');
+  const blankClientLinesEl = document.getElementById('blankClientLines');
+  const clientDisplayBlockEl = document.getElementById('clientDisplayBlock');
+  const receiptItemsPrintTableEl = document.getElementById('receiptItemsPrintTable');
+  const receiptItemsPrintTbodyEl = document.getElementById('receiptItemsPrintTbody');
+  const receiptCustomItemsWrapEl = document.getElementById('receiptCustomItemsWrap');
+  const receiptCustomItemsBodyEl = document.getElementById('receiptCustomItemsBody');
+  const receiptItemListEl = document.getElementById('receiptItemList');
+  const addReceiptItemBtn = document.getElementById('addReceiptItemBtn');
+  const importInvItemsBtn = document.getElementById('importInvItemsBtn');
+  const receiptDocFooterEl = document.getElementById('receiptDocFooter');
 
   let isDirty = false;
   let currentReceiptNumber = '';
   let currentInvoiceFull = null;
   let _lastAppliedInvNo = '';
+
+  function isBlankReceiptMode() {
+    return !!(blankModeToggle && blankModeToggle.checked);
+  }
+
+  function _getActiveReceiptRecord() {
+    return currentReceiptNumber && typeof getReceiptByNumber === 'function'
+      ? getReceiptByNumber(currentReceiptNumber)
+      : null;
+  }
+
+  function populateReceiptItemDatalist() {
+    if (!receiptItemListEl || typeof loadItems !== 'function') return;
+    try {
+      receiptItemListEl.innerHTML = '';
+      (loadItems() || []).forEach(it => {
+        if (!it || !it.name) return;
+        const opt = document.createElement('option');
+        opt.value = it.name;
+        receiptItemListEl.appendChild(opt);
+      });
+    } catch (_) { }
+  }
+  populateReceiptItemDatalist();
+  window.addEventListener('storagesync', populateReceiptItemDatalist);
+
+  function getReceiptCustomItems() {
+    if (!receiptCustomItemsBodyEl) return [];
+    const items = [];
+    receiptCustomItemsBodyEl.querySelectorAll('tr').forEach(tr => {
+      const name = (tr.querySelector('.rcpt-item-name')?.value || '').trim();
+      const desc = (tr.querySelector('.rcpt-item-desc')?.value || '').trim();
+      if (name || desc) items.push({ name, desc });
+    });
+    return items;
+  }
+
+  function _updateCustomItemsVisibility() {
+    if (!receiptCustomItemsWrapEl || !receiptCustomItemsBodyEl) return;
+    receiptCustomItemsWrapEl.classList.toggle('d-none', receiptCustomItemsBodyEl.children.length === 0);
+  }
+
+  function addReceiptItemRow(item = {}) {
+    if (!receiptCustomItemsBodyEl) return;
+    const tr = document.createElement('tr');
+    const rowIdx = receiptCustomItemsBodyEl.children.length + 1;
+    tr.innerHTML = `
+      <td style="width: 44%;">
+        <input type="text" class="form-control form-control-sm rcpt-item-name" list="receiptItemList" placeholder="Item / Service name" aria-label="Receipt item name, row ${rowIdx}" value="${escapeAttr(item.name || '')}" />
+      </td>
+      <td>
+        <input type="text" class="form-control form-control-sm rcpt-item-desc" placeholder="Optional details / qty" aria-label="Receipt item details, row ${rowIdx}" value="${escapeAttr(item.desc || '')}" />
+      </td>
+      <td style="width: 1%;" class="text-end">
+        <button type="button" class="btn btn-sm btn-outline-danger rcpt-item-del" aria-label="Remove item row ${rowIdx}">&times;</button>
+      </td>
+    `;
+    const nameInput = tr.querySelector('.rcpt-item-name');
+    const descInput = tr.querySelector('.rcpt-item-desc');
+    const delBtn = tr.querySelector('.rcpt-item-del');
+    const onEdit = () => {
+      isDirty = true;
+      renderReceiptItemsPrintTable();
+    };
+    if (nameInput) {
+      nameInput.addEventListener('input', onEdit);
+      nameInput.addEventListener('change', () => {
+        if (descInput && !descInput.value.trim() && typeof getItemByName === 'function') {
+          const matched = getItemByName(nameInput.value);
+          if (matched && matched.desc) descInput.value = matched.desc;
+        }
+        onEdit();
+      });
+    }
+    if (descInput) descInput.addEventListener('input', onEdit);
+    if (delBtn) {
+      delBtn.addEventListener('click', () => {
+        tr.remove();
+        isDirty = true;
+        _updateCustomItemsVisibility();
+        renderReceiptItemsPrintTable();
+      });
+    }
+    receiptCustomItemsBodyEl.appendChild(tr);
+    _updateCustomItemsVisibility();
+    renderReceiptItemsPrintTable();
+  }
+
+  function clearReceiptCustomItems() {
+    if (!receiptCustomItemsBodyEl) return;
+    receiptCustomItemsBodyEl.innerHTML = '';
+    _updateCustomItemsVisibility();
+  }
+
+  function renderReceiptItemsPrintTable() {
+    if (!receiptItemsPrintTableEl || !receiptItemsPrintTbodyEl) return;
+    const isBlank = isBlankReceiptMode();
+    const customItems = getReceiptCustomItems();
+    const invItems = (!customItems.length && isBlank && currentInvoiceFull && currentInvoiceFull.status !== 'Void' && Array.isArray(currentInvoiceFull.items))
+      ? currentInvoiceFull.items.filter(it => it && (it.name || it.desc))
+      : [];
+    const itemsToShow = customItems.length ? customItems : invItems;
+
+    if (itemsToShow.length > 0) {
+      const rowsHtml = itemsToShow.map((it, idx) => {
+        const name = escapeHTML(it.name || 'Item');
+        const desc = it.desc ? `<div class="small text-muted">${escapeHTML(it.desc)}</div>` : '';
+        const amtCell = isBlank ? '<span class="blank-amt-line" style="min-width: 75px;"></span>' : '<span class="text-muted">—</span>';
+        return `
+          <tr>
+            <td class="text-center text-muted">${idx + 1}</td>
+            <td><div class="fw-semibold">${name}</div>${desc}</td>
+            <td class="text-end font-monospace">${amtCell}</td>
+          </tr>
+        `;
+      }).join('');
+      receiptItemsPrintTbodyEl.innerHTML = rowsHtml;
+      receiptItemsPrintTableEl.classList.remove('d-none');
+      return;
+    }
+
+    if (isBlank) {
+      let blankRows = '';
+      for (let i = 1; i <= 4; i++) {
+        blankRows += `
+          <tr class="blank-filler-row">
+            <td class="text-center text-muted">${i}</td>
+            <td>&nbsp;</td>
+            <td class="text-end">&nbsp;</td>
+          </tr>
+        `;
+      }
+      receiptItemsPrintTbodyEl.innerHTML = blankRows;
+      receiptItemsPrintTableEl.classList.remove('d-none');
+      return;
+    }
+
+    receiptItemsPrintTbodyEl.innerHTML = '';
+    receiptItemsPrintTableEl.classList.add('d-none');
+  }
 
   function parseAmt(str) {
     const raw = String(str || '').trim().replace(/,/g, '');
@@ -48,12 +202,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const modeBadgeEl = document.getElementById('modeBadge');
-  function updateModeBadge(isEditing, docNo) {
+  function updateModeBadge(isEditing, docNo, isPending = false) {
     if (!modeBadgeEl) return;
-    if (isEditing) {
+    if (isEditing && isPending) {
+      modeBadgeEl.innerHTML = `<span class="badge bg-info text-dark fs-6 px-3 py-2 shadow-sm">⏳ Pending Receipt: ${escapeHTML(docNo)}</span>`;
+    } else if (isEditing) {
       modeBadgeEl.innerHTML = `<span class="badge bg-primary fs-6 px-3 py-2 shadow-sm">📝 Editing Receipt: ${escapeHTML(docNo)}</span>`;
+    } else if (isBlankReceiptMode()) {
+      modeBadgeEl.innerHTML = `<span class="badge bg-info text-dark fs-6 px-3 py-2 shadow-sm">📝 Blank / Pending Receipt</span>`;
     } else {
       modeBadgeEl.innerHTML = `<span class="badge bg-success fs-6 px-3 py-2 shadow-sm">✨ New Receipt</span>`;
+    }
+    if (pendingBannerEl) {
+      pendingBannerEl.classList.toggle('d-none', !(isEditing && isPending));
     }
   }
 
@@ -61,6 +222,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function syncClientDisplay() {
     const name = (clientNameEl?.value || '').trim();
     const addr = (clientAddressEl?.value || '').trim();
+    const isBlank = isBlankReceiptMode();
+    const useBlankLines = isBlank && !name;
+    if (clientDisplayBlockEl) clientDisplayBlockEl.classList.toggle('d-none', useBlankLines);
+    if (blankClientLinesEl) blankClientLinesEl.classList.toggle('d-none', !useBlankLines);
+
     const nameDisp = document.getElementById('clientNameDisplay');
     const addrDisp = document.getElementById('clientAddressDisplay');
     const contactDisp = document.getElementById('clientContactDisplay');
@@ -98,6 +264,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function syncReceiptPrintValues() {
     syncClientDisplay();
 
+    const isBlank = isBlankReceiptMode();
+    const printArea = document.getElementById('printArea');
+    if (printArea) printArea.classList.toggle('blank-doc-mode', isBlank);
+    renderReceiptItemsPrintTable();
+
     const rcptNumPrint = document.getElementById('receiptNumberPrint');
     const rcptDatePrint = document.getElementById('receiptDatePrint');
     const payMethodPrint = document.getElementById('paymentMethodPrint');
@@ -115,35 +286,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (rcptNumPrint && receiptNumberEl) rcptNumPrint.textContent = receiptNumberEl.value || '—';
     if (rcptDatePrint && receiptDateEl) {
-      rcptDatePrint.textContent = typeof formatDisplayDate === 'function' ? formatDisplayDate(receiptDateEl.value) : receiptDateEl.value;
+      if (isBlank && !receiptDateEl.value) {
+        rcptDatePrint.innerHTML = '<span class="blank-amt-line"></span>';
+      } else {
+        rcptDatePrint.textContent = typeof formatDisplayDate === 'function' ? formatDisplayDate(receiptDateEl.value) : receiptDateEl.value;
+      }
     }
-    const methodVal = paymentMethodEl?.value || 'Cash';
+    const methodVal = paymentMethodEl ? paymentMethodEl.value : 'Cash';
     const trxVal = (trxRefEl?.value || '').trim();
     if (payMethodPrint) {
-      payMethodPrint.textContent = methodVal;
+      if (isBlank && !methodVal) {
+        payMethodPrint.innerHTML = '<span class="blank-amt-line"></span>';
+      } else {
+        payMethodPrint.textContent = methodVal || 'Cash';
+      }
     }
     if (trxRefPrint) {
-      trxRefPrint.textContent = trxVal || '—';
+      if (isBlank && !trxVal) {
+        trxRefPrint.innerHTML = '<span class="blank-amt-line"></span>';
+      } else {
+        trxRefPrint.textContent = trxVal || '—';
+      }
     }
     if (payModeDesc) {
-      payModeDesc.textContent = trxVal ? `Received via ${methodVal} • Ref: ${trxVal}` : `Received via ${methodVal}`;
+      if (isBlank && !methodVal) {
+        const refSuffix = trxVal ? ` • Ref: ${escapeHTML(trxVal)}` : '';
+        payModeDesc.innerHTML = `Payment Method: <span class="blank-amt-line" style="min-width: 90px;" aria-hidden="true"></span>${refSuffix}`;
+      } else {
+        const effMethod = methodVal || 'Cash';
+        payModeDesc.textContent = trxVal ? `Received via ${effMethod} • Ref: ${trxVal}` : `Received via ${effMethod}`;
+      }
     }
 
     const invNo = (linkedInvoiceEl?.value || '').trim();
     if (linkInvPrint) {
-      linkInvPrint.textContent = invNo || '— (Direct Payment)';
+      if (isBlank && !invNo) {
+        linkInvPrint.innerHTML = '<span class="blank-amt-line"></span>';
+      } else {
+        linkInvPrint.textContent = invNo || '— (Direct Payment)';
+      }
     }
 
     const amtNum = Math.max(0, parseAmt(amountReceivedEl?.value));
+    const showBlankAmount = isBlank && amtNum === 0;
     if (amtReceivedDisp) {
-      amtReceivedDisp.textContent = formatBDT(amtNum);
+      if (showBlankAmount) {
+        amtReceivedDisp.innerHTML = '৳ <span class="blank-amt-line"></span>';
+      } else {
+        amtReceivedDisp.textContent = formatBDT(amtNum);
+      }
     }
     if (amountWordsEl) {
-      amountWordsEl.textContent = numberToWordsBDT(amtNum);
+      if (showBlankAmount) {
+        amountWordsEl.innerHTML = '<span class="blank-words-line"></span><span class="blank-words-line"></span>';
+      } else {
+        amountWordsEl.textContent = numberToWordsBDT(amtNum);
+      }
+    }
+
+    if (receiptDocFooterEl) {
+      receiptDocFooterEl.textContent = isBlank
+        ? 'Blank / Provisional Money Receipt — Amount and signature to be completed upon payment collection.'
+        : 'Thank you for your payment. This is a computer-generated money receipt.';
+    }
+
+    const existingRc = _getActiveReceiptRecord();
+    const isEditingPending = !!(existingRc && (existingRc.status === 'Pending' || existingRc.amountPending));
+    if (saveAndNextBlankBtn) {
+      saveAndNextBlankBtn.classList.toggle('d-none', !isBlank);
+    }
+    if (saveBtn) {
+      if (isBlank) saveBtn.textContent = '💾 Save Pending Receipt';
+      else if (isEditingPending) saveBtn.textContent = '✅ Complete & Save Receipt';
+      else saveBtn.textContent = 'Save Receipt';
     }
 
     if (invNo) {
       const inv = getInvoiceByNumber(invNo) || currentInvoiceFull;
+      const isPendingInv = !!(inv && (inv.status === 'Pending' || inv.amountPending));
       const stats = getInvoicePaymentStats(inv || invNo, currentReceiptNumber);
       const baseTotal = inv && inv.grandTotal != null ? roundBDT(inv.grandTotal) : (stats ? stats.originalTotal || stats.total : 0);
       const liveAdjusted = (adjustedInvoiceTotalEl && !adjustedInvoiceTotalEl.disabled && adjustedInvoiceTotalEl.value.trim() !== '')
@@ -153,22 +373,27 @@ document.addEventListener('DOMContentLoaded', () => {
       const paid = stats ? stats.paid : 0;
       const dueVal = parseAmt(dueAmountEl?.value);
       const adjVariance = roundBDT(baseTotal - total);
-      const isAdjusted = Math.abs(adjVariance) > 0 || !!(zeroDueToggle && zeroDueToggle.checked);
       const reason = adjustmentReasonEl?.value || 'Settlement Adjustment';
 
       if (particularsTitle) particularsTitle.textContent = `Payment for Commercial Invoice #${invNo}`;
       if (particularsSub) {
-        if (Math.abs(adjVariance) > 0) {
+        if (isPendingInv && total === 0) {
+          particularsSub.textContent = 'Linked invoice amount pending — enter agreed/received amount upon settlement';
+        } else if (Math.abs(adjVariance) > 0) {
           particularsSub.innerHTML = `Agreed Total: <strong>${formatBDT(total)}</strong> <span class="text-muted">(Orig: ${formatBDT(baseTotal)} • ${escapeHTML(reason)})</span> • Prior Collections: <strong>${formatBDT(paid)}</strong>`;
         } else {
           particularsSub.innerHTML = `Total Invoiced: <strong>${formatBDT(total)}</strong> • Prior Collections: <strong>${formatBDT(paid)}</strong>`;
         }
       }
-      if (invTotalCol) invTotalCol.textContent = formatBDT(total);
+      if (invTotalCol) {
+        invTotalCol.innerHTML = (isBlank && total === 0) ? '৳ <span class="blank-amt-line" style="min-width:85px;"></span>' : formatBDT(total);
+      }
       if (particularsRow) particularsRow.style.display = '';
 
       if (dueDesc) {
-        if (zeroDueToggle && zeroDueToggle.checked) {
+        if (showBlankAmount) {
+          dueDesc.textContent = 'Remaining balance to be calculated upon payment';
+        } else if (zeroDueToggle && zeroDueToggle.checked) {
           dueDesc.textContent = `Settled & closed (${reason})`;
         } else if (Math.abs(adjVariance) > 0 && dueVal <= 0) {
           dueDesc.textContent = `Settled via adjusted amount (${reason})`;
@@ -184,6 +409,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (inv && inv.status === 'Void') {
           dueAmtDisp.textContent = 'VOID INVOICE';
           dueAmtDisp.className = 'text-danger fw-bold font-monospace';
+        } else if (showBlankAmount) {
+          dueAmtDisp.innerHTML = '৳ <span class="blank-amt-line" style="min-width:85px;"></span>';
+          dueAmtDisp.className = 'fw-bold font-monospace';
         } else if (dueVal <= 0 || (zeroDueToggle && zeroDueToggle.checked)) {
           dueAmtDisp.textContent = '৳0.00 (PAID IN FULL)';
           dueAmtDisp.className = 'text-success fw-bold font-monospace';
@@ -195,10 +423,21 @@ document.addEventListener('DOMContentLoaded', () => {
       if (dueRow) dueRow.style.display = '';
     } else {
       if (particularsTitle) particularsTitle.textContent = 'Direct Payment / Official Service Receipt';
-      if (particularsSub) particularsSub.textContent = 'Non-invoiced receipt / Direct cash receipt';
-      if (invTotalCol) invTotalCol.textContent = formatBDT(amtNum);
+      if (particularsSub) particularsSub.textContent = isBlank ? 'Blank / Fill-later official receipt' : 'Non-invoiced receipt / Direct cash receipt';
+      if (invTotalCol) {
+        invTotalCol.innerHTML = showBlankAmount ? '৳ <span class="blank-amt-line" style="min-width:85px;"></span>' : formatBDT(amtNum);
+      }
+      if (particularsRow) particularsRow.style.display = isBlank ? 'none' : '';
       if (dueDesc) dueDesc.textContent = 'Outstanding balance after this receipt';
-      if (dueAmtDisp) dueAmtDisp.textContent = '৳0.00';
+      if (dueAmtDisp) {
+        if (showBlankAmount) {
+          dueAmtDisp.innerHTML = '৳ <span class="blank-amt-line" style="min-width:85px;"></span>';
+          dueAmtDisp.className = 'fw-bold font-monospace';
+        } else {
+          dueAmtDisp.textContent = '৳0.00';
+          dueAmtDisp.className = 'fw-bold font-monospace';
+        }
+      }
       if (dueRow) dueRow.style.display = '';
     }
   }
@@ -295,6 +534,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderInvoiceItemsRef(inv) {
+    if (importInvItemsBtn) {
+      const hasInvItems = !!(inv && inv.status !== 'Void' && Array.isArray(inv.items) && inv.items.length);
+      importInvItemsBtn.classList.toggle('d-none', !hasInvItems);
+    }
     if (!receiptItemsRefEl || !receiptItemsTbodyEl) return;
     const items = (inv && inv.status !== 'Void' && Array.isArray(inv.items)) ? inv.items : [];
     if (!items.length) {
@@ -375,25 +618,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const csEl = document.getElementById('clientSelect');
     if (csEl) csEl.value = inv.client?.name || '';
     clientAddressEl.value = inv.client?.address || '';
-    paymentMethodEl.value = inv.paymentMethod || 'Cash';
+    paymentMethodEl.value = inv.paymentMethod || (isBlankReceiptMode() ? '' : 'Cash');
     if (zeroDueToggle) zeroDueToggle.checked = false;
 
+    const isPendingInv = !!(inv.status === 'Pending' || inv.amountPending);
     const st = _resolveEffectiveInvoiceState(inv, 0);
     if (adjustedInvoiceTotalEl) {
-      adjustedInvoiceTotalEl.disabled = false;
-      adjustedInvoiceTotalEl.value = st.storedTotal.toFixed(2);
+      adjustedInvoiceTotalEl.disabled = isPendingInv;
+      adjustedInvoiceTotalEl.value = isPendingInv ? '' : st.storedTotal.toFixed(2);
     }
     if (adjustmentReasonEl && st.prevAdj && Math.abs(st.baseTotal - st.storedTotal) > 0 && st.prevAdj.reason && st.prevAdj.reason !== 'Adjustment Removed / Restored') {
       _setSelectReasonSafe(st.prevAdj.reason);
     } else if (adjustmentReasonEl) {
       adjustmentReasonEl.value = 'Payment Settlement Rebate';
     }
-    const defaultAmt = roundBDT(Math.max(0, st.storedTotal - st.priorPaid));
-    amountReceivedEl.value = String(defaultAmt);
-    const amt = Math.max(0, parseAmt(amountReceivedEl.value));
-    amountWordsEl.textContent = numberToWordsBDT(amt);
+    if (isBlankReceiptMode() || isPendingInv) {
+      amountReceivedEl.value = '';
+      amountWordsEl.textContent = '';
+    } else {
+      const defaultAmt = roundBDT(Math.max(0, st.storedTotal - st.priorPaid));
+      amountReceivedEl.value = String(defaultAmt);
+      const amt = Math.max(0, parseAmt(amountReceivedEl.value));
+      amountWordsEl.textContent = numberToWordsBDT(amt);
+    }
     if (linkedInvoiceInfoEl) {
-      const totalTxt = (inv.grandTotal != null) ? formatBDT(inv.grandTotal) : '';
+      const totalTxt = isPendingInv ? 'Pending Amount' : ((inv.grandTotal != null) ? formatBDT(inv.grandTotal) : '');
       linkedInvoiceInfoEl.textContent = `${inv.invoiceNumber || inv.number} • ${inv.title || ''} • ${inv.date || ''} ${totalTxt ? '• ' + totalTxt : ''}`.trim();
     }
     renderInvoiceItemsRef(inv);
@@ -411,9 +660,12 @@ document.addEventListener('DOMContentLoaded', () => {
     return inv;
   }
 
-  function resetReceiptFieldsToNew() {
+  function resetReceiptFieldsToNew(options = {}) {
+    const asBlank = !!options.blank;
     currentReceiptNumber = '';
     currentInvoiceFull = null;
+    _lastAppliedInvNo = '';
+    if (blankModeToggle) blankModeToggle.checked = asBlank;
     if (typeof setCompanyHeader === 'function') setCompanyHeader();
     if (receiptNumberEl) receiptNumberEl.value = peekNextReceiptNumber();
     if (receiptDateEl) receiptDateEl.value = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
@@ -432,14 +684,15 @@ document.addEventListener('DOMContentLoaded', () => {
       adjustedInvoiceHintEl.className = 'form-text small';
     }
     renderInvoiceItemsRef(null);
+    clearReceiptCustomItems();
     const csEl = document.getElementById('clientSelect');
     if (csEl) csEl.value = '';
     if (clientNameEl) clientNameEl.value = '';
     if (clientAddressEl) clientAddressEl.value = '';
-    if (paymentMethodEl) paymentMethodEl.value = 'Cash';
+    if (paymentMethodEl) paymentMethodEl.value = asBlank ? '' : 'Cash';
     if (trxRefEl) trxRefEl.value = '';
     if (amountReceivedEl) amountReceivedEl.value = '';
-    if (amountWordsEl) amountWordsEl.textContent = numberToWordsBDT(0);
+    if (amountWordsEl) amountWordsEl.textContent = asBlank ? '' : numberToWordsBDT(0);
     if (zeroDueToggle) zeroDueToggle.checked = false;
     if (adjustmentReasonEl) {
       adjustmentReasonEl.disabled = true;
@@ -455,13 +708,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const params = p || {};
     const preselectedInv = navOpts && navOpts._selectedInvoice;
     const rcptNo = params.rcpt || params.no;
+    const isBlankParam = params.blank === '1' || params.blank === 'true';
 
     if (rcptNo) {
       const r = getReceiptByNumber(rcptNo);
       if (r) {
+        const isPendingRc = !!(r.status === 'Pending' || r.amountPending);
         currentReceiptNumber = r.receiptNumber;
+        if (blankModeToggle) blankModeToggle.checked = isPendingRc;
         receiptNumberEl.value = r.receiptNumber;
-        receiptDateEl.value = r.date || (typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10));
+        receiptDateEl.value = isPendingRc ? (r.date || '') : (r.date || (typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10)));
         linkedInvoiceEl.value = r.invoiceNumber || '';
         linkedInvoiceEl.classList.remove('is-invalid');
         if (linkedInvoiceInfoEl) linkedInvoiceInfoEl.textContent = '';
@@ -469,11 +725,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const csEl = document.getElementById('clientSelect');
         if (csEl) csEl.value = r.client?.name || '';
         clientAddressEl.value = r.client?.address || '';
-        paymentMethodEl.value = r.paymentMethod || 'Cash';
+        paymentMethodEl.value = r.paymentMethod != null ? r.paymentMethod : (isPendingRc ? '' : 'Cash');
         if (trxRefEl) trxRefEl.value = r.trxRef || '';
-        amountReceivedEl.value = String(r.amount || 0);
-        amountWordsEl.textContent = numberToWordsBDT(r.amount || 0);
-        updateModeBadge(true, r.receiptNumber);
+        clearReceiptCustomItems();
+        if (Array.isArray(r.items)) {
+          r.items.forEach(it => addReceiptItemRow(it));
+        }
+        amountReceivedEl.value = isPendingRc ? '' : String(r.amount || 0);
+        amountWordsEl.textContent = isPendingRc ? '' : numberToWordsBDT(r.amount || 0);
+        updateModeBadge(true, r.receiptNumber, isPendingRc);
         if (r.billerId || r.company) {
           const rBiller = (typeof getBillerById === 'function' && r.billerId ? getBillerById(r.billerId) : null) || r.company;
           if (rBiller) setCompanyHeader(rBiller);
@@ -495,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
               linkedInvoiceInfoEl.textContent = `${inv.invoiceNumber || r.invoiceNumber} • ${inv.title || ''} • ${inv.date || ''} ${totalTxt ? '• ' + totalTxt : ''}`.trim();
             }
             if (adjustedInvoiceTotalEl) {
-              if (inv.status === 'Void') {
+              if (inv.status === 'Void' || inv.status === 'Pending' || inv.amountPending) {
                 adjustedInvoiceTotalEl.value = '';
                 adjustedInvoiceTotalEl.disabled = true;
               } else {
@@ -524,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resetReceiptFieldsToNew();
       }
     } else if (params.inv || preselectedInv) {
-      resetReceiptFieldsToNew();
+      resetReceiptFieldsToNew({ blank: isBlankParam });
       const inv = preselectedInv || await fetchInvoiceByNumber(params.inv);
       if (inv) {
         linkedInvoiceEl.value = inv.invoiceNumber || inv.number || params.inv || '';
@@ -534,20 +794,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       syncReceiptPrintValues();
     } else if (params.qtn) {
-      resetReceiptFieldsToNew();
+      resetReceiptFieldsToNew({ blank: isBlankParam });
       const q = getQuotationByNumber(params.qtn);
       if (q) {
         clientNameEl.value = q.to?.company || q.to?.name || '';
         clientAddressEl.value = q.to?.address || '';
-        paymentMethodEl.value = 'Cash';
-        amountReceivedEl.value = String(q.grandTotal || 0);
-        amountWordsEl.textContent = numberToWordsBDT(q.grandTotal || 0);
+        paymentMethodEl.value = isBlankParam ? '' : 'Cash';
+        if (!isBlankParam) {
+          amountReceivedEl.value = String(q.grandTotal || 0);
+          amountWordsEl.textContent = numberToWordsBDT(q.grandTotal || 0);
+        }
         updateDue();
         syncReceiptPrintValues();
         updateReceiptSummaryAndQR();
       }
     } else {
-      resetReceiptFieldsToNew();
+      resetReceiptFieldsToNew({ blank: isBlankParam });
     }
     _lastAppliedInvNo = (linkedInvoiceEl?.value || '').trim();
     isDirty = false;
@@ -569,11 +831,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
   amountReceivedEl.addEventListener('input', () => {
     const amt = Math.max(0, parseAmt(amountReceivedEl.value));
+    if (amt > 0 && blankModeToggle && blankModeToggle.checked) {
+      blankModeToggle.checked = false;
+      if (paymentMethodEl && !paymentMethodEl.value) paymentMethodEl.value = 'Cash';
+      const activeRc = _getActiveReceiptRecord();
+      updateModeBadge(!!currentReceiptNumber, currentReceiptNumber, !!(activeRc && (activeRc.status === 'Pending' || activeRc.amountPending)));
+    }
     amountWordsEl.textContent = numberToWordsBDT(amt);
     updateDue();
     syncReceiptPrintValues();
     debouncedUpdateReceiptSummaryAndQR();
   });
+
+  if (blankModeToggle) {
+    blankModeToggle.addEventListener('change', () => {
+      if (blankModeToggle.checked) {
+        if (parseAmt(amountReceivedEl?.value) > 0) {
+          if (!confirm('Switching to Blank / Fill-Later Mode will clear Amount Received so the receipt stays blank. Proceed?')) {
+            blankModeToggle.checked = false;
+            return;
+          }
+          amountReceivedEl.value = '';
+          if (zeroDueToggle) zeroDueToggle.checked = false;
+        }
+        if (paymentMethodEl && paymentMethodEl.value === 'Cash') paymentMethodEl.value = '';
+      } else if (paymentMethodEl && !paymentMethodEl.value) {
+        paymentMethodEl.value = 'Cash';
+      }
+      isDirty = true;
+      const activeRc = _getActiveReceiptRecord();
+      updateModeBadge(!!currentReceiptNumber, currentReceiptNumber, !!(activeRc && (activeRc.status === 'Pending' || activeRc.amountPending)));
+      updateDue();
+      syncReceiptPrintValues();
+      updateReceiptSummaryAndQR();
+    });
+  }
+
+  if (addReceiptItemBtn) {
+    addReceiptItemBtn.addEventListener('click', () => {
+      addReceiptItemRow({});
+      isDirty = true;
+    });
+  }
+
+  if (importInvItemsBtn) {
+    importInvItemsBtn.addEventListener('click', () => {
+      if (!currentInvoiceFull || !Array.isArray(currentInvoiceFull.items)) return;
+      const existingNames = new Set(getReceiptCustomItems().map(it => `${it.name}||${it.desc}`.toLowerCase()));
+      let added = 0;
+      currentInvoiceFull.items.forEach(it => {
+        if (!it || (!it.name && !it.desc)) return;
+        const k = `${(it.name || '').trim()}||${(it.desc || '').trim()}`.toLowerCase();
+        if (!existingNames.has(k)) {
+          addReceiptItemRow({ name: it.name || '', desc: it.desc || '' });
+          existingNames.add(k);
+          added++;
+        }
+      });
+      if (added > 0) {
+        isDirty = true;
+        if (typeof showToast === 'function') showToast(`Imported ${added} item(s) from invoice.`, 'info');
+      } else if (typeof showToast === 'function') {
+        showToast('All invoice items are already listed.', 'info');
+      }
+    });
+  }
   if (adjustedInvoiceTotalEl) {
     adjustedInvoiceTotalEl.addEventListener('input', () => {
       if (zeroDueToggle && zeroDueToggle.checked) {
@@ -718,13 +1040,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function buildInvoiceStyleQRForReceipt() {
     const tx = (receiptNumberEl.value || '').trim();
-    const amtNum = Math.max(0, parseAmt(amountReceivedEl.value));
+    const isBlank = isBlankReceiptMode();
+    const amtNum = isBlank ? 0 : Math.max(0, parseAmt(amountReceivedEl.value));
     const client = (clientNameEl.value || '').trim();
     const { biller } = _resolveReceiptBiller();
     return buildQRPayload('RCPT', {
       number: tx,
       date: receiptDateEl.value,
       amount: amtNum,
+      pending: isBlank,
       client,
       company: biller.name || (typeof COMPANY !== 'undefined' ? COMPANY.name : '')
     });
@@ -746,8 +1070,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const invNo = (linkedInvoiceEl.value || '').trim();
     const amtEntered = parseAmt(amountReceivedEl.value);
     const negative = amtEntered < 0;
+    const isBlank = isBlankReceiptMode();
     const inv = (invNo ? getInvoiceByNumber(invNo) : null) || (currentInvoiceFull && (currentInvoiceFull.invoiceNumber === invNo || currentInvoiceFull.number === invNo) ? currentInvoiceFull : null);
-    if (!invNo || !inv || inv.status === 'Void') {
+    const isPendingInv = !!(inv && (inv.status === 'Pending' || inv.amountPending));
+    if (!invNo || !inv || inv.status === 'Void' || isPendingInv) {
       if (inv && inv.status === 'Void') {
         if (dueAmountEl) dueAmountEl.value = '';
         if (dueMsgEl) {
@@ -756,6 +1082,17 @@ document.addEventListener('DOMContentLoaded', () => {
           dueMsgEl.classList.add('text-danger');
         }
         saveBtn.disabled = true;
+      } else if (isPendingInv) {
+        if (dueAmountEl) dueAmountEl.value = '';
+        if (dueMsgEl) {
+          dueMsgEl.textContent = isBlank
+            ? `Linked invoice ${invNo} is Pending Amount — receipt will also be saved as Pending.`
+            : `Linked invoice ${invNo} is Pending Amount — finalize invoice amounts first before collecting payment.`;
+          dueMsgEl.classList.remove('text-success', isBlank ? 'text-danger' : 'text-warning');
+          dueMsgEl.classList.add(isBlank ? 'text-warning' : 'text-danger');
+        }
+        amountReceivedEl.classList.toggle('is-invalid', negative || (!isBlank && amtEntered > 0));
+        saveBtn.disabled = !isBlank || negative;
       } else {
         if (dueAmountEl) dueAmountEl.value = '';
         if (dueMsgEl) { dueMsgEl.textContent = ''; dueMsgEl.classList.remove('text-success', 'text-warning', 'text-danger'); }
@@ -768,7 +1105,9 @@ document.addEventListener('DOMContentLoaded', () => {
         adjustedInvoiceTotalEl.classList.remove('is-invalid');
       }
       if (adjustedInvoiceHintEl) {
-        adjustedInvoiceHintEl.textContent = inv && inv.status === 'Void' ? 'Void invoice cannot be adjusted.' : 'Link an invoice to edit total.';
+        adjustedInvoiceHintEl.textContent = inv && inv.status === 'Void'
+          ? 'Void invoice cannot be adjusted.'
+          : (isPendingInv ? 'Linked invoice is Pending — finalize invoice amounts first.' : 'Link an invoice to edit total.');
         adjustedInvoiceHintEl.className = 'form-text small';
       }
       if (adjustmentReasonEl && !zeroDueToggle?.checked) adjustmentReasonEl.disabled = true;
@@ -836,32 +1175,48 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof syncReceiptPrintValues === 'function') syncReceiptPrintValues();
   }
 
-  saveBtn.addEventListener('click', async () => {
+  async function saveReceiptRecord(opts = {}) {
     const invNo = (linkedInvoiceEl.value || '').trim();
     let inv = invNo ? getInvoiceByNumber(invNo) : null;
     if (!inv && invNo) { inv = await fetchInvoiceByNumber(invNo); }
     if (inv && inv.status === 'Void') {
       showToast(`Invoice ${invNo} is Void and cannot accept payments.`, 'danger');
-      return;
+      return null;
     }
     const amt = parseAmt(amountReceivedEl.value);
     if (amt < 0) {
       showToast('Amount cannot be negative.', 'danger');
       amountReceivedEl.classList.add('is-invalid');
-      return;
+      return null;
     }
     const adjustOn = !!(zeroDueToggle && zeroDueToggle.checked);
     let resolvedState = null;
-    if (inv) {
+    const isPendingSave = !!(opts && opts.forcePending) || isBlankReceiptMode();
+    if (!isPendingSave) {
+      if (inv && (inv.status === 'Pending' || inv.amountPending)) {
+        showToast(`Linked invoice ${invNo} is still Pending Amount. Finalize the invoice amounts first before completing this receipt.`, 'warning');
+        return null;
+      }
+      if (!clientNameEl.value.trim()) {
+        showToast('Client / Company Name is required (or enable Blank Mode to save as Pending).', 'warning');
+        return null;
+      }
+      if (amt <= 0) {
+        showToast('Enter Amount Received > 0 (or enable Blank Mode to save as Pending).', 'warning');
+        amountReceivedEl.classList.add('is-invalid');
+        return null;
+      }
+    }
+    if (inv && !isPendingSave) {
       resolvedState = _resolveEffectiveInvoiceState(inv, amt);
       if (resolvedState.effectiveTotal < resolvedState.priorPaid) {
         showToast(`Agreed invoice total cannot be less than prior payments (${formatBDT(resolvedState.priorPaid)}).`, 'danger');
         if (adjustedInvoiceTotalEl) adjustedInvoiceTotalEl.classList.add('is-invalid');
-        return;
+        return null;
       }
       if (!adjustOn && amt > resolvedState.remainingBefore) {
         showToast('Overpayment prevented. Reduce amount to remaining due or adjust Agreed Invoice Amt.', 'warning');
-        return;
+        return null;
       }
       if (resolvedState.prevAdj) {
         const prevEff = isFinite(Number(resolvedState.prevAdj.adjustedTotal))
@@ -869,31 +1224,40 @@ document.addEventListener('DOMContentLoaded', () => {
           : resolvedState.baseTotal;
         if (Math.abs(roundBDT(prevEff - resolvedState.effectiveTotal)) > 0) {
           const proceed = confirm(`This invoice already has an adjustment (${formatBDT(resolvedState.prevAdj.amount || 0)}, Agreed Total ${formatBDT(prevEff)}). Update agreed total to ${formatBDT(resolvedState.effectiveTotal)}?`);
-          if (!proceed) return;
+          if (!proceed) return null;
         }
       }
     }
     const { existingRc, bId: activeBillerId, biller: activeBiller } = _resolveReceiptBiller();
+    if (!isPendingSave && paymentMethodEl && !paymentMethodEl.value) {
+      paymentMethodEl.value = 'Cash';
+    }
+    const effectiveAmt = isPendingSave ? 0 : amt;
     const companySnap = typeof slimCompanySnapshot === 'function' ? slimCompanySnapshot(activeBiller) : activeBiller;
+    if (!receiptNumberEl.value) {
+      receiptNumberEl.value = peekNextReceiptNumber(activeBillerId);
+    }
     const qrData = buildInvoiceStyleQRForReceipt();
     const rc = {
       id: existingRc?.id,
       createdAt: existingRc?.createdAt,
-      status: existingRc?.status,
+      status: existingRc?.status === 'Void' ? 'Void' : (isPendingSave ? 'Pending' : 'Saved'),
+      amountPending: isPendingSave,
       _type: 'receipt',
       billerId: activeBillerId,
       receiptNumber: receiptNumberEl.value,
       date: receiptDateEl.value,
       invoiceNumber: linkedInvoiceEl.value,
       client: { name: clientNameEl.value.trim(), address: clientAddressEl.value.trim() },
-      paymentMethod: paymentMethodEl.value,
+      paymentMethod: isPendingSave ? (paymentMethodEl.value || '') : (paymentMethodEl.value || 'Cash'),
       trxRef: (trxRefEl?.value || '').trim(),
-      amount: amt,
-      amountInWords: numberToWordsBDT(amt),
+      items: getReceiptCustomItems(),
+      amount: effectiveAmt,
+      amountInWords: isPendingSave ? '' : numberToWordsBDT(effectiveAmt),
       qrData,
       company: companySnap
     };
-    if (inv && resolvedState) {
+    if (!isPendingSave && inv && resolvedState) {
       const hasAdj = adjustOn || Math.abs(resolvedState.adjVariance) > 0;
       if (hasAdj || resolvedState.prevAdj) {
         rc.adjustment = {
@@ -916,13 +1280,18 @@ document.addEventListener('DOMContentLoaded', () => {
       try { history.replaceState(null, '', `?rcpt=${encodeURIComponent(rc.receiptNumber)}`); } catch (_) { }
     }
     isDirty = false;
-    updateModeBadge(true, rc.receiptNumber);
-    if (clientOnboarding) clientOnboarding.refresh(rc.client?.name);
-    showToast('Receipt saved successfully.', 'success');
+    updateModeBadge(true, rc.receiptNumber, isPendingSave);
+    if (clientOnboarding && rc.client?.name) clientOnboarding.refresh(rc.client.name);
+    if (!opts || !opts.silent) {
+      showToast(isPendingSave ? `Pending receipt ${rc.receiptNumber} saved & number locked.` : 'Receipt saved successfully.', 'success');
+    }
     updateDue();
     syncReceiptPrintValues();
     updateReceiptSummaryAndQR();
-  });
+    return rc;
+  }
+
+  saveBtn.addEventListener('click', () => saveReceiptRecord({}));
 
   function prepareForPrint() {
     try {
@@ -939,11 +1308,18 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('beforeprint', () => {
     prepareForPrint();
     if (typeof setPrintDocumentTitle === 'function') {
-      setPrintDocumentTitle(receiptNumberEl?.value || 'Receipt', clientNameEl?.value || '');
+      const base = setPrintDocumentTitle(receiptNumberEl?.value || 'Receipt', clientNameEl?.value || '');
+      if (isBlankReceiptMode()) document.title = `${base}_Blank`;
     }
   });
 
-  function printWithGuard() {
+  async function printWithGuard() {
+    if (isBlankReceiptMode()) {
+      const saved = await saveReceiptRecord({ forcePending: true, silent: true });
+      if (saved && typeof showToast === 'function') {
+        showToast(`Reserved ${saved.receiptNumber} as Pending Amount before printing.`, 'info');
+      }
+    }
     prepareForPrint();
     let done = false;
     const onAfter = () => { done = true; window.removeEventListener('afterprint', onAfter); };
@@ -960,14 +1336,80 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   printBtn.addEventListener('click', printWithGuard);
 
+  if (downloadBlankBtn) {
+    downloadBlankBtn.addEventListener('click', async () => {
+      const invNo = (linkedInvoiceEl?.value || '').trim();
+      const linkedInv = invNo ? (getInvoiceByNumber(invNo) || await fetchInvoiceByNumber(invNo)) : null;
+      if (linkedInv && linkedInv.status === 'Void') {
+        showToast(`Invoice ${invNo} is Void and cannot accept payments.`, 'danger');
+        return;
+      }
+      const existingRc = _getActiveReceiptRecord();
+      const isFinalizedExisting = !!(existingRc && existingRc.status !== 'Pending' && !existingRc.amountPending);
+      if (isFinalizedExisting) {
+        if (!confirm(`Receipt ${existingRc.receiptNumber} is already finalized. Create a NEW blank receipt with a fresh unique number instead (keeping selected client & item names)?`)) {
+          return;
+        }
+        const { bId } = _resolveReceiptBiller();
+        currentReceiptNumber = '';
+        if (receiptNumberEl) receiptNumberEl.value = peekNextReceiptNumber(bId);
+        if (amountReceivedEl) amountReceivedEl.value = '';
+        if (zeroDueToggle) zeroDueToggle.checked = false;
+      } else if (parseAmt(amountReceivedEl?.value) > 0) {
+        if (!confirm('Amount Received is currently filled. Clear amount and download as a Blank / Pending receipt?')) {
+          return;
+        }
+        amountReceivedEl.value = '';
+        if (zeroDueToggle) zeroDueToggle.checked = false;
+      }
+      if (blankModeToggle) blankModeToggle.checked = true;
+      if (paymentMethodEl && paymentMethodEl.value === 'Cash') paymentMethodEl.value = '';
+      const saved = await saveReceiptRecord({ forcePending: true, silent: true });
+      if (!saved) return;
+      if (typeof showToast === 'function') {
+        showToast(`Reserved ${saved.receiptNumber} as Pending Amount. Reopen later to enter received amount.`, 'info');
+      }
+      const getBlankFilename = () => (typeof setPrintDocumentTitle === 'function'
+        ? `${setPrintDocumentTitle(receiptNumberEl?.value || 'Receipt', clientNameEl?.value || '')}_Blank`
+        : `${receiptNumberEl?.value || 'Receipt'}_Blank`);
+      if (typeof downloadRenderedPdf === 'function') {
+        await downloadRenderedPdf(prepareForPrint, getBlankFilename, downloadBlankBtn);
+      } else {
+        printWithGuard();
+      }
+    });
+  }
+  if (saveAndNextBlankBtn) {
+    saveAndNextBlankBtn.addEventListener('click', async () => {
+      if (!isBlankReceiptMode()) return;
+      const saved = await saveReceiptRecord({ forcePending: true, silent: true });
+      if (!saved) return;
+      resetReceiptFieldsToNew({ blank: true });
+      if (typeof history !== 'undefined' && history.replaceState) {
+        try { history.replaceState(null, '', '?new=1&blank=1'); } catch (_) { }
+      }
+      updateModeBadge(false);
+      updateDue();
+      syncReceiptPrintValues();
+      updateReceiptSummaryAndQR();
+      isDirty = false;
+      if (typeof showToast === 'function') {
+        showToast(`Reserved ${saved.receiptNumber} — ready for next blank ${receiptNumberEl?.value || ''}.`, 'success');
+      }
+    });
+  }
+
   if (typeof initPdfDownloadButton === 'function') {
-    initPdfDownloadButton('downloadPdfBtn', () => {
+    initPdfDownloadButton('downloadPdfBtn', async () => {
+      if (isBlankReceiptMode()) {
+        await saveReceiptRecord({ forcePending: true, silent: true });
+      }
       prepareForPrint();
     }, () => {
-      if (typeof setPrintDocumentTitle === 'function') {
-        return setPrintDocumentTitle(receiptNumberEl?.value || 'Receipt', clientNameEl?.value || '');
-      }
-      return receiptNumberEl?.value || 'Receipt';
+      const base = typeof setPrintDocumentTitle === 'function'
+        ? setPrintDocumentTitle(receiptNumberEl?.value || 'Receipt', clientNameEl?.value || '')
+        : (receiptNumberEl?.value || 'Receipt');
+      return isBlankReceiptMode() ? `${base}_Blank` : base;
     });
   }
 
@@ -980,15 +1422,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   downloadCsvBtn.addEventListener('click', () => {
+    const isBlank = isBlankReceiptMode();
+    const itemsList = getReceiptCustomItems().map(it => it.desc ? `${it.name} (${it.desc})` : it.name).filter(Boolean).join('; ');
     const rows = [
       ['Receipt Number', receiptNumberEl.value],
+      ['Status', isBlank ? 'Pending Amount' : 'Saved'],
       ['Date', receiptDateEl.value],
       ['Invoice Number', linkedInvoiceEl.value],
       ['Client Name', clientNameEl.value],
       ['Client Address', clientAddressEl.value],
       ['Payment Method', paymentMethodEl.value],
       ['Transaction / Cheque Ref', trxRefEl?.value || ''],
-      ['Amount', String(Math.max(0, parseAmt(amountReceivedEl.value)))]
+      ['Items', itemsList],
+      ['Amount', isBlank ? 'Pending' : String(Math.max(0, parseAmt(amountReceivedEl.value)))]
     ];
     if (typeof downloadCSV === 'function') {
       downloadCSV(`receipt_${receiptNumberEl.value}.csv`, rows);
@@ -1003,6 +1449,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const nextNo = peekNextReceiptNumber(bId);
       receiptNumberEl.value = nextNo;
       receiptDateEl.value = typeof toLocalISODate === 'function' ? toLocalISODate() : new Date().toISOString().slice(0, 10);
+      if (zeroDueToggle) zeroDueToggle.checked = false;
+      if (blankModeToggle) blankModeToggle.checked = false;
+      if (paymentMethodEl && !paymentMethodEl.value) paymentMethodEl.value = 'Cash';
+      if (typeof history !== 'undefined' && history.replaceState) {
+        try { history.replaceState(null, '', '?new=1'); } catch (_) { }
+      }
       isDirty = true;
       updateModeBadge(false);
       updateDue();
@@ -1016,17 +1468,22 @@ document.addEventListener('DOMContentLoaded', () => {
     exportReceiptBtn.addEventListener('click', () => {
       const rcNo = (receiptNumberEl?.value || 'receipt').trim();
       const existingRc = currentReceiptNumber ? getReceiptByNumber(currentReceiptNumber) : null;
-      const amt = Math.max(0, parseAmt(amountReceivedEl?.value));
-      const payload = existingRc || {
+      const isBlank = isBlankReceiptMode();
+      const amt = isBlank ? 0 : Math.max(0, parseAmt(amountReceivedEl?.value));
+      const payload = {
+        ...(existingRc || {}),
         _type: 'receipt',
+        status: existingRc?.status === 'Void' ? 'Void' : (isBlank ? 'Pending' : 'Saved'),
+        amountPending: isBlank,
         receiptNumber: rcNo,
         date: receiptDateEl?.value || '',
         invoiceNumber: (linkedInvoiceEl?.value || '').trim(),
         client: { name: (clientNameEl?.value || '').trim(), address: (clientAddressEl?.value || '').trim() },
-        paymentMethod: paymentMethodEl?.value || 'Cash',
+        paymentMethod: isBlank ? (paymentMethodEl?.value || '') : (paymentMethodEl?.value || 'Cash'),
         trxRef: (trxRefEl?.value || '').trim(),
+        items: getReceiptCustomItems(),
         amount: amt,
-        amountInWords: numberToWordsBDT(amt)
+        amountInWords: isBlank ? '' : numberToWordsBDT(amt)
       };
       const slug = slugify(payload.client?.name || '');
       downloadJSON(`receipt_${rcNo}${slug ? '_' + slug : ''}.json`, payload);
@@ -1082,6 +1539,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (shareWhatsAppBtn) {
     shareWhatsAppBtn.addEventListener('click', (e) => {
       e.preventDefault();
+      if (isBlankReceiptMode()) {
+        showToast('Enter and save the received amount before sharing this receipt.', 'warning');
+        return;
+      }
       if (typeof shareDocumentWhatsApp === 'function') {
         shareDocumentWhatsApp('receipt', getShareData());
       }
@@ -1091,6 +1552,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (shareEmailBtn) {
     shareEmailBtn.addEventListener('click', (e) => {
       e.preventDefault();
+      if (isBlankReceiptMode()) {
+        showToast('Enter and save the received amount before sharing this receipt.', 'warning');
+        return;
+      }
       if (typeof shareDocumentEmail === 'function') {
         shareDocumentEmail('receipt', getShareData());
       }
@@ -1120,12 +1585,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.addEventListener('billerchange', () => {
+    const params = new URLSearchParams(window.location.search);
+    const isEditing = params.get('no') || params.get('id') || params.get('load') || params.get('rcpt') || currentReceiptNumber;
+    if (isEditing) return;
     if (typeof setCompanyHeader === 'function') {
       setCompanyHeader();
     }
-    const params = new URLSearchParams(window.location.search);
-    const isEditing = params.get('no') || params.get('id') || params.get('load') || params.get('rcpt') || currentReceiptNumber;
-    if (!isEditing && receiptNumberEl) {
+    if (receiptNumberEl) {
       receiptNumberEl.value = peekNextReceiptNumber();
     }
     syncReceiptPrintValues();
@@ -1135,11 +1601,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (window.AutoInvoiceDocList && typeof window.AutoInvoiceDocList.connectWorkspace === 'function') {
     window.AutoInvoiceDocList.connectWorkspace({
       type: 'receipt',
+      blankBtnId: 'listBlankReceiptBtn',
       getRecords: () => (typeof loadReceipts === 'function' ? loadReceipts() : []),
       loadDiskSummaries: null,
       isDirty: () => isDirty,
       resetDirty: () => { isDirty = false; },
-      hasEditorParams: (p) => !!(p && (p.new === '1' || p.new === 'true' || p.no || p.rcpt || p.inv || p.qtn || p.id || p.load || p.autoprint === '1')),
+      hasEditorParams: (p) => !!(p && (p.new === '1' || p.new === 'true' || p.blank === '1' || p.blank === 'true' || p.no || p.rcpt || p.inv || p.qtn || p.id || p.load || p.autoprint === '1')),
       loadEditor: async (p, navOpts) => { await loadEditorFromParams(p, navOpts); },
       onEnterList: () => { currentReceiptNumber = ''; currentInvoiceFull = null; },
       onGenerateFromInvoice: async (inv, ctx) => {

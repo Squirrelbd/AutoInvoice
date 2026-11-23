@@ -125,3 +125,61 @@ test('Editable agreed invoice total supports downward partial and upward surchar
   const r4 = ok(sRst.total === 1000 && sRst.adjustmentAmount === 0 && sRst.paid === 1000 && sRst.due === 0, 'Restoring agreed total overrides prior adjustment back to 1000');
   return [r1, r2, r3, r4];
 });
+
+test('Blank/Pending receipt reserves unique number, stores items, excludes KPIs until completed', () => {
+  const win = document.getElementById('receiptFrame').contentWindow;
+  const rcNo = win.peekNextReceiptNumber();
+  win.saveReceipt({
+    receiptNumber: rcNo,
+    date: '2026-11-23',
+    status: 'Pending',
+    amountPending: true,
+    client: { name: 'Pending Receipt Client', address: 'Dhaka' },
+    paymentMethod: '',
+    items: [{ name: 'Telemetry Sensor', desc: 'Batch A' }],
+    amount: 0,
+    amountInWords: ''
+  });
+  win.finalizeReceiptNumber(rcNo);
+
+  const nextNo = win.peekNextReceiptNumber();
+  const r1 = ok(nextNo !== rcNo, `Pending receipt locked ${rcNo}; next peek is ${nextNo}`);
+
+  const savedPending = win.getReceiptByNumber(rcNo);
+  const r2 = ok(savedPending?.status === 'Pending' && savedPending?.items?.length === 1 && savedPending.items[0].name === 'Telemetry Sensor', 'Pending receipt preserves optional item names');
+
+  const kpiBefore = win.getDashboardKPIs('all');
+  const stmtBefore = win.computeClientStatementData({ clientName: 'Pending Receipt Client' });
+  const r3 = ok(kpiBefore.totalCollected === 0 && stmtBefore.allReceipts.length === 0, 'Pending receipt excluded from KPIs and client statement');
+
+  // Complete the receipt later with received amount
+  win.saveReceipt({
+    receiptNumber: rcNo,
+    date: '2026-11-23',
+    status: 'Saved',
+    amountPending: false,
+    client: { name: 'Pending Receipt Client', address: 'Dhaka' },
+    paymentMethod: 'Cash',
+    items: [{ name: 'Telemetry Sensor', desc: 'Batch A' }],
+    amount: 5000,
+    amountInWords: win.numberToWordsBDT(5000)
+  });
+  const kpiAfter = win.getDashboardKPIs('all');
+  const stmtAfter = win.computeClientStatementData({ clientName: 'Pending Receipt Client' });
+  const r4 = ok(kpiAfter.totalCollected === 5000 && stmtAfter.allReceipts.length === 1, 'Completed receipt updates collected KPI and statement');
+
+  // Pending receipt linked to real invoice must NOT count toward paid or getReceiptsByInvoiceNumber()
+  win.saveInvoice({ invoiceNumber: 'INV-LINKED-PEND', date: '2026-11-23', client: { name: 'Linked Co' }, grandTotal: 4000 });
+  win.saveReceipt({ receiptNumber: 'RCPT-LINKED-PEND', date: '', invoiceNumber: 'INV-LINKED-PEND', status: 'Pending', amountPending: true, client: { name: 'Linked Co' }, amount: 0 });
+  const linkedStats = win.getInvoicePaymentStats('INV-LINKED-PEND');
+  const r5 = ok(
+    linkedStats.paid === 0 &&
+    linkedStats.due === 4000 &&
+    linkedStats.receipts.length === 0 &&
+    linkedStats.pendingReceipts.length === 1 &&
+    win.getTotalPaidForInvoice('INV-LINKED-PEND') === 0,
+    'Pending linked receipt excluded from paid/settled receipts and tracked in pendingReceipts'
+  );
+
+  return [r1, r2, r3, r4, r5];
+});

@@ -17,6 +17,7 @@ async function loadDiskIndex(dir) {
       title: r.title || '',
       billerId: r.billerId || '',
       status: r.status || '',
+      amountPending: !!r.amountPending,
       client: r.client || {},
       file: r.file || ''
     }));
@@ -92,6 +93,7 @@ async function autoDiscoverSummaries(dir) {
           title: obj.title || '',
           billerId: obj.billerId || '',
           status: obj.status || '',
+          amountPending: !!obj.amountPending,
           client,
           file: f
         });

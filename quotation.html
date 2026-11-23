@@ -177,14 +177,62 @@
         </div>
         <datalist id="itemList"></datalist>
 
-        <div class="d-flex justify-content-between align-items-center p-2 rounded words-box mb-2 flex-wrap gap-2">
-          <div><strong class="smaller text-muted text-uppercase me-2">In Word:</strong> <span id="amountInWords" class="fw-bold text-primary">Taka Only</span></div>
-          <div class="h5 mb-0 fw-bold">Grand Total: <span id="grandTotal">৳0.00</span></div>
-        </div>
+        <div class="row g-3 mb-3 financial-summary-row">
+          <div class="col-md-7 col-12">
+            <div class="p-3 rounded words-box mb-2">
+              <div class="smaller fw-semibold text-muted text-uppercase mb-1">In Word:</div>
+              <div class="fw-bold text-primary" id="amountInWords">Zero Taka Only</div>
+            </div>
+            <div id="remittanceBox" class="p-2 rounded invoice-notes-box d-none">
+              <div class="smaller text-muted fw-semibold text-uppercase mb-1">Bank &amp; MFS Remittance:</div>
+              <div id="remittanceContent" class="smaller"></div>
+            </div>
+          </div>
 
-        <div id="remittanceBox" class="p-2 rounded invoice-notes-box mb-2 d-none">
-          <div class="smaller text-muted fw-semibold text-uppercase mb-1">Bank &amp; MFS Remittance:</div>
-          <div id="remittanceContent" class="smaller"></div>
+          <div class="col-md-5 col-12 ms-auto">
+            <table class="table table-sm table-bordered summary-table mb-0">
+              <tbody>
+                <tr>
+                  <td class="text-muted fw-semibold">Subtotal:</td>
+                  <td class="text-end fw-semibold" id="subtotalDisplay">৳0.00</td>
+                </tr>
+                <tr id="discountRow" class="no-print">
+                  <td class="text-muted small">
+                    <div class="d-flex align-items-center justify-content-between gap-1">
+                      <label for="quotationDiscount" class="mb-0" id="discountRateLabel">Discount:</label>
+                      <select id="discountMode" class="form-select form-select-sm no-print" style="max-width: 65px;" aria-label="Discount Type">
+                        <option value="bdt" selected>৳</option>
+                        <option value="percent">%</option>
+                      </select>
+                    </div>
+                  </td>
+                  <td class="text-end">
+                    <input id="quotationDiscount" type="text" inputmode="decimal" class="form-control form-control-sm text-end no-print ms-auto" style="max-width: 110px;" value="0" aria-label="Quotation Discount" />
+                    <span class="print-only text-danger fw-semibold" id="discountDisplayPrint">-৳0.00</span>
+                  </td>
+                </tr>
+                <tr id="vatRow" class="no-print">
+                  <td class="text-muted small">
+                    <div class="d-flex align-items-center justify-content-between gap-1 flex-wrap">
+                      <label for="quotationVatRate" class="mb-0" id="vatRateLabel">VAT (%):</label>
+                      <div class="d-flex align-items-center gap-1 no-print">
+                        <select id="vatMode" class="form-select form-select-sm" style="max-width: 72px;" aria-label="VAT Calculation Mode">
+                          <option value="excl" selected>+VAT</option>
+                          <option value="incl">Incl.</option>
+                        </select>
+                        <input id="quotationVatRate" type="text" inputmode="decimal" class="form-control form-control-sm text-end" style="max-width: 62px;" value="0" aria-label="VAT Rate Percentage" />
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-end fw-semibold" id="vatAmountDisplay">৳0.00</td>
+                </tr>
+                <tr class="grand-total-row">
+                  <td class="fs-6 fw-bold">Grand Total:</td>
+                  <td class="text-end fs-6 fw-bold" id="grandTotal">৳0.00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div class="row g-3 mt-2 quotation-notes-row">

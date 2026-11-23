@@ -1177,6 +1177,81 @@ input[type=number] {
   margin-bottom: 0.25rem;
 }
 
+/* Blank / Fill-Later Mode writable lines & optional receipt items table */
+.blank-write-line {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;
+  width: 100%;
+  min-height: 1.35em;
+  border-bottom: 1px dashed var(--border-hover, #94a3b8);
+}
+
+html[data-bs-theme="dark"] .blank-write-line,
+html[data-bs-theme="dark"] .blank-words-line {
+  border-bottom-color: rgba(148, 163, 184, 0.55);
+}
+
+/* WCAG 2.1 AA contrast fix for outline-info buttons in Light Mode */
+html[data-bs-theme="light"] .btn-outline-info {
+  color: #0e7490;
+  border-color: #0e7490;
+}
+
+html[data-bs-theme="light"] .btn-outline-info:hover,
+html[data-bs-theme="light"] .btn-outline-info:focus-visible,
+html[data-bs-theme="light"] .btn-outline-info:active {
+  background-color: #0e7490;
+  border-color: #0e7490;
+  color: #ffffff;
+}
+
+.blank-amt-line {
+  display: inline-block;
+  min-width: 110px;
+  height: 1.1em;
+  border-bottom: 1.5px solid currentColor;
+  vertical-align: baseline;
+}
+
+.blank-words-line {
+  display: block;
+  width: 100%;
+  height: 1.5em;
+  margin-top: 0.25rem;
+  border-bottom: 1px dashed var(--border-hover, #94a3b8);
+}
+
+.blank-client-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.45rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.blank-client-label {
+  flex: 0 0 auto;
+  font-weight: 600;
+}
+
+.blank-filler-row td {
+  height: 2.1rem;
+  vertical-align: middle;
+}
+
+.receipt-items-table th {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.receipt-items-table td {
+  font-size: 0.88rem;
+  vertical-align: middle;
+}
+
 @media (max-width: 576px) {
   #headerTop {
     flex-direction: column;

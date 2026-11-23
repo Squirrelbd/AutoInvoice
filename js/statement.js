@@ -370,7 +370,7 @@
     const closingBalance = runningBalance;
 
     // 6. Compute Receivables Aging Analysis
-    const aging = calculateAging(allInvoices);
+    const aging = calculateAging(allInvoices, toDate);
 
     // 7. Store current statement data for export/share
     currentStatementData = {
@@ -400,12 +400,17 @@
     renderStatementUI(currentStatementData);
   }
 
-  function calculateAging(invoices) {
+  function calculateAging(invoices, asOfDateStr) {
     const buckets = { current: 0, d1_30: 0, d31_60: 0, d61_90: 0, d90plus: 0 };
-    const today = new Date();
+    const parsedAsOf = asOfDateStr
+      ? (typeof parseLocalISODate === 'function' ? parseLocalISODate(asOfDateStr) : new Date(asOfDateStr))
+      : null;
+    const today = (parsedAsOf && !isNaN(parsedAsOf.getTime())) ? parsedAsOf : new Date();
     today.setHours(0, 0, 0, 0);
 
     invoices.forEach(inv => {
+      if (!inv || inv.status === 'Void' || inv.status === 'Pending' || inv.amountPending) return;
+      if (asOfDateStr && inv.date && String(inv.date).slice(0, 10) > asOfDateStr) return;
       const stats = typeof getInvoicePaymentStats === 'function' ? getInvoicePaymentStats(inv) : null;
       const due = stats ? stats.due : Number(inv.grandTotal || 0);
       if (due <= 0) return;
@@ -481,7 +486,10 @@
     if (periodEl) periodEl.textContent = data.period.label;
 
     if (statusBadge) {
-      if (data.closingBalance <= 0) {
+      if (data.closingBalance < 0) {
+        statusBadge.className = 'badge bg-info-subtle text-info-emphasis border border-info-subtle';
+        statusBadge.textContent = `Credit Balance / Advance: ${formatBDT(Math.abs(data.closingBalance))}`;
+      } else if (data.closingBalance === 0) {
         statusBadge.className = 'badge bg-success-subtle text-success border border-success-subtle';
         statusBadge.textContent = 'Account Settled (Nil Balance)';
       } else {
@@ -731,12 +739,13 @@
     if (!currentStatementData) return;
     const d = currentStatementData;
     const subject = `Statement of Account — ${d.client.name} [${d.biller?.name || 'AutoInvoice'}]`;
+    const fmtAmt = (val) => (typeof formatBDT === 'function' ? formatBDT(val) : `BDT ${Number(val || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
     const body = `Dear ${d.client.name},\n\n` +
       `Please review the summary of your Statement of Account with ${d.biller?.name || 'AutoInvoice'}.\n\n` +
       `Statement Period: ${d.period.label}\n` +
-      `Total Invoiced (Debits): BDT ${d.totalDebits.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n` +
-      `Total Payments (Credits): BDT ${d.totalCredits.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n` +
-      `Closing Balance Due: BDT ${d.closingBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}\n\n` +
+      `Total Invoiced (Debits): ${fmtAmt(d.totalDebits)}\n` +
+      `Total Payments (Credits): ${fmtAmt(d.totalCredits)}\n` +
+      `Closing Balance Due: ${fmtAmt(d.closingBalance)}\n\n` +
       `Please let us know if you require a formal PDF or invoice breakdown.\n\n` +
       `Warm regards,\n${d.biller?.name || 'AutoInvoice'}\n${d.biller?.phone || ''}`;
 
@@ -751,11 +760,15 @@
     const method = rc.paymentMethod || 'Payment';
     const linked = rc.invoiceNumber ? ` for Invoice ${rc.invoiceNumber}` : '';
     let desc = `Payment Received via ${method}${linked}`;
-    if (rc.adjustment && rc.adjustment.applied) {
-      const adjVal = roundBDT(Number(rc.adjustment.amount || 0));
+    const hasCustomAdj = rc._adjAmt !== undefined;
+    const adjVal = hasCustomAdj
+      ? roundBDT(Number(rc._adjAmt || 0))
+      : ((rc.adjustment && rc.adjustment.applied) ? roundBDT(Number(rc.adjustment.amount || 0)) : 0);
+    if (adjVal !== 0) {
+      const fmtAdj = typeof formatBDT === 'function' ? formatBDT(Math.abs(adjVal)) : `৳${Math.abs(adjVal).toFixed(2)}`;
       desc += adjVal < 0
-        ? ` [Surcharge Adj: +৳${Math.abs(adjVal).toFixed(2)}]`
-        : ` [Settlement Adj: ৳${adjVal.toFixed(2)}]`;
+        ? ` [Surcharge Adj: +${fmtAdj}]`
+        : ` [Settlement Adj: ${fmtAdj}]`;
     }
     const effCredit = roundBDT(rc._effectiveCredit != null ? rc._effectiveCredit : (rc.amount || 0));
     return {

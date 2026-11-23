@@ -134,6 +134,32 @@ test('sanitizeCsvCell neutralizes whitespace/tab formula injection & edge math h
   const qr = buildQRPayload('INV', { number: 'INV-1', date: '2026-10-08', amount: 500, client: 'A|B=C', company: 'X' });
   const parsed = parseQRPayload(qr);
   const t5 = ok(parsed.valid && parsed.fields.REC === 'A B:C', 'QR builder sanitizes delimiters and parseQRPayload decodes V=1');
-  return [t1, t2, t3, t4, t5];
+  const qrPend = buildQRPayload('RCPT', { number: 'RCPT-P1', date: '', amount: 999, pending: true, client: '', company: 'X' });
+  const parsedPend = parseQRPayload(qrPend);
+  const t6 = ok(parsedPend.valid && parsedPend.fields.ST === 'PENDING' && parsedPend.fields.AMT === '0', 'Pending QR encodes ST=PENDING and AMT=0');
+  const escAttr = escapeAttr('A&B "quote" <tag>');
+  const t7 = ok(escAttr === 'A&amp;B &quot;quote&quot; &lt;tag&gt;', `escapeAttr escapes & before quotes/brackets (got ${escAttr})`);
+  return [t1, t2, t3, t4, t5, t6, t7];
+});
+
+test('computeTotalsBreakdown handles BDT/% discounts, clamping, and exclusive/inclusive VAT', () => {
+  const excl = computeTotalsBreakdown(10000, { discountMode: 'percent', discountValue: 10, vatRate: 15, vatInclusive: false });
+  const t1 = ok(
+    excl.discount === 1000 && excl.taxable === 9000 && excl.vatAmount === 1350 && excl.grandTotal === 10350,
+    `Exclusive 10% disc + 15% VAT -> 10350 (got ${excl.grandTotal})`
+  );
+
+  const incl = computeTotalsBreakdown(10000, { discountMode: 'percent', discountValue: 10, vatRate: 15, vatInclusive: true });
+  const t2 = ok(
+    incl.discount === 1000 && incl.taxable === 7826.09 && incl.vatAmount === 1173.91 && incl.grandTotal === 9000,
+    `Inclusive 10% disc + 15% VAT -> taxable 7826.09, VAT 1173.91 (got ${incl.taxable}/${incl.vatAmount})`
+  );
+
+  const clamped = computeTotalsBreakdown(500, { discountMode: 'bdt', discountValue: 900, vatRate: 15, vatInclusive: false });
+  const t3 = ok(
+    clamped.discount === 500 && clamped.taxable === 0 && clamped.vatAmount === 0 && clamped.grandTotal === 0,
+    'BDT discount exceeding subtotal clamps cleanly to subtotal with 0 total'
+  );
+  return [t1, t2, t3];
 });
 
