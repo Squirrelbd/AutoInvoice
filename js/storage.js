@@ -792,6 +792,9 @@ function _finalizeDocNumber(type, defaultPrefix, no, billerId) {
     if (last.year > year) return;
     if (last.year === year && seq <= last.seq) return;
     _writeJSON(key, { year, seq });
+    if (typeof supabasePushSequence === 'function') {
+      supabasePushSequence(key, year, seq);
+    }
   } catch (e) {
     console.warn(`Failed to finalize ${type} number`, e);
   }
@@ -862,6 +865,10 @@ function _saveDocRecord(storageKey, listLoader, doc, numField, idPrefix, getClie
   const clientToSave = getClientFn ? getClientFn(cleanDoc) : cleanDoc.client;
   if (clientToSave) saveClient(clientToSave, { replace: false });
   _writeJSON(storageKey, list);
+  if (typeof supabasePushRecord === 'function') {
+    const table = storageKey === STORAGE_KEYS.invoices ? 'invoices' : storageKey === STORAGE_KEYS.challans ? 'challans' : storageKey === STORAGE_KEYS.receipts ? 'receipts' : 'quotations';
+    supabasePushRecord(table, record);
+  }
 }
 
 function saveInvoice(inv) {
@@ -969,9 +976,8 @@ function saveExpense(expense) {
   }
 
   _writeJSON(STORAGE_KEYS.expenses, list);
-
-  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
-    window.dispatchEvent(new CustomEvent('storagesync', { detail: { action: 'saveExpense', id: entry.id } }));
+  if (typeof supabasePushRecord === 'function') {
+    supabasePushRecord('expenses', entry);
   }
 
   return entry;
@@ -1059,6 +1065,9 @@ function saveClient(client, options = {}) {
   }
   if (typeof localStorage !== 'undefined') localStorage.setItem('ai_clients_seeded', '1');
   _writeJSON(STORAGE_KEYS.clients, list);
+  if (typeof supabasePushRecord === 'function') {
+    supabasePushRecord('clients', entry);
+  }
   return entry;
 }
 
@@ -1142,6 +1151,9 @@ function saveItem(item, options = {}) {
   }
   if (typeof localStorage !== 'undefined') localStorage.setItem('ai_items_seeded', '1');
   _writeJSON(STORAGE_KEYS.items, list);
+  if (typeof supabasePushRecord === 'function') {
+    supabasePushRecord('items', entry);
+  }
   return entry;
 }
 
@@ -1694,6 +1706,11 @@ function deleteRecordByType(type, number) {
   _forceNextSyncPrune = true;
   _writeJSON(cfg.key, filtered, { skipSync: true });
   _flushSQLiteSyncNow();
+  if (typeof supabaseDeleteRecord === 'function') {
+    const table = t === 'invoice' ? 'invoices' : t === 'challan' ? 'challans' : t === 'receipt' ? 'receipts' : 'quotations';
+    const docId = `${t === 'invoice' ? 'inv' : t === 'challan' ? 'ch' : t === 'receipt' ? 'r' : 'q'}_${target}`;
+    supabaseDeleteRecord(table, docId);
+  }
   if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
     window.dispatchEvent(new CustomEvent('storagesync', { detail: { action: 'deleteRecord', type: t, number: target } }));
   }
