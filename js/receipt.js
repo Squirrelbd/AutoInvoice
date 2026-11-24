@@ -38,7 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const pendingBannerEl = document.getElementById('pendingReceiptBanner');
   const blankClientLinesEl = document.getElementById('blankClientLines');
   const clientDisplayBlockEl = document.getElementById('clientDisplayBlock');
-  const receiptItemsPrintTableEl = document.getElementById('receiptItemsPrintTable');
+  const receiptTableEl = document.getElementById('receiptTable') || document.getElementById('receiptItemsPrintTable');
+  const receiptItemsPrintTableEl = receiptTableEl;
   const receiptItemsPrintTbodyEl = document.getElementById('receiptItemsPrintTbody');
   const receiptCustomItemsWrapEl = document.getElementById('receiptCustomItemsWrap');
   const receiptCustomItemsBodyEl = document.getElementById('receiptCustomItemsBody');
@@ -145,8 +146,24 @@ document.addEventListener('DOMContentLoaded', () => {
     _updateCustomItemsVisibility();
   }
 
+  function _setReceiptTableColumns(hasItems) {
+    const thNo = document.getElementById('receiptThNo');
+    const thPart = document.getElementById('receiptThParticulars');
+    const partCell = document.getElementById('receiptParticularsCell');
+    const amtCell = document.getElementById('receiptAmountCell');
+    const dueCell = document.getElementById('receiptDueCell');
+    const tbodyItems = document.getElementById('receiptItemsPrintTbody');
+
+    if (thNo) thNo.style.display = hasItems ? '' : 'none';
+    if (thPart) thPart.textContent = hasItems ? 'Item Name / Particulars' : 'Description / Payment Particulars';
+    if (partCell) partCell.colSpan = hasItems ? 2 : 1;
+    if (amtCell) amtCell.colSpan = hasItems ? 2 : 1;
+    if (dueCell) dueCell.colSpan = hasItems ? 2 : 1;
+    if (tbodyItems) tbodyItems.style.display = hasItems ? '' : 'none';
+  }
+
   function renderReceiptItemsPrintTable() {
-    if (!receiptItemsPrintTableEl || !receiptItemsPrintTbodyEl) return;
+    if (!receiptItemsPrintTbodyEl) return;
     const isBlank = isBlankReceiptMode();
     const customItems = getReceiptCustomItems();
     const invItems = (!customItems.length && isBlank && currentInvoiceFull && currentInvoiceFull.status !== 'Void' && Array.isArray(currentInvoiceFull.items))
@@ -161,14 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const amtCell = isBlank ? '<span class="blank-amt-line" style="min-width: 75px;"></span>' : '<span class="text-muted">—</span>';
         return `
           <tr>
-            <td class="text-center text-muted">${idx + 1}</td>
-            <td><div class="fw-semibold">${name}</div>${desc}</td>
-            <td class="text-end font-monospace">${amtCell}</td>
+            <td class="text-center text-muted rcpt-col-no">${idx + 1}</td>
+            <td class="rcpt-col-particulars"><div class="fw-semibold">${name}</div>${desc}</td>
+            <td class="text-end font-monospace rcpt-col-amount">${amtCell}</td>
           </tr>
         `;
       }).join('');
       receiptItemsPrintTbodyEl.innerHTML = rowsHtml;
-      receiptItemsPrintTableEl.classList.remove('d-none');
+      _setReceiptTableColumns(true);
       return;
     }
 
@@ -177,19 +194,19 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let i = 1; i <= 4; i++) {
         blankRows += `
           <tr class="blank-filler-row">
-            <td class="text-center text-muted">${i}</td>
-            <td>&nbsp;</td>
-            <td class="text-end">&nbsp;</td>
+            <td class="text-center text-muted rcpt-col-no">${i}</td>
+            <td class="rcpt-col-particulars">&nbsp;</td>
+            <td class="text-end rcpt-col-amount">&nbsp;</td>
           </tr>
         `;
       }
       receiptItemsPrintTbodyEl.innerHTML = blankRows;
-      receiptItemsPrintTableEl.classList.remove('d-none');
+      _setReceiptTableColumns(true);
       return;
     }
 
     receiptItemsPrintTbodyEl.innerHTML = '';
-    receiptItemsPrintTableEl.classList.add('d-none');
+    _setReceiptTableColumns(false);
   }
 
   function parseAmt(str) {
@@ -1413,13 +1430,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Global Ctrl+S shortcut to save
-  window.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-      e.preventDefault();
-      saveBtn.click();
-    }
-  });
+  initSaveShortcut(saveBtn);
 
   downloadCsvBtn.addEventListener('click', () => {
     const isBlank = isBlankReceiptMode();

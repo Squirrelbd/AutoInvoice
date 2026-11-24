@@ -44,13 +44,13 @@ const STORAGE_KEYS = Object.freeze({
   lastExpenseNo: "ai_last_expense_number",
 });
 
-// Number formats
+// Number formats — alias company prefixes to avoid duplicated definitions
 const NUMBER_FORMATS = Object.freeze({
-  invoicePrefix: "INV",
-  challanPrefix: "CH",
-  receiptPrefix: "RCPT",
-  quotationPrefix: "QTN",
-  expensePrefix: "EXP",
+  invoicePrefix: COMPANY.prefixes.invoice,
+  challanPrefix: COMPANY.prefixes.challan,
+  receiptPrefix: COMPANY.prefixes.receipt,
+  quotationPrefix: COMPANY.prefixes.quotation,
+  expensePrefix: COMPANY.prefixes.expense,
 });
 
 // Standard Default Expense Categories

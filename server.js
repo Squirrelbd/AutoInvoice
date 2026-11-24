@@ -380,8 +380,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // API: Invoices CRUD
-  if (reqPath === '/api/invoices') {
+  function handleTableCrud(table, maxSize, name, getIdFn, upsertFn, outKey) {
     if (!db || !db.isAvailable()) {
       res.writeHead(503, jsonHeaders(req));
       res.end(JSON.stringify({ error: 'Database not available' }));
@@ -389,7 +388,7 @@ const server = http.createServer((req, res) => {
     }
     if (req.method === 'GET') {
       try {
-        const list = db.getAll('invoices');
+        const list = db.getAll(table);
         res.writeHead(200, jsonHeaders(req, { 'Cache-Control': 'no-cache' }));
         res.end(JSON.stringify(list));
       } catch (e) {
@@ -400,23 +399,24 @@ const server = http.createServer((req, res) => {
     }
     if (req.method === 'POST') {
       if (!requireJsonPost(req, res)) return;
-      readJsonBody(req, res, 5 * 1024 * 1024, (err, invoice) => {
+      readJsonBody(req, res, maxSize, (err, payload) => {
         if (err) return;
-        if (!invoice || typeof invoice !== 'object' || Array.isArray(invoice)) {
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
           res.writeHead(400, jsonHeaders(req));
-          res.end(JSON.stringify({ error: 'Invoice payload must be a JSON object' }));
+          res.end(JSON.stringify({ error: `${name} payload must be a JSON object` }));
           return;
         }
-        const num = String(invoice.invoiceNumber || invoice.number || '').trim();
-        if (!num) {
+        const key = getIdFn(payload);
+        if (!key) {
+          const errDetail = table === 'invoices' ? 'include invoiceNumber or number' : 'include id, voucherNo, or expenseNumber';
           res.writeHead(400, jsonHeaders(req));
-          res.end(JSON.stringify({ error: 'Invoice payload must include invoiceNumber or number' }));
+          res.end(JSON.stringify({ error: `${name} payload must ${errDetail}` }));
           return;
         }
         try {
-          db.upsertInvoice(invoice);
+          upsertFn(payload);
           res.writeHead(200, jsonHeaders(req));
-          res.end(JSON.stringify({ success: true, number: num }));
+          res.end(JSON.stringify({ success: true, [outKey]: key }));
         } catch (e) {
           res.writeHead(500, jsonHeaders(req));
           res.end(JSON.stringify({ error: e.message }));
@@ -426,55 +426,17 @@ const server = http.createServer((req, res) => {
     }
     res.writeHead(405, jsonHeaders(req, { Allow: 'GET, POST' }));
     res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+  }
+
+  // API: Invoices CRUD
+  if (reqPath === '/api/invoices') {
+    handleTableCrud('invoices', 5 * 1024 * 1024, 'Invoice', inv => String(inv.invoiceNumber || inv.number || '').trim(), inv => db.upsertInvoice(inv), 'number');
     return;
   }
 
   // API: Expenses CRUD
   if (reqPath === '/api/expenses') {
-    if (!db || !db.isAvailable()) {
-      res.writeHead(503, jsonHeaders(req));
-      res.end(JSON.stringify({ error: 'Database not available' }));
-      return;
-    }
-    if (req.method === 'GET') {
-      try {
-        const list = db.getAll('expenses');
-        res.writeHead(200, jsonHeaders(req, { 'Cache-Control': 'no-cache' }));
-        res.end(JSON.stringify(list));
-      } catch (e) {
-        res.writeHead(500, jsonHeaders(req));
-        res.end(JSON.stringify({ error: e.message }));
-      }
-      return;
-    }
-    if (req.method === 'POST') {
-      if (!requireJsonPost(req, res)) return;
-      readJsonBody(req, res, 2 * 1024 * 1024, (err, expense) => {
-        if (err) return;
-        if (!expense || typeof expense !== 'object' || Array.isArray(expense)) {
-          res.writeHead(400, jsonHeaders(req));
-          res.end(JSON.stringify({ error: 'Expense payload must be a JSON object' }));
-          return;
-        }
-        const id = String(expense.id || expense.voucherNo || expense.expenseNumber || '').trim();
-        if (!id) {
-          res.writeHead(400, jsonHeaders(req));
-          res.end(JSON.stringify({ error: 'Expense payload must include id, voucherNo, or expenseNumber' }));
-          return;
-        }
-        try {
-          db.upsertExpense(expense);
-          res.writeHead(200, jsonHeaders(req));
-          res.end(JSON.stringify({ success: true, id }));
-        } catch (e) {
-          res.writeHead(500, jsonHeaders(req));
-          res.end(JSON.stringify({ error: e.message }));
-        }
-      });
-      return;
-    }
-    res.writeHead(405, jsonHeaders(req, { Allow: 'GET, POST' }));
-    res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+    handleTableCrud('expenses', 2 * 1024 * 1024, 'Expense', exp => String(exp.id || exp.voucherNo || exp.expenseNumber || '').trim(), exp => db.upsertExpense(exp), 'id');
     return;
   }
 

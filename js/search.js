@@ -140,10 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const chLocal = loadChallans().map(r => ({ ...r, __type: 'challan', source: 'local' }));
     const rcLocal = loadReceipts().map(r => ({ ...r, __type: 'receipt', source: 'local' }));
     const qtnLocal = (typeof loadQuotations === 'function') ? loadQuotations().map(r => ({ ...r, __type: 'quotation', source: 'local' })) : [];
-    let invDisk = await loadDiskInvoicesSummaries();
-    let chDisk = await loadDiskChallansSummaries();
-    if (!invDisk.length) invDisk = await autoDiscoverSummaries('invoices');
-    if (!chDisk.length) chDisk = await autoDiscoverSummaries('challans');
+    const invDisk = await loadDiskInvoicesSummaries();
+    const chDisk = await loadDiskChallansSummaries();
 
     const dedupeByNo = (localArr, diskArr, field) => {
       const seen = new Set(localArr.map(r => r[field] || r.number).filter(Boolean));

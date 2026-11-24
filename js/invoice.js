@@ -1065,13 +1065,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Global Ctrl+S shortcut to save
-  window.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-      e.preventDefault();
-      saveBtn.click();
-    }
-  });
+  initSaveShortcut(saveBtn);
 
   const createReceiptBtn = document.getElementById('createReceiptBtn');
   if (createReceiptBtn) {

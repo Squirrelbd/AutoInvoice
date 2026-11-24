@@ -7,30 +7,11 @@
 (function (root) {
   'use strict';
 
-  function _escHtml(v) {
-    if (typeof root.escapeHTML === 'function') return root.escapeHTML(v);
-    return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  function _escAttr(v) {
-    if (typeof root.escapeAttr === 'function') return root.escapeAttr(v);
-    return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  function _round(v) {
-    return typeof root.roundBDT === 'function'
-      ? root.roundBDT(v)
-      : Math.round((Number(v || 0) + Number.EPSILON) * 100) / 100;
-  }
-
-  function _fmtBDT(v) {
-    return typeof root.formatBDT === 'function' ? root.formatBDT(v) : `৳${_round(v).toFixed(2)}`;
-  }
-
-  function _fmtDate(d) {
-    if (!d) return '—';
-    return typeof root.formatDisplayDate === 'function' ? root.formatDisplayDate(d) : String(d).slice(0, 10);
-  }
+  const _escHtml = v => (typeof root.escapeHTML === 'function' ? root.escapeHTML(v) : String(v ?? ''));
+  const _escAttr = v => (typeof root.escapeAttr === 'function' ? root.escapeAttr(v) : String(v ?? ''));
+  const _round = v => (typeof root.roundBDT === 'function' ? root.roundBDT(v) : Math.round(Number(v || 0) * 100) / 100);
+  const _fmtBDT = v => (typeof root.formatBDT === 'function' ? root.formatBDT(v) : `৳${_round(v).toFixed(2)}`);
+  const _fmtDate = d => (d ? (typeof root.formatDisplayDate === 'function' ? root.formatDisplayDate(d) : String(d).slice(0, 10)) : '—');
 
   const NUMBER_FIELDS = {
     quotation: 'quotationNumber',
@@ -483,10 +464,7 @@
 
     if (typeof root.loadDiskInvoicesSummaries === 'function') {
       try {
-        let disk = await root.loadDiskInvoicesSummaries();
-        if (!disk.length && typeof root.autoDiscoverSummaries === 'function') {
-          disk = await root.autoDiscoverSummaries('invoices');
-        }
+        const disk = await root.loadDiskInvoicesSummaries();
         (disk || []).forEach(d => {
           const no = getDocNumber(d, 'invoice');
           if (no && !seen.has(no)) {

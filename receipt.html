@@ -190,17 +190,6 @@
 
         <!-- 3. Financial Settlement & Payment Particulars Table -->
         <div class="mb-3">
-          <table class="table table-sm table-bordered receipt-items-table mb-2 d-none" id="receiptItemsPrintTable">
-            <thead class="table-light">
-              <tr>
-                <th scope="col" style="width: 8%; text-align: center;">#</th>
-                <th scope="col">Item Name / Particulars</th>
-                <th scope="col" style="width: 26%; text-align: right;">Amount (৳)</th>
-              </tr>
-            </thead>
-            <tbody id="receiptItemsPrintTbody"></tbody>
-          </table>
-
           <div class="card p-2 mb-2 bg-body-tertiary border no-print" id="receiptCustomItemsCard">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
               <span class="small fw-semibold">Item Names / Particulars (Optional)</span>
@@ -218,36 +207,40 @@
             </div>
           </div>
 
-          <table class="table receipt-table mb-0">
+          <!-- Unified Receipt Table (Print & Live Screen Preview) -->
+          <table class="table receipt-table mb-0" id="receiptTable">
+            <caption class="visually-hidden">Money receipt particulars and financial settlement breakdown</caption>
             <thead>
-              <tr>
-                <th>Description / Payment Particulars</th>
-                <th style="width: 30%; text-align: right;">Amount (৳)</th>
+              <tr id="receiptTableHeadRow">
+                <th scope="col" class="rcpt-col-no" id="receiptThNo" style="width: 8%; text-align: center;">#</th>
+                <th scope="col" class="rcpt-col-particulars" id="receiptThParticulars">Item Name / Particulars</th>
+                <th scope="col" class="rcpt-col-amount" id="receiptThAmount" style="width: 26%; text-align: right;">Amount (৳)</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="receiptItemsPrintTbody"></tbody>
+            <tbody id="receiptSettlementTbody">
               <tr id="receiptParticularsRow">
-                <td>
+                <td colspan="2" id="receiptParticularsCell">
                   <div class="fw-bold" id="receiptParticularsTitle">Payment for Commercial Invoice</div>
                   <div class="small text-muted" id="receiptParticularsSub">Total Invoiced: <span id="receiptInvTotal">৳0.00</span> • Previously Paid: <span id="receiptPrevPaid">৳0.00</span></div>
                 </td>
-                <td class="text-end font-monospace" id="receiptInvTotalCol">৳0.00</td>
+                <td class="text-end font-monospace rcpt-col-amount" id="receiptInvTotalCol">৳0.00</td>
               </tr>
               <tr class="table-success receipt-amount-row">
-                <td class="fw-bold text-success">
+                <td colspan="2" id="receiptAmountCell" class="fw-bold text-success">
                   <div class="fs-6">Amount Received (This Receipt)</div>
                   <div class="small fw-normal text-muted" id="receiptPaymentModeDesc">Received via Cash</div>
                 </td>
-                <td class="text-end fw-bold font-monospace text-success fs-5">
+                <td class="text-end fw-bold font-monospace text-success fs-5 rcpt-col-amount">
                   <span id="amountReceivedDisplay">৳0.00</span>
                 </td>
               </tr>
               <tr class="receipt-due-row" id="receiptDueRow">
-                <td class="fw-semibold">
+                <td colspan="2" id="receiptDueCell" class="fw-semibold">
                   <div>Remaining Due Balance</div>
                   <div class="small fw-normal text-muted" id="receiptDueDesc">Outstanding balance after this receipt</div>
                 </td>
-                <td class="text-end fw-bold font-monospace">
+                <td class="text-end fw-bold font-monospace rcpt-col-amount">
                   <span id="dueAmountDisplay">৳0.00</span>
                 </td>
               </tr>

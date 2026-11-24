@@ -284,46 +284,24 @@ function importAllData(jsonStr, options = {}) {
     if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEYS.activeBillerId, String(activeId));
   }
 
-  if (Array.isArray(data.invoices)) {
-    const nextInvoices = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.invoices, []), data.invoices, x => x.invoiceNumber || x.number || x.id) : data.invoices;
-    _writeJSON(STORAGE_KEYS.invoices, nextInvoices);
-    nextInvoices.forEach(inv => {
-      const num = inv.invoiceNumber || inv.number;
-      if (num && typeof finalizeInvoiceNumber === 'function') finalizeInvoiceNumber(num, inv.billerId);
-    });
-  }
-  if (Array.isArray(data.challans)) {
-    const nextChallans = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.challans, []), data.challans, x => x.challanNumber || x.number || x.id) : data.challans;
-    _writeJSON(STORAGE_KEYS.challans, nextChallans);
-    nextChallans.forEach(ch => {
-      const num = ch.challanNumber || ch.number;
-      if (num && typeof finalizeChallanNumber === 'function') finalizeChallanNumber(num, ch.billerId);
-    });
-  }
-  if (Array.isArray(data.receipts)) {
-    const nextReceipts = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.receipts, []), data.receipts, x => x.receiptNumber || x.number || x.id) : data.receipts;
-    _writeJSON(STORAGE_KEYS.receipts, nextReceipts);
-    nextReceipts.forEach(rc => {
-      const num = rc.receiptNumber || rc.number;
-      if (num && typeof finalizeReceiptNumber === 'function') finalizeReceiptNumber(num, rc.billerId);
-    });
-  }
-  if (Array.isArray(data.quotations)) {
-    const nextQuotations = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.quotations, []), data.quotations, x => x.quotationNumber || x.number || x.id) : data.quotations;
-    _writeJSON(STORAGE_KEYS.quotations, nextQuotations);
-    nextQuotations.forEach(qtn => {
-      const num = qtn.quotationNumber || qtn.number;
-      if (num && typeof finalizeQuotationNumber === 'function') finalizeQuotationNumber(num, qtn.billerId);
-    });
-  }
-  if (Array.isArray(data.expenses)) {
-    const nextExpenses = isMerge ? _mergeByKey(_readJSON(STORAGE_KEYS.expenses, []), data.expenses, x => x.id || x.expenseNumber) : data.expenses;
-    _writeJSON(STORAGE_KEYS.expenses, nextExpenses);
-    nextExpenses.forEach(exp => {
-      const num = exp.id || exp.expenseNumber;
-      if (num && typeof finalizeExpenseNumber === 'function') finalizeExpenseNumber(num, exp.billerId);
-    });
-  }
+  const docTypes = [
+    { key: STORAGE_KEYS.invoices, data: data.invoices, numFn: x => x.invoiceNumber || x.number || x.id, finalize: finalizeInvoiceNumber },
+    { key: STORAGE_KEYS.challans, data: data.challans, numFn: x => x.challanNumber || x.number || x.id, finalize: finalizeChallanNumber },
+    { key: STORAGE_KEYS.receipts, data: data.receipts, numFn: x => x.receiptNumber || x.number || x.id, finalize: finalizeReceiptNumber },
+    { key: STORAGE_KEYS.quotations, data: data.quotations, numFn: x => x.quotationNumber || x.number || x.id, finalize: finalizeQuotationNumber },
+    { key: STORAGE_KEYS.expenses, data: data.expenses, numFn: x => x.id || x.expenseNumber, finalize: finalizeExpenseNumber }
+  ];
+  docTypes.forEach(({ key, data: items, numFn, finalize }) => {
+    if (!Array.isArray(items)) return;
+    const nextItems = isMerge ? _mergeByKey(_readJSON(key, []), items, numFn) : items;
+    _writeJSON(key, nextItems);
+    if (typeof finalize === 'function') {
+      nextItems.forEach(it => {
+        const num = numFn(it);
+        if (num) finalize(num, it.billerId);
+      });
+    }
+  });
   if (Array.isArray(data.expenseCategories)) {
     const nextCats = isMerge ? _mergeStringList(_readJSON(STORAGE_KEYS.expenseCategories, []), data.expenseCategories) : data.expenseCategories;
     _writeJSON(STORAGE_KEYS.expenseCategories, nextCats);
@@ -774,11 +752,11 @@ function _findBillerByPrefix(type, prefix) {
   return billers.find(b => (b.prefixes?.[type] || '').trim().toLowerCase() === target) || null;
 }
 
-// Next numbers (Isolated per biller)
-function getNextInvoiceNumber(billerId) {
+// Next numbers (Isolated per biller - parameterized generator, peeker, and finalizer)
+function _getNextDocNumber(type, defaultPrefix, billerId) {
   const b = (billerId && getBillerById(billerId)) || getActiveBiller();
-  const prefix = (b?.prefixes?.invoice || NUMBER_FORMATS.invoicePrefix || 'INV').trim();
-  const key = _getBillerSeqKey('invoice', b?.id, prefix);
+  const prefix = (b?.prefixes?.[type] || NUMBER_FORMATS[`${type}Prefix`] || defaultPrefix).trim();
+  const key = _getBillerSeqKey(type, b?.id, prefix);
   const year = new Date().getFullYear();
   let last = _readJSON(key, { year, seq: 0 });
   if (last.year !== year) last = { year, seq: 0 };
@@ -788,10 +766,10 @@ function getNextInvoiceNumber(billerId) {
   return `${prefix}-${year}-${padded}`;
 }
 
-function peekNextInvoiceNumber(billerId) {
+function _peekNextDocNumber(type, defaultPrefix, billerId) {
   const b = (billerId && getBillerById(billerId)) || getActiveBiller();
-  const prefix = (b?.prefixes?.invoice || NUMBER_FORMATS.invoicePrefix || 'INV').trim();
-  const key = _getBillerSeqKey('invoice', b?.id, prefix);
+  const prefix = (b?.prefixes?.[type] || NUMBER_FORMATS[`${type}Prefix`] || defaultPrefix).trim();
+  const key = _getBillerSeqKey(type, b?.id, prefix);
   const year = new Date().getFullYear();
   let last = _readJSON(key, { year, seq: 0 });
   if (last.year !== year) last = { year, seq: 0 };
@@ -799,7 +777,7 @@ function peekNextInvoiceNumber(billerId) {
   return `${prefix}-${year}-${padded}`;
 }
 
-function finalizeInvoiceNumber(no, billerId) {
+function _finalizeDocNumber(type, defaultPrefix, no, billerId) {
   if (!no) return;
   try {
     const parts = String(no).split('-');
@@ -808,192 +786,36 @@ function finalizeInvoiceNumber(no, billerId) {
     const year = Number(parts[parts.length - 2]) || new Date().getFullYear();
     const seq = Number(parts[parts.length - 1]) || 0;
     if (!seq) return;
-    const b = (billerId && getBillerById(billerId)) || _findBillerByPrefix('invoice', prefix) || getActiveBiller();
-    const key = _getBillerSeqKey('invoice', b?.id, prefix);
+    const b = (billerId && getBillerById(billerId)) || _findBillerByPrefix(type, prefix) || getActiveBiller();
+    const key = _getBillerSeqKey(type, b?.id, prefix);
     let last = _readJSON(key, { year, seq: 0 });
     if (last.year > year) return;
     if (last.year === year && seq <= last.seq) return;
     _writeJSON(key, { year, seq });
   } catch (e) {
-    console.warn('Failed to finalize invoice number', e);
+    console.warn(`Failed to finalize ${type} number`, e);
   }
 }
 
-function getNextChallanNumber(billerId) {
-  const b = (billerId && getBillerById(billerId)) || getActiveBiller();
-  const prefix = (b?.prefixes?.challan || NUMBER_FORMATS.challanPrefix || 'CH').trim();
-  const key = _getBillerSeqKey('challan', b?.id, prefix);
-  const year = new Date().getFullYear();
-  let last = _readJSON(key, { year, seq: 0 });
-  if (last.year !== year) last = { year, seq: 0 };
-  last.seq += 1;
-  _writeJSON(key, last);
-  const padded = String(last.seq).padStart(4, "0");
-  return `${prefix}-${year}-${padded}`;
-}
+function getNextInvoiceNumber(bId) { return _getNextDocNumber('invoice', 'INV', bId); }
+function peekNextInvoiceNumber(bId) { return _peekNextDocNumber('invoice', 'INV', bId); }
+function finalizeInvoiceNumber(no, bId) { _finalizeDocNumber('invoice', 'INV', no, bId); }
 
-function peekNextChallanNumber(billerId) {
-  const b = (billerId && getBillerById(billerId)) || getActiveBiller();
-  const prefix = (b?.prefixes?.challan || NUMBER_FORMATS.challanPrefix || 'CH').trim();
-  const key = _getBillerSeqKey('challan', b?.id, prefix);
-  const year = new Date().getFullYear();
-  let last = _readJSON(key, { year, seq: 0 });
-  if (last.year !== year) last = { year, seq: 0 };
-  const padded = String(last.seq + 1).padStart(4, "0");
-  return `${prefix}-${year}-${padded}`;
-}
+function getNextChallanNumber(bId) { return _getNextDocNumber('challan', 'CH', bId); }
+function peekNextChallanNumber(bId) { return _peekNextDocNumber('challan', 'CH', bId); }
+function finalizeChallanNumber(no, bId) { _finalizeDocNumber('challan', 'CH', no, bId); }
 
-function finalizeChallanNumber(no, billerId) {
-  if (!no) return;
-  try {
-    const parts = String(no).split('-');
-    if (parts.length < 3) return;
-    const prefix = parts.slice(0, parts.length - 2).join('-');
-    const year = Number(parts[parts.length - 2]) || new Date().getFullYear();
-    const seq = Number(parts[parts.length - 1]) || 0;
-    if (!seq) return;
-    const b = (billerId && getBillerById(billerId)) || _findBillerByPrefix('challan', prefix) || getActiveBiller();
-    const key = _getBillerSeqKey('challan', b?.id, prefix);
-    let last = _readJSON(key, { year, seq: 0 });
-    if (last.year > year) return;
-    if (last.year === year && seq <= last.seq) return;
-    _writeJSON(key, { year, seq });
-  } catch (e) {
-    console.warn('Failed to finalize challan number', e);
-  }
-}
+function getNextReceiptNumber(bId) { return _getNextDocNumber('receipt', 'RCPT', bId); }
+function peekNextReceiptNumber(bId) { return _peekNextDocNumber('receipt', 'RCPT', bId); }
+function finalizeReceiptNumber(no, bId) { _finalizeDocNumber('receipt', 'RCPT', no, bId); }
 
-function getNextReceiptNumber(billerId) {
-  const b = (billerId && getBillerById(billerId)) || getActiveBiller();
-  const prefix = (b?.prefixes?.receipt || NUMBER_FORMATS.receiptPrefix || 'RCPT').trim();
-  const key = _getBillerSeqKey('receipt', b?.id, prefix);
-  const year = new Date().getFullYear();
-  let last = _readJSON(key, { year, seq: 0 });
-  if (last.year !== year) last = { year, seq: 0 };
-  last.seq += 1;
-  _writeJSON(key, last);
-  const padded = String(last.seq).padStart(4, "0");
-  return `${prefix}-${year}-${padded}`;
-}
+function getNextQuotationNumber(bId) { return _getNextDocNumber('quotation', 'QTN', bId); }
+function peekNextQuotationNumber(bId) { return _peekNextDocNumber('quotation', 'QTN', bId); }
+function finalizeQuotationNumber(no, bId) { _finalizeDocNumber('quotation', 'QTN', no, bId); }
 
-function peekNextReceiptNumber(billerId) {
-  const b = (billerId && getBillerById(billerId)) || getActiveBiller();
-  const prefix = (b?.prefixes?.receipt || NUMBER_FORMATS.receiptPrefix || 'RCPT').trim();
-  const key = _getBillerSeqKey('receipt', b?.id, prefix);
-  const year = new Date().getFullYear();
-  let last = _readJSON(key, { year, seq: 0 });
-  if (last.year !== year) last = { year, seq: 0 };
-  const padded = String(last.seq + 1).padStart(4, "0");
-  return `${prefix}-${year}-${padded}`;
-}
-
-function finalizeReceiptNumber(no, billerId) {
-  if (!no) return;
-  try {
-    const parts = String(no).split('-');
-    if (parts.length < 3) return;
-    const prefix = parts.slice(0, parts.length - 2).join('-');
-    const year = Number(parts[parts.length - 2]) || new Date().getFullYear();
-    const seq = Number(parts[parts.length - 1]) || 0;
-    if (!seq) return;
-    const b = (billerId && getBillerById(billerId)) || _findBillerByPrefix('receipt', prefix) || getActiveBiller();
-    const key = _getBillerSeqKey('receipt', b?.id, prefix);
-    let last = _readJSON(key, { year, seq: 0 });
-    if (last.year > year) return;
-    if (last.year === year && seq <= last.seq) return;
-    _writeJSON(key, { year, seq });
-  } catch (e) {
-    console.warn('Failed to finalize receipt number', e);
-  }
-}
-
-function getNextQuotationNumber(billerId) {
-  const b = (billerId && getBillerById(billerId)) || getActiveBiller();
-  const prefix = (b?.prefixes?.quotation || NUMBER_FORMATS.quotationPrefix || 'QTN').trim();
-  const key = _getBillerSeqKey('quotation', b?.id, prefix);
-  const year = new Date().getFullYear();
-  let last = _readJSON(key, { year, seq: 0 });
-  if (last.year !== year) last = { year, seq: 0 };
-  last.seq += 1;
-  _writeJSON(key, last);
-  const padded = String(last.seq).padStart(4, "0");
-  return `${prefix}-${year}-${padded}`;
-}
-
-function peekNextQuotationNumber(billerId) {
-  const b = (billerId && getBillerById(billerId)) || getActiveBiller();
-  const prefix = (b?.prefixes?.quotation || NUMBER_FORMATS.quotationPrefix || 'QTN').trim();
-  const key = _getBillerSeqKey('quotation', b?.id, prefix);
-  const year = new Date().getFullYear();
-  let last = _readJSON(key, { year, seq: 0 });
-  if (last.year !== year) last = { year, seq: 0 };
-  const padded = String(last.seq + 1).padStart(4, "0");
-  return `${prefix}-${year}-${padded}`;
-}
-
-function finalizeQuotationNumber(no, billerId) {
-  if (!no) return;
-  try {
-    const parts = String(no).split('-');
-    if (parts.length < 3) return;
-    const prefix = parts.slice(0, parts.length - 2).join('-');
-    const year = Number(parts[parts.length - 2]) || new Date().getFullYear();
-    const seq = Number(parts[parts.length - 1]) || 0;
-    if (!seq) return;
-    const b = (billerId && getBillerById(billerId)) || _findBillerByPrefix('quotation', prefix) || getActiveBiller();
-    const key = _getBillerSeqKey('quotation', b?.id, prefix);
-    let last = _readJSON(key, { year, seq: 0 });
-    if (last.year > year) return;
-    if (last.year === year && seq <= last.seq) return;
-    _writeJSON(key, { year, seq });
-  } catch (e) {
-    console.warn('Failed to finalize quotation number', e);
-  }
-}
-
-function getNextExpenseNumber(billerId) {
-  const b = (billerId && getBillerById(billerId)) || getActiveBiller();
-  const prefix = (b?.prefixes?.expense || NUMBER_FORMATS.expensePrefix || 'EXP').trim();
-  const key = _getBillerSeqKey('expense', b?.id, prefix);
-  const year = new Date().getFullYear();
-  let last = _readJSON(key, { year, seq: 0 });
-  if (last.year !== year) last = { year, seq: 0 };
-  last.seq += 1;
-  _writeJSON(key, last);
-  const padded = String(last.seq).padStart(4, "0");
-  return `${prefix}-${year}-${padded}`;
-}
-
-function peekNextExpenseNumber(billerId) {
-  const b = (billerId && getBillerById(billerId)) || getActiveBiller();
-  const prefix = (b?.prefixes?.expense || NUMBER_FORMATS.expensePrefix || 'EXP').trim();
-  const key = _getBillerSeqKey('expense', b?.id, prefix);
-  const year = new Date().getFullYear();
-  let last = _readJSON(key, { year, seq: 0 });
-  if (last.year !== year) last = { year, seq: 0 };
-  const padded = String(last.seq + 1).padStart(4, "0");
-  return `${prefix}-${year}-${padded}`;
-}
-
-function finalizeExpenseNumber(no, billerId) {
-  if (!no) return;
-  try {
-    const parts = String(no).split('-');
-    if (parts.length < 3) return;
-    const prefix = parts.slice(0, parts.length - 2).join('-');
-    const year = Number(parts[parts.length - 2]) || new Date().getFullYear();
-    const seq = Number(parts[parts.length - 1]) || 0;
-    if (!seq) return;
-    const b = (billerId && getBillerById(billerId)) || _findBillerByPrefix('expense', prefix) || getActiveBiller();
-    const key = _getBillerSeqKey('expense', b?.id, prefix);
-    let last = _readJSON(key, { year, seq: 0 });
-    if (last.year > year) return;
-    if (last.year === year && seq <= last.seq) return;
-    _writeJSON(key, { year, seq });
-  } catch (e) {
-    console.warn('Failed to finalize expense number', e);
-  }
-}
+function getNextExpenseNumber(bId) { return _getNextDocNumber('expense', 'EXP', bId); }
+function peekNextExpenseNumber(bId) { return _peekNextDocNumber('expense', 'EXP', bId); }
+function finalizeExpenseNumber(no, bId) { _finalizeDocNumber('expense', 'EXP', no, bId); }
 
 // Records
 function loadInvoices() {
@@ -1015,102 +837,53 @@ function loadQuotations() {
   return Array.isArray(data) ? data : [];
 }
 
-function saveInvoice(inv) {
-  const cleanInv = sanitizeRecord(inv);
-  const list = loadInvoices();
+function _saveDocRecord(storageKey, listLoader, doc, numField, idPrefix, getClientFn) {
+  const cleanDoc = sanitizeRecord(doc);
+  const list = listLoader();
   const now = new Date().toISOString();
-  const idx = list.findIndex(x => x.invoiceNumber === cleanInv.invoiceNumber);
+  const idx = list.findIndex(x => x[numField] === cleanDoc[numField]);
   const existing = idx >= 0 ? list[idx] : null;
-  const billerId = cleanInv.billerId || existing?.billerId || getActiveBillerId() || 'biller_default';
+  const billerId = cleanDoc.billerId || existing?.billerId || getActiveBillerId() || 'biller_default';
   const record = {
-    id: cleanInv.id || existing?.id || `inv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-    createdAt: existing?.createdAt || cleanInv.createdAt || now,
+    id: cleanDoc.id || existing?.id || `${idPrefix}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    createdAt: existing?.createdAt || cleanDoc.createdAt || now,
     savedAt: now,
     billerId,
-    ...cleanInv
+    ...cleanDoc
   };
   if (idx >= 0) {
     if (existing.savedAt && existing.savedAt > record.savedAt) {
-      console.warn('Invoice conflict: existing newer than current');
+      console.warn(`${numField} conflict: existing newer than current`);
     }
     list[idx] = record;
   } else {
     list.push(record);
   }
-  if (cleanInv.client) saveClient(cleanInv.client, { replace: false });
-  _writeJSON(STORAGE_KEYS.invoices, list);
+  const clientToSave = getClientFn ? getClientFn(cleanDoc) : cleanDoc.client;
+  if (clientToSave) saveClient(clientToSave, { replace: false });
+  _writeJSON(storageKey, list);
+}
+
+function saveInvoice(inv) {
+  _saveDocRecord(STORAGE_KEYS.invoices, loadInvoices, inv, 'invoiceNumber', 'inv');
 }
 
 function saveChallan(ch) {
-  const cleanCh = sanitizeRecord(ch);
-  const list = loadChallans();
-  const now = new Date().toISOString();
-  const idx = list.findIndex(x => x.challanNumber === cleanCh.challanNumber);
-  const existing = idx >= 0 ? list[idx] : null;
-  const billerId = cleanCh.billerId || existing?.billerId || getActiveBillerId() || 'biller_default';
-  const record = {
-    id: cleanCh.id || existing?.id || `ch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-    createdAt: existing?.createdAt || cleanCh.createdAt || now,
-    savedAt: now,
-    billerId,
-    ...cleanCh
-  };
-  if (idx >= 0) {
-    if (existing.savedAt && existing.savedAt > record.savedAt) {
-      console.warn('Challan conflict: existing newer than current');
-    }
-    list[idx] = record;
-  } else {
-    list.push(record);
-  }
-  if (cleanCh.client) saveClient(cleanCh.client, { replace: false });
-  _writeJSON(STORAGE_KEYS.challans, list);
+  _saveDocRecord(STORAGE_KEYS.challans, loadChallans, ch, 'challanNumber', 'ch');
 }
 
 function saveReceipt(rc) {
-  const cleanRc = sanitizeRecord(rc);
-  const list = loadReceipts();
-  const now = new Date().toISOString();
-  const idx = list.findIndex(x => x.receiptNumber === cleanRc.receiptNumber);
-  const existing = idx >= 0 ? list[idx] : null;
-  const billerId = cleanRc.billerId || existing?.billerId || getActiveBillerId() || 'biller_default';
-  const rec = {
-    id: cleanRc.id || existing?.id || `r_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-    createdAt: existing?.createdAt || cleanRc.createdAt || now,
-    savedAt: now,
-    billerId,
-    ...cleanRc
-  };
-  if (idx >= 0) list[idx] = rec; else list.push(rec);
-  if (cleanRc.client) saveClient(cleanRc.client, { replace: false });
-  _writeJSON(STORAGE_KEYS.receipts, list);
+  _saveDocRecord(STORAGE_KEYS.receipts, loadReceipts, rc, 'receiptNumber', 'r');
 }
 
 function saveQuotation(q) {
-  const cleanQ = sanitizeRecord(q);
-  const list = loadQuotations();
-  const now = new Date().toISOString();
-  const idx = list.findIndex(x => x.quotationNumber === cleanQ.quotationNumber);
-  const existing = idx >= 0 ? list[idx] : null;
-  const billerId = cleanQ.billerId || existing?.billerId || getActiveBillerId() || 'biller_default';
-  const rec = {
-    id: cleanQ.id || existing?.id || `q_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-    createdAt: existing?.createdAt || cleanQ.createdAt || now,
-    savedAt: now,
-    billerId,
-    ...cleanQ
-  };
-  if (idx >= 0) list[idx] = rec; else list.push(rec);
-  if (cleanQ.to) {
-    saveClient({
-      name: cleanQ.to.name,
-      address: cleanQ.to.address,
-      title: cleanQ.to.title,
-      company: cleanQ.to.company,
-      bin: cleanQ.to.bin || ''
-    }, { replace: false });
-  }
-  _writeJSON(STORAGE_KEYS.quotations, list);
+  _saveDocRecord(STORAGE_KEYS.quotations, loadQuotations, q, 'quotationNumber', 'q', cleanQ => cleanQ.to ? {
+    name: cleanQ.to.name,
+    address: cleanQ.to.address,
+    title: cleanQ.to.title,
+    company: cleanQ.to.company,
+    bin: cleanQ.to.bin || ''
+  } : null);
 }
 
 // ==========================================
@@ -1502,16 +1275,7 @@ function getChallanByNumber(no) {
 }
 
 function _safeRound(n) {
-  if (typeof roundBDT === 'function') return roundBDT(n);
-  const num = Number(n);
-  if (!Number.isFinite(num) || Math.abs(num) < 1e-9) return 0;
-  if (Math.abs(num) >= 1e15) return Math.round(num * 100) / 100;
-  const sign = num < 0 ? -1 : 1;
-  const absStr = String(Math.abs(num));
-  const res = (absStr.includes('e') || absStr.includes('E'))
-    ? sign * (Math.round((Math.abs(num) + Number.EPSILON) * 100) / 100)
-    : sign * Number(Math.round(Number(absStr + 'e2')) + 'e-2');
-  return res === 0 ? 0 : res;
+  return typeof roundBDT === 'function' ? roundBDT(n) : Math.round(Number(n || 0) * 100) / 100;
 }
 
 // Money receipt helpers

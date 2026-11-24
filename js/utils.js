@@ -363,10 +363,8 @@ function formatDisplayDate(isoDateStr) {
 }
 
 function parseQuery() {
-  const params = new URLSearchParams(window.location.search);
-  const obj = {};
-  for (const [k, v] of params.entries()) obj[k] = v;
-  return obj;
+  if (typeof window === 'undefined' || !window.location) return {};
+  return Object.fromEntries(new URLSearchParams(window.location.search));
 }
 
 function renderQR(containerEl, text) {
@@ -666,12 +664,9 @@ function sanitizeCsvCell(cell) {
   return `"${str.replace(/"/g, '""')}"`;
 }
 
-// Unified Formula-Safe CSV Exporter (UTF-8 BOM + Blob to prevent # truncation)
-function downloadCSV(filename, rows) {
-  if (typeof document === 'undefined' || !Array.isArray(rows)) return;
-  const csvContent = '\uFEFF' + rows.map(r => (Array.isArray(r) ? r : [r]).map(sanitizeCsvCell).join(',')).join('\r\n');
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+// Unified Blob Downloader
+function downloadBlob(filename, blob) {
+  if (typeof document === 'undefined' || !blob) return;
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -679,7 +674,14 @@ function downloadCSV(filename, rows) {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+// Unified Formula-Safe CSV Exporter (UTF-8 BOM + Blob to prevent # truncation)
+function downloadCSV(filename, rows) {
+  if (typeof document === 'undefined' || !Array.isArray(rows)) return;
+  const csvContent = '\uFEFF' + rows.map(r => (Array.isArray(r) ? r : [r]).map(sanitizeCsvCell).join(',')).join('\r\n');
+  downloadBlob(filename, new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }));
 }
 
 // Deterministic PDF filename setter during browser print dialog
@@ -803,14 +805,7 @@ async function downloadRenderedPdf(prepareFn, filenameBase, triggerBtn) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = cleanName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    downloadBlob(cleanName, blob);
     if (typeof showToast === 'function') showToast(`Downloaded ${cleanName}`, 'success');
   } catch (err) {
     console.warn('Direct PDF endpoint failed, opening browser print dialog:', err);
@@ -867,6 +862,18 @@ if (typeof document !== 'undefined' && typeof document.addEventListener === 'fun
           if (document.activeElement === el && typeof el.select === 'function') el.select();
         } catch (_) { }
       });
+    }
+  });
+}
+
+// Global Ctrl+S shortcut helper for document editors
+function initSaveShortcut(btnId) {
+  if (typeof window === 'undefined') return;
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      const btn = typeof btnId === 'string' ? document.getElementById(btnId) : btnId;
+      if (btn && typeof btn.click === 'function') btn.click();
     }
   });
 }

@@ -698,13 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Global Ctrl+S shortcut to save
-  window.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-      e.preventDefault();
-      saveBtn.click();
-    }
-  });
+  initSaveShortcut(saveBtn);
 
   printBtn.addEventListener('click', () => {
     prepareForPrint();

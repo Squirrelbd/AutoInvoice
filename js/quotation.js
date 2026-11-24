@@ -688,13 +688,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Global Ctrl+S shortcut to save
-  window.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-      e.preventDefault();
-      if (saveBtn) saveBtn.click();
-    }
-  });
+  initSaveShortcut(saveBtn);
 
   function prepareForPrint() {
     itemRowsEl.querySelectorAll('tr').forEach(syncQuotationRowMirrors);

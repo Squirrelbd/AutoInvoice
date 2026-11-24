@@ -441,15 +441,7 @@
     if (exportBtn) {
       exportBtn.addEventListener('click', () => {
         const billers = typeof loadBillers === 'function' ? loadBillers() : [];
-        const blob = new Blob([JSON.stringify(billers, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `autoinvoice_billers_${new Date().toISOString().slice(0, 10)}.json`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
+        downloadBlob(`autoinvoice_billers_${new Date().toISOString().slice(0, 10)}.json`, new Blob([JSON.stringify(billers, null, 2)], { type: 'application/json' }));
         if (typeof showToast === 'function') showToast('Biller profiles exported as JSON.', 'success');
       });
     }

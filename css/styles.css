@@ -1057,6 +1057,9 @@ input[type=number] {
   border: 1px solid var(--border-subtle);
   border-radius: 0.5rem;
   overflow: hidden;
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .receipt-table th {
@@ -1067,12 +1070,26 @@ input[type=number] {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-subtle);
+  vertical-align: middle;
 }
 
 .receipt-table td {
-  padding: 0.75rem;
+  padding: 0.65rem 0.75rem;
   vertical-align: middle;
-  border-bottom: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle);
+}
+
+.receipt-table th.rcpt-col-no,
+.receipt-table td.rcpt-col-no {
+  width: 8%;
+  text-align: center;
+}
+
+.receipt-table th.rcpt-col-amount,
+.receipt-table td.rcpt-col-amount {
+  width: 26%;
+  text-align: right;
 }
 
 .receipt-amount-row {
@@ -1080,8 +1097,8 @@ input[type=number] {
 }
 
 .receipt-amount-row td {
-  border-top: 1px solid rgba(22, 163, 74, 0.25) !important;
-  border-bottom: 1px solid rgba(22, 163, 74, 0.25) !important;
+  border-top: 1.5px solid rgba(22, 163, 74, 0.4) !important;
+  border-bottom: 1.5px solid rgba(22, 163, 74, 0.4) !important;
 }
 
 .receipt-due-row td {
@@ -1238,17 +1255,6 @@ html[data-bs-theme="light"] .btn-outline-info:active {
 
 .blank-filler-row td {
   height: 2.1rem;
-  vertical-align: middle;
-}
-
-.receipt-items-table th {
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.receipt-items-table td {
-  font-size: 0.88rem;
   vertical-align: middle;
 }
 

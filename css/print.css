@@ -533,7 +533,8 @@
 
   table.invoice-table,
   table.challan-table,
-  table.quotation-table {
+  table.quotation-table,
+  table.receipt-table {
     table-layout: fixed !important;
   }
 
@@ -768,6 +769,7 @@
 
   .receipt-table {
     width: 100% !important;
+    table-layout: fixed !important;
     border: 1px solid #94a3b8 !important;
     border-collapse: collapse !important;
     margin-bottom: 3.5mm !important;
@@ -783,6 +785,7 @@
     letter-spacing: 0.03em !important;
     border: 1px solid #cbd5e1 !important;
     padding: 2.2mm 2.8mm !important;
+    vertical-align: middle !important;
   }
 
   .receipt-table,
@@ -798,6 +801,19 @@
     vertical-align: middle !important;
     background-color: #ffffff !important;
     color: #0f172a !important;
+  }
+
+  /* Receipt Table Column Widths */
+  .receipt-table th.rcpt-col-no,
+  .receipt-table td.rcpt-col-no {
+    width: 8% !important;
+    text-align: center !important;
+  }
+
+  .receipt-table th.rcpt-col-amount,
+  .receipt-table td.rcpt-col-amount {
+    width: 26% !important;
+    text-align: right !important;
   }
 
   .receipt-amount-row td {
@@ -852,40 +868,6 @@
   .blank-doc-mode .invoice-table tbody td {
     height: 7.5mm !important;
     vertical-align: middle !important;
-  }
-
-  .receipt-items-table {
-    width: 100% !important;
-    border: 1px solid #94a3b8 !important;
-    border-collapse: collapse !important;
-    margin-bottom: 3mm !important;
-  }
-
-  .receipt-items-table th {
-    background-color: #f1f5f9 !important;
-    color: #0f172a !important;
-    font-weight: 700 !important;
-    font-size: 8pt !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.03em !important;
-    border: 1px solid #cbd5e1 !important;
-    padding: 1.8mm 2.4mm !important;
-  }
-
-  .receipt-items-table td {
-    border: 1px solid #cbd5e1 !important;
-    padding: 1.8mm 2.4mm !important;
-    font-size: 8.5pt !important;
-    background-color: #ffffff !important;
-    color: #0f172a !important;
-    vertical-align: middle !important;
-  }
-
-  .blank-doc-mode .receipt-amount-row td {
-    background-color: #f0fdf4 !important;
-    color: #15803d !important;
-    border-top: 1.5px solid #16a34a !important;
-    border-bottom: 1.5px solid #16a34a !important;
   }
 
   .words-box #amountInWords {
