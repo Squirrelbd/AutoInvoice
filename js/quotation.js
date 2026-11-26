@@ -641,6 +641,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const record = buildRecord();
       const validMsg = validateRecord(record);
       if (validMsg) { showToast(validMsg, 'warning'); return; }
+      if (!currentQuotationRecord && typeof getQuotationByNumber === 'function' && getQuotationByNumber(record.quotationNumber)) {
+        const nextNo = peekNextQuotationNumber(record.billerId);
+        record.quotationNumber = nextNo;
+        if (quotationNumberEl) quotationNumberEl.value = nextNo;
+        showToast(`Number already in use — assigned ${nextNo} to protect existing quotation.`, 'info');
+      }
       saveQuotation(record);
       finalizeQuotationNumber(record.quotationNumber, record.billerId);
       currentQuotationRecord = record;
@@ -889,6 +895,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     syncQuotationPrintValues();
     renderQR(qrContainer, buildQRText());
+  });
+
+  window.addEventListener('storagesync', () => {
+    const qs = new URLSearchParams(window.location.search);
+    const isEditing = !!(qs.get('no') || qs.get('id') || qs.get('load') || currentQuotationRecord);
+    if (isEditing || !quotationNumberEl) return;
+    if (typeof getQuotationByNumber === 'function' && getQuotationByNumber(quotationNumberEl.value)) {
+      quotationNumberEl.value = peekNextQuotationNumber();
+      syncQuotationPrintValues();
+      renderQR(qrContainer, buildQRText());
+    }
   });
 
   if (window.AutoInvoiceDocList && typeof window.AutoInvoiceDocList.connectWorkspace === 'function') {

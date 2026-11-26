@@ -753,6 +753,27 @@ function _findBillerByPrefix(type, prefix) {
 }
 
 // Next numbers (Isolated per biller - parameterized generator, peeker, and finalizer)
+function _maxExistingDocSeq(type, prefix, year) {
+  const loaders = {
+    invoice: { fn: loadInvoices, field: 'invoiceNumber' },
+    challan: { fn: loadChallans, field: 'challanNumber' },
+    receipt: { fn: loadReceipts, field: 'receiptNumber' },
+    quotation: { fn: loadQuotations, field: 'quotationNumber' },
+    expense: { fn: loadExpenses, field: 'id' }
+  };
+  const cfg = loaders[type];
+  if (!cfg || typeof cfg.fn !== 'function') return 0;
+  const wantPrefix = `${prefix}-${year}-`;
+  let maxSeq = 0;
+  for (const rec of cfg.fn()) {
+    const no = String(rec?.[cfg.field] || rec?.number || '').trim();
+    if (!no.startsWith(wantPrefix)) continue;
+    const seq = Number(no.slice(wantPrefix.length)) || 0;
+    if (seq > maxSeq) maxSeq = seq;
+  }
+  return maxSeq;
+}
+
 function _getNextDocNumber(type, defaultPrefix, billerId) {
   const b = (billerId && getBillerById(billerId)) || getActiveBiller();
   const prefix = (b?.prefixes?.[type] || NUMBER_FORMATS[`${type}Prefix`] || defaultPrefix).trim();
@@ -760,7 +781,7 @@ function _getNextDocNumber(type, defaultPrefix, billerId) {
   const year = new Date().getFullYear();
   let last = _readJSON(key, { year, seq: 0 });
   if (last.year !== year) last = { year, seq: 0 };
-  last.seq += 1;
+  last.seq = Math.max(last.seq, _maxExistingDocSeq(type, prefix, year)) + 1;
   _writeJSON(key, last);
   const padded = String(last.seq).padStart(4, "0");
   return `${prefix}-${year}-${padded}`;
@@ -773,7 +794,8 @@ function _peekNextDocNumber(type, defaultPrefix, billerId) {
   const year = new Date().getFullYear();
   let last = _readJSON(key, { year, seq: 0 });
   if (last.year !== year) last = { year, seq: 0 };
-  const padded = String(last.seq + 1).padStart(4, "0");
+  const baseSeq = Math.max(last.seq, _maxExistingDocSeq(type, prefix, year));
+  const padded = String(baseSeq + 1).padStart(4, "0");
   return `${prefix}-${year}-${padded}`;
 }
 

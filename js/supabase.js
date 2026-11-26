@@ -51,7 +51,7 @@
   }
 
   async function supabaseUpsert(table, row) {
-    if (!row || !row.id) return false;
+    if (!row || (!row.id && !row.key)) return false;
     const res = await supabaseRequest(table, {
       method: 'POST',
       body: JSON.stringify(row)
@@ -333,6 +333,22 @@
         // Save updated / deduplicated local data
         if (changedLocal && typeof root._writeJSON === 'function') {
           root._writeJSON(sKey, mergedArr, { skipCloudSync: true });
+        }
+
+        // Advance local & cloud sequence counters past all synced documents
+        const finalizerMap = {
+          invoices: root.finalizeInvoiceNumber,
+          challans: root.finalizeChallanNumber,
+          receipts: root.finalizeReceiptNumber,
+          quotations: root.finalizeQuotationNumber,
+          expenses: root.finalizeExpenseNumber
+        };
+        const finalizeFn = finalizerMap[table];
+        if (typeof finalizeFn === 'function') {
+          for (const rec of mergedArr) {
+            const num = getCanonicalKey(table, rec);
+            if (num) finalizeFn(num, rec.billerId);
+          }
         }
 
         // Push any local records not yet present in Supabase
