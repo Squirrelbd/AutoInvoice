@@ -72,10 +72,51 @@
     return Array.isArray(data) ? data : [];
   }
 
+  function _slugKey(str) {
+    return String(str || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  }
+
+  /**
+   * Canonical business key per table (matches js/storage.js uniqueness rules)
+   */
+  function getCanonicalKey(table, rec) {
+    if (!rec) return '';
+    switch (table) {
+      case 'invoices': return String(rec.invoiceNumber || rec.number || rec.id || '').trim();
+      case 'challans': return String(rec.challanNumber || rec.number || rec.id || '').trim();
+      case 'receipts': return String(rec.receiptNumber || rec.number || rec.id || '').trim();
+      case 'quotations': return String(rec.quotationNumber || rec.number || rec.id || '').trim();
+      case 'expenses': return String(rec.id || rec.voucherNo || rec.expenseNumber || '').trim();
+      case 'clients': return String(rec.name || rec.id || '').trim().toLowerCase();
+      case 'items': return String(rec.name || rec.id || '').trim().toLowerCase();
+      case 'billers': return String(rec.id || '').trim();
+      default: return String(rec.id || '').trim();
+    }
+  }
+
+  /**
+   * Deterministic Supabase primary key per table (prevents cross-device duplicates)
+   */
+  function getCloudRowId(table, rec) {
+    const key = getCanonicalKey(table, rec);
+    if (!key) return '';
+    switch (table) {
+      case 'invoices': return `inv_${key}`;
+      case 'challans': return `ch_${key}`;
+      case 'receipts': return `r_${key}`;
+      case 'quotations': return `q_${key}`;
+      case 'expenses': return key;
+      case 'clients': return `cli_${_slugKey(key)}`;
+      case 'items': return `it_${_slugKey(key)}`;
+      case 'billers': return key;
+      default: return key;
+    }
+  }
+
   // Row formatters for mapping local document records to Supabase tables
   const TABLE_FORMATTERS = {
     invoices: rec => ({
-      id: rec.id || `inv_${rec.invoiceNumber}`,
+      id: getCloudRowId('invoices', rec),
       invoice_number: rec.invoiceNumber || rec.number || '',
       biller_id: rec.billerId || 'biller_default',
       client_name: rec.client?.name || '',
@@ -86,7 +127,7 @@
       updated_at: rec.savedAt || new Date().toISOString()
     }),
     challans: rec => ({
-      id: rec.id || `ch_${rec.challanNumber}`,
+      id: getCloudRowId('challans', rec),
       challan_number: rec.challanNumber || rec.number || '',
       biller_id: rec.billerId || 'biller_default',
       client_name: rec.client?.name || '',
@@ -96,7 +137,7 @@
       updated_at: rec.savedAt || new Date().toISOString()
     }),
     receipts: rec => ({
-      id: rec.id || `r_${rec.receiptNumber}`,
+      id: getCloudRowId('receipts', rec),
       receipt_number: rec.receiptNumber || rec.number || '',
       invoice_number: rec.invoiceNumber || '',
       biller_id: rec.billerId || 'biller_default',
@@ -106,7 +147,7 @@
       updated_at: rec.savedAt || new Date().toISOString()
     }),
     quotations: rec => ({
-      id: rec.id || `q_${rec.quotationNumber}`,
+      id: getCloudRowId('quotations', rec),
       quotation_number: rec.quotationNumber || rec.number || '',
       biller_id: rec.billerId || 'biller_default',
       client_name: rec.to?.company || rec.to?.name || '',
@@ -116,32 +157,32 @@
       updated_at: rec.savedAt || new Date().toISOString()
     }),
     expenses: rec => ({
-      id: rec.id || `exp_${rec.voucherNo || Date.now()}`,
+      id: getCloudRowId('expenses', rec) || `exp_${Date.now()}`,
       voucher_no: rec.voucherNo || rec.expenseNumber || '',
       biller_id: rec.billerId || 'biller_default',
       category: rec.category || '',
       amount: Number(rec.amount || 0) || 0,
       date: rec.date || '',
       data: rec,
-      updated_at: rec.savedAt || new Date().toISOString()
+      updated_at: rec.savedAt || rec.updatedAt || new Date().toISOString()
     }),
     clients: rec => ({
-      id: rec.id || `cli_${String(rec.name || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+      id: getCloudRowId('clients', rec),
       name: rec.name || '',
       phone: rec.phone || '',
       email: rec.email || '',
       data: rec,
-      updated_at: new Date().toISOString()
+      updated_at: rec.updatedAt || new Date().toISOString()
     }),
     items: rec => ({
-      id: rec.id || `it_${String(rec.name || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+      id: getCloudRowId('items', rec),
       name: rec.name || '',
       unit_price: Number(rec.unitPrice || 0) || 0,
       data: rec,
-      updated_at: new Date().toISOString()
+      updated_at: rec.updatedAt || new Date().toISOString()
     }),
     billers: rec => ({
-      id: rec.id || 'biller_default',
+      id: getCloudRowId('billers', rec) || 'biller_default',
       name: rec.name || '',
       data: rec,
       updated_at: rec.updatedAt || new Date().toISOString()
@@ -249,62 +290,57 @@
       for (const [table, sKey] of Object.entries(storageKeyMap)) {
         const cloudRows = cloudData[table] || [];
         const localList = (typeof root._readJSON === 'function') ? root._readJSON(sKey, []) : [];
-        const localArr = Array.isArray(localList) ? localList : [];
+        const rawLocalArr = Array.isArray(localList) ? localList : [];
+
+        // Deduplicate local records by canonical business key (self-heals any prior duplicates)
         const localMap = new Map();
-        localArr.forEach(item => {
-          const id = item.id || (table === 'invoices' ? item.invoiceNumber : table === 'challans' ? item.challanNumber : table === 'receipts' ? item.receiptNumber : table === 'quotations' ? item.quotationNumber : item.name);
-          if (id) localMap.set(String(id), item);
-        });
+        const getTs = obj => String(obj?.savedAt || obj?.updatedAt || obj?.updated_at || '');
+        for (const item of rawLocalArr) {
+          const key = getCanonicalKey(table, item);
+          if (!key) continue;
+          const prev = localMap.get(key);
+          if (!prev || getTs(item) >= getTs(prev)) {
+            localMap.set(key, item);
+          }
+        }
 
-        let changedLocal = false;
-        const missingOnCloud = [];
+        let changedLocal = localMap.size !== rawLocalArr.length;
+        const cloudKeySet = new Set();
 
-        // Ingest from Cloud
+        // Ingest from Cloud using the exact same canonical business key
         for (const cRow of cloudRows) {
-          const cDoc = cRow.data || cRow;
-          const id = String(cRow.id || cDoc.id || '');
-          if (!id) continue;
+          const cDoc = (cRow && cRow.data && typeof cRow.data === 'object') ? cRow.data : cRow;
+          const key = getCanonicalKey(table, cDoc);
+          if (!key) continue;
+          cloudKeySet.add(key);
 
-          if (!localMap.has(id)) {
-            localArr.push(cDoc);
-            localMap.set(id, cDoc);
+          const existing = localMap.get(key);
+          if (!existing) {
+            localMap.set(key, cDoc);
             changedLocal = true;
           } else {
-            // Check timestamps if both have savedAt / updatedAt
-            const existing = localMap.get(id);
-            const cTime = cRow.updated_at || cDoc.savedAt || cDoc.updatedAt || '';
-            const lTime = existing.savedAt || existing.updatedAt || '';
-            if (cTime && lTime && cTime > lTime) {
-              const idx = localArr.findIndex(x => (x.id || x.invoiceNumber || x.challanNumber || x.receiptNumber || x.quotationNumber || x.name) === id);
-              if (idx >= 0) {
-                localArr[idx] = cDoc;
-                localMap.set(id, cDoc);
-                changedLocal = true;
-              }
+            const cTime = String(cRow.updated_at || cDoc.savedAt || cDoc.updatedAt || '');
+            const lTime = getTs(existing);
+            if (cTime && (!lTime || cTime > lTime)) {
+              localMap.set(key, cDoc);
+              changedLocal = true;
             }
           }
         }
 
-        // Detect local records to push up to cloud
-        const cloudIdSet = new Set(cloudRows.map(r => String(r.id)));
-        for (const localItem of localArr) {
-          const id = String(localItem.id || (table === 'invoices' ? localItem.invoiceNumber : table === 'challans' ? localItem.challanNumber : table === 'receipts' ? localItem.receiptNumber : table === 'quotations' ? localItem.quotationNumber : localItem.name) || '');
-          if (id && !cloudIdSet.has(id)) {
-            missingOnCloud.push(localItem);
-          }
-        }
+        const mergedArr = Array.from(localMap.values());
 
-        // Save updated local data if cloud added items
+        // Save updated / deduplicated local data
         if (changedLocal && typeof root._writeJSON === 'function') {
-          root._writeJSON(sKey, localArr, { skipCloudSync: true });
+          root._writeJSON(sKey, mergedArr, { skipCloudSync: true });
         }
 
-        // Push any missing local items to Supabase
-        if (missingOnCloud.length > 0) {
-          const formatter = TABLE_FORMATTERS[table];
-          if (formatter) {
-            for (const item of missingOnCloud) {
-              await supabaseUpsert(table, formatter(item));
+        // Push any local records not yet present in Supabase
+        const formatter = TABLE_FORMATTERS[table];
+        if (formatter) {
+          for (const [key, localItem] of localMap.entries()) {
+            if (!cloudKeySet.has(key)) {
+              await supabaseUpsert(table, formatter(localItem));
             }
           }
         }
